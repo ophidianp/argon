@@ -8,7 +8,7 @@
     <title>Transparency · Argon</title>
     <link rel="icon" type="image/svg+xml" href="assets/argon-icon.svg">
     <script>try{var d=document.documentElement,s=localStorage.getItem("argon-theme"),t=s==="light"||s==="dark"?s:(d.dataset.theme==="light"?"light":"dark");d.dataset.theme=t;var v=JSON.parse(localStorage.getItem("argon-accent-vars")||"null");if(v&&v[t])for(var k in v[t])d.style.setProperty(k,v[t][k])}catch(e){}</script>
-    <link rel="stylesheet" href="assets/site.css?v=2">
+    <link rel="stylesheet" href="assets/site.css?v=3">
     <script src="assets/site.js?v=2" defer></script>
   </head>
   <body>
@@ -37,12 +37,11 @@
       <section class="page-hero wrap">
         <p class="eyebrow" data-reveal><span class="status-dot"></span> Transparency</p>
         <h1 class="split">How Argon <span class="grad">was made.</span></h1>
-        <p class="lede" data-reveal style="--d: 300ms">Straight answers about where the idea came from, who wrote the code, and what happens to your data.</p>
+        <p class="lede" data-reveal style="--d: 300ms">Straight answers about who wrote the code and what happens to your data.</p>
       </section>
 
       <section class="wrap">
         <div class="facts" data-stagger>
-          <article class="fact"><p class="eyebrow">The idea</p><h3>Inspired by Symvibe</h3><p>Argon started from the idea behind Symvibe, a Mac app for running coding agents on a shared board. Argon is its own app for Windows, written from scratch, with its own name, look and code.</p></article>
           <article class="fact"><p class="eyebrow">The code</p><h3>Built with AI</h3><p>Argon and this website were written with Claude, an AI model, directed and tested by Pavan. The design follows the same style as Chlorine and the other sites in this family.</p></article>
           <article class="fact"><p class="eyebrow">Your data</p><h3>Stays on your PC</h3><p>Argon has no servers, accounts or telemetry. Boards, notes, memory and settings are JSON files in your app data folder, with rolling backups.</p></article>
           <article class="fact"><p class="eyebrow">Your accounts</p><h3>Never touched</h3><p>Agents sign in by themselves. Argon only checks whether each agent has saved a login file, to show "signed in" in the setup panel. It never reads or sends what's inside.</p></article>
