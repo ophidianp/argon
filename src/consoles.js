@@ -6,6 +6,8 @@ import { terminalOptions } from './appearance.js';
 const NEEDS_RE = /(\(y\/n\)|\[y\/n\]|\by\/N\b|\bY\/n\b|Do you want to|Do you trust|Allow (this|once|always)|Yes, (allow|and don't ask)|Approve\?|approve this|Press Enter to continue|Continue\?|Waiting for (your )?(input|approval)|Select (a |your )?(login method|option|model)|Press Enter to|❯\s*\d+\.\s)/i;
 const ANSI_RE = /\x1b\[[0-9;?<>=]*[ -\/]*[@-~]|\x1b[()][0-9A-Za-z]|\x1b[=>78DEHM]|\r/g;
 const OSC_RE = /\x1b\][^\x07\x1b]*(\x07|\x1b\\)/g;
+// Data xterm sends by itself: focus events, CSI reports (device attributes, cursor position, status, window size, modes), OSC and DCS replies.
+const TERM_REPLY_RE = /^(?:\x1b\[[IO]|\x1b\[[?>=]?[\d;]*(?:\$y|[cRnt])|\x1b\][^\x07\x1b]*(?:\x07|\x1b\\)|\x1bP[^\x1b]*\x1b\\)+$/;
 
 export const rt = (id) => S.runtime.get(id);
 
@@ -55,7 +57,8 @@ export function mountConsole(node, body, w) {
     if (e.ctrlKey && e.key.toLowerCase() === 'k') return false; // command bar
     return true;
   });
-  term.onData((d) => { r.lastIn = Date.now(); window.argon.pty.write(node.id, d); });
+  // The terminal's own automatic replies (focus in/out, cursor and device reports) are not you typing.
+  term.onData((d) => { if (!TERM_REPLY_RE.test(d)) r.lastIn = Date.now(); window.argon.pty.write(node.id, d); });
 
   window.argon.pty.onData(node.id, (data) => {
     term.write(data);
