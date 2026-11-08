@@ -12,6 +12,7 @@ import { initTeamwork, presetMenu } from './teamwork.js';
 import { initMissionMap, openMissionMap } from './missionmap.js';
 import { initFlowDots } from './flowdots.js';
 import { initBoardApi } from './boardapi.js';
+import { initTeamTalk } from './teamtalk.js';
 import { initPace } from './pace.js';
 import { paintIcons } from './icons.js';
 import { openOnboarding } from './onboarding.js';
@@ -58,6 +59,7 @@ async function boot() {
   initPace();
   initFlowDots();
   initBoardApi();
+  initTeamTalk();
   renderMission();
 
   // First run (and once for anyone who has not seen it yet): the welcome screen. /welcome brings it back.

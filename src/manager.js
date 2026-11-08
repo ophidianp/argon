@@ -12,6 +12,7 @@ import { animationsOn } from './appearance.js';
 import { setBrief, clearBriefs } from './teamwork.js';
 import { flyTo } from './board.js';
 import { paced } from './pace.js';
+import { startTeamFile, teamIntro } from './teamtalk.js';
 
 const NS = 'http://www.w3.org/2000/svg';
 const slug = (s) => String(s || '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') || 'agent';
@@ -348,20 +349,23 @@ async function run(p, w) {
   for (const { node: t, via } of rows) {
     const task = ((p.data.tasks || {})[t.id] || '').trim() || defaultTask(t, via);
     const ag = agentsFor(w, t);
+    // a group is a team: they get a shared team file to split the work in, and the rules for working together
+    if (t.type === 'group' && ag.length > 1) await startTeamFile(w, t, { goal, task, fresh: true });
     if (!ag.length) { toast(`${label(t)} has no terminals in it yet.`, 'warn'); continue; }
     for (const a of ag) {
       if (a.data.agent === 'shell') { toast(`${a.title} is a plain terminal, so it gets no prompt.`); continue; }
       const c = rt(a.id);
       if (!c || !c.alive) { toast(`${a.title} is not running. Restart it and run again.`, 'warn'); continue; }
       const rel = `.argon/manager/${r.id}/${slug(a.title)}.md`; r.files[a.id] = rel;
-      const others = everyone.filter((x) => x !== a.title);
+      const mates = t.type === 'group' ? ag.map((x) => x.title) : [a.title];
+      const others = everyone.filter((x) => !mates.includes(x));
       const prompt = [
         `[Argon] Team goal: ${goal}`,
-        t.type === 'group' ? `You are ${a.title} on team #${groupTag(t)} (with ${ag.filter((x) => x !== a).map((x) => x.title).join(', ') || 'no one else'}).` : `You are ${a.title}.`,
+        t.type === 'group' ? teamIntro(w, t, a) : `You are ${a.title}.`,
         via ? `${via.title} worked before you; what it handed over is below.` : '',
-        `Your task: ${task}`,
-        others.length ? `Others on the team: ${others.join(', ')}. Do not redo their parts.` : '',
-        `When you are done, write a short report to ${rel} (create the folders if needed). Start it with "## Summary" (2-3 sentences), then "## Links" (URLs of any website, repo or pull request), then "## Proof" (tests, checks, screenshot paths), then "## Files" (every file and folder you created or changed, one full path per line). Then stop.`,
+        t.type === 'group' ? `Your team's task: ${task}` : `Your task: ${task}`,
+        others.length ? `Other agents in this run${t.type === 'group' ? ' (not on your team, they work before or after you)' : ''}: ${others.join(', ')}. Do not redo their parts.` : '',
+        `${t.type === 'group' ? 'When your part is done (and the team file shows nothing left for you), write' : 'When you are done, write'} a short report to ${rel} (create the folders if needed). Start it with "## Summary" (2-3 sentences), then "## Links" (URLs of any website, repo or pull request), then "## Proof" (tests, checks, screenshot paths), then "## Files" (every file and folder you created or changed, one full path per line). Then stop.`,
       ].filter(Boolean).join(' ');
       sent++;
       // Agents further down the chain get their task together with the handoff that reaches them.

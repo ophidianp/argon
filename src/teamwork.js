@@ -8,6 +8,7 @@ import { agentByKey } from './agents.js';
 import { isTyping } from './board.js';
 import { openCommandBar } from './panels.js';
 import { paced } from './pace.js';
+import { startTeamFile, teamIntro, hasQueued } from './teamtalk.js';
 
 const NS = 'http://www.w3.org/2000/svg';
 const isPipe = (n) => !!(n && n.data && n.data.space === 'pipe');
@@ -30,16 +31,21 @@ function endState(id) {
   const inps = rs.map(inputAt).filter(Boolean);
   return {
     alive: rs.some((r) => r.alive),
-    status: rs.some((r) => r.status === 'working') ? 'working' : rs.some((r) => r.status === 'needs') ? 'needs' : 'resting',
+    // a teammate with a message waiting for them still has work to do, so the team isn't done yet
+    status: rs.some((r) => r.status === 'working') || agentsIn(id).some((a) => hasQueued(a.id)) ? 'working' : rs.some((r) => r.status === 'needs') ? 'needs' : 'resting',
     lastOut: Math.max(...rs.map((r) => r.lastOut || 0)), lastIn: Math.max(...rs.map((r) => r.lastIn || 0)),
     inp: inps.length ? Math.max(...inps) : 0,
   };
 }
 const endStatus = (id) => { const s = endState(id); return s ? s.status : 'exited'; };
 // What a console said last, or what everyone in a group said.
+// An agent that only printed its start-up banner, or only ran a slash command like /clear, has nothing to hand over.
+const BANNER_RE = /[▐▛▜▝▘▙▟█▀▄]|Claude Code v\d|OpenAI Codex|Gemini CLI|GitHub Copilot|^\s*(?:~|[A-Za-z]:)?[\\/][^\s]*\s*$|\b(?:Opus|Sonnet|Haiku|Fable)\s+\d[\d.]*\s*·|Claude (?:Pro|Max|Team|Enterprise|API)|^\s*(?:model|directory|workdir|session):|Tips for getting started|To get started|\/init\b|\/help\b|\/status\b|\/model\b|Welcome|^\s*[>❯›]\s*\/[a-z][\w-]*\b.*$|\(no content\)|^\s*⎿\s*$|^\s*⎿\s*(?:Cleared|Compacted)\b/i;
+const bannerOnly = (t) => !t.split('\n').some((l) => l.trim() && !BANNER_RE.test(l));
+const agentText = (id, max) => { const t = replyText(id, max); return bannerOnly(t) ? '' : t; };
 function textOf(id) {
-  if (!isGroupId(id)) return replyText(id);
-  return agentsIn(id).map((a) => { const t = replyText(a.id, 1400); return t ? `--- ${a.title} ---\n${t}` : ''; }).filter(Boolean).join('\n\n');
+  if (!isGroupId(id)) return agentText(id);
+  return agentsIn(id).map((a) => { const t = agentText(a.id, 1400); return t ? `--- ${a.title} ---\n${t}` : ''; }).filter(Boolean).join('\n\n');
 }
 const titleOf = (id) => { const n = nodeOf(id); return n ? (n.data.role || n.title) : 'an agent'; };
 
@@ -85,10 +91,17 @@ function deliver(w, wire, toId, text) {
   if (!dst || !dst.alive) { toast(`${titleOf(toId)} is not running, so the handoff waits`, 'warn'); wire.pending = { to: toId, text }; return; }
   if (dst.status === 'working' || dst.status === 'needs') { wire.pending = { to: toId, text }; return; }
   wire.pending = null;
-  const ids = isGroupId(toId) ? agentsIn(toId).map((a) => a.id) : [toId];
+  const team = isGroupId(toId) ? agentsIn(toId) : null;
+  const ids = team ? team.map((a) => a.id) : [toId];
+  // A handoff into a group goes to a team. Unless the Prompter already set them up, give them a fresh team file
+  // (kept during review fix rounds) and the rules for working together.
+  const g = team && team.length > 1 ? nodeOf(toId) : null;
+  const prompted = ids.some((id) => briefs.has(id));
+  if (g && !prompted) startTeamFile(w, g, { fresh: !(wire.mode === 'review' && toId === wire.from) });
   for (const id of ids) {
     let t = text;
     const b = briefs.get(id); if (b) { briefs.delete(id); t = `${b}\n\n${t}`; }
+    else if (g) t = `${teamIntro(w, g, nodeOf(id))}\n\n${t}`;
     sendTo(id, t);
   }
   packet(w, wire, toId === wire.from);

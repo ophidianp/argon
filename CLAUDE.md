@@ -46,11 +46,17 @@ The owner is the only user and tester. They write casually and fast. Answer in p
 - Per project: `.argon/` in the workspace folder (git-ignored): `board/BOARD.md`, `board/inbox/`, `board/results/`, `manager/<run>/<agent>.md` reports, handoff briefs.
 
 ## The team in the argon workspace
-Left to right on the board: **Prompter** → **researcher** → **Build** group (**claude-1** + **builder**) → **shipper** → **Secretary**, with the **Manager** under the Prompter. Wires hand work on when each step is done.
+Left to right on the board: **Prompter** → **researcher** → **Build** group (**builder-1** + **builder-2**) → **shipper** → **Secretary**, with the **Manager** under the Prompter. Wires hand work on when each step is done.
 - **researcher**: changes no code. Finds the files involved and writes a step-by-step plan to `.argon/research.md`.
-- **Build** group: builds from `.argon/research.md`. Split the work between you and say who takes what, so you don't edit the same files, then test in the real app as described above.
+- **Build** group: a team. builder-1 and builder-2 build from `.argon/research.md` TOGETHER: split the work in the team file `.argon/team/build.md` before starting, hand tasks to each other with team messages, then test in the real app as described above.
 - **shipper**: final checkout. Reads the whole diff, syntax-checks changed modules, builds, fixes small things, then commits and pushes to `origin tauri`. Reports anything it couldn't fix.
 If your console's title is one of these, that's your role when a task comes from the Prompter.
+
+## Teams (any group with two or more agents)
+`src/teamtalk.js`. When work reaches a group (from the Prompter or a wire), Argon writes a team file `.argon/team/<group tag>.md` (members, goal, "Who's doing what", decisions, messages) and gives every member loud team rules: you are on a team, split the work first, hand tasks to each other, answer teammates, finish together.
+- Team message: write a `.json` file into `.argon/board/inbox/` with `{"do":"say","from":"<your name>","to":"<teammate>","text":"..."}`. Argon holds it until the teammate isn't working or on a permission prompt, then types it in as `[Team #tag] Message from …`, and logs it in the team file.
+- A group counts as still working while any member has a message waiting, so the next wire doesn't fire early.
+- Console names must be unique: messages find agents by name.
 
 ## The board for agents (you can use it now)
 Read `.argon/board/BOARD.md` in the project folder. It lists every tile with its id, position and contents, the groups, agents and wires, and the exact JSON to write into `.argon/board/inbox/` to add notes, checklists, kanban boards, text, web previews or file managers, edit or move tiles, group them, wire agents, message another agent, or delete tiles (never agent consoles). Results come back in `.argon/board/results/`.

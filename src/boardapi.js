@@ -7,6 +7,7 @@ import { S, ws, save, emit, on, toast } from './state.js';
 import { addNode, removeNode, fitGroup, groupMembers, groupTag, remountTile, retagAll, place } from './tiles.js';
 import { statusOf, sendTo } from './consoles.js';
 import { agentByKey } from './agents.js';
+import { sendTeamMessage, teamFile, teamOf } from './teamtalk.js';
 
 const win = () => window.argon.platform === 'win32';
 const sep = () => (win() ? '\\' : '/');
@@ -67,12 +68,13 @@ function snapshot(w) {
     '{"do":"move","id":"<id>","x":400,"y":120,"w":320,"h":240}',
     '{"do":"group","ids":["<id>","<id>"],"title":"Research"}',
     '{"do":"wire","from":"<console or group id>","to":"<console or group id>","mode":"done"}',
-    '{"do":"say","to":"<console name or id>","text":"message typed into that agent"}',
+    '{"do":"say","from":"<your console name>","to":"<console name or id>","text":"a message or a task for that agent"}',
     '{"do":"delete","id":"<id>"}',
     '```',
     'Types you can add: ' + ADDABLE.join(', ') + '. Positions are board pixels: x grows to the right, y grows down.',
     'Put new tiles next to related ones and do not cover other tiles. Agent consoles cannot be added or deleted this way.',
     'Wire modes: done (hand over when finished), reply (every reply), if (only if the reply matches "pattern"), review (until APPROVED), context (share once).',
+    'A "say" message waits until that agent is free, then it is typed in, so it never cuts into their work. Always fill in "from".',
     '',
     `## Tiles (${tiles.length})`,
     ...(tiles.length ? tiles.map((n) => describe(w, n)) : ['(none)']),
@@ -82,6 +84,11 @@ function snapshot(w) {
     '',
     `## Groups (${groups.length})`,
     ...(groups.length ? groups.map((g) => `- "${g.title}" \`${g.id}\` #${groupTag(g)}: ${groupMembers(g, w).map((m) => m.title).join(', ') || '(empty)'}`) : ['(none)']),
+    '',
+    `## Teams`,
+    'Everyone in a group is one team: they work TOGETHER, split the work in their team file, and hand tasks to each other with "say" messages.',
+    ...(groups.filter((g) => teamOf(w, g).length > 1).map((g) => `- #${groupTag(g)}: ${teamOf(w, g).map((m) => m.title).join(', ')}. Team file: ${teamFile(w, g)}`)),
+    ...(groups.some((g) => teamOf(w, g).length > 1) ? [] : ['(no group has two or more agents)']),
     '',
     `## Wires (${(w.wires || []).length})`,
     ...((w.wires || []).length ? w.wires.map((x) => `- ${title(x.from)} → ${title(x.to)} (${x.mode}${x.paused ? ', paused' : ''})`) : ['(none)']),
@@ -155,8 +162,9 @@ function apply(w, a) {
   if (what === 'say') {
     const t = findIn(w, a.to);
     if (!t || t.type !== 'console') throw new Error(`no console "${a.to}"`);
-    if (!sendTo(t.id, String(a.text || ''))) throw new Error(`${t.title} is not running`);
-    return { ok: true, did: `sent to ${t.title}` };
+    if (statusOf(t.id) === 'exited') throw new Error(`${t.title} is not running`);
+    const how = sendTeamMessage(w, t, a.from, String(a.text || ''));
+    return { ok: true, did: how === 'sent' ? `sent to ${t.title}` : `message for ${t.title} (it reaches them as soon as they're free)` };
   }
   if (what === 'delete') {
     if (!n) throw new Error(`no tile "${a.id}"`);
