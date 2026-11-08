@@ -13,6 +13,34 @@ const NS = 'http://www.w3.org/2000/svg';
 const isPipe = (n) => !!(n && n.data && n.data.space === 'pipe');
 const animOn = () => !document.body.classList.contains('no-anim');
 const nodeOf = (id) => { const f = findNode(id); return f ? f.node : null; };
+// A wire end is a console or a group. A group stands for every agent in it (nested groups too).
+const isGroupId = (id) => { const n = nodeOf(id); return !!(n && n.type === 'group'); };
+function agentsIn(id) {
+  const f = findNode(id); if (!f) return [];
+  const n = f.node;
+  if (n.type === 'console') return [n];
+  if (n.type !== 'group') return [];
+  return groupMembers(n, f.ws).flatMap((m) => (m.type === 'group' ? agentsIn(m.id) : m.type === 'console' && m.data.agent !== 'shell' ? [m] : []));
+}
+// One view over a console or a whole group: a group is working while anyone in it works.
+function endState(id) {
+  if (!isGroupId(id)) { const r = rt(id); return r ? { alive: r.alive, status: r.status, lastOut: r.lastOut || 0, lastIn: r.lastIn || 0, inp: inputAt(r) } : null; }
+  const rs = agentsIn(id).map((a) => rt(a.id)).filter(Boolean);
+  if (!rs.length) return null;
+  const inps = rs.map(inputAt).filter(Boolean);
+  return {
+    alive: rs.some((r) => r.alive),
+    status: rs.some((r) => r.status === 'working') ? 'working' : rs.some((r) => r.status === 'needs') ? 'needs' : 'resting',
+    lastOut: Math.max(...rs.map((r) => r.lastOut || 0)), lastIn: Math.max(...rs.map((r) => r.lastIn || 0)),
+    inp: inps.length ? Math.max(...inps) : 0,
+  };
+}
+const endStatus = (id) => { const s = endState(id); return s ? s.status : 'exited'; };
+// What a console said last, or what everyone in a group said.
+function textOf(id) {
+  if (!isGroupId(id)) return replyText(id);
+  return agentsIn(id).map((a) => { const t = replyText(a.id, 1400); return t ? `--- ${a.title} ---\n${t}` : ''; }).filter(Boolean).join('\n\n');
+}
 const titleOf = (id) => { const n = nodeOf(id); return n ? (n.data.role || n.title) : 'an agent'; };
 
 // ====================================================================================
@@ -53,20 +81,22 @@ export function setBrief(id, text) { briefs.set(id, text); }
 export function clearBriefs(ids) { for (const id of ids) briefs.delete(id); }
 
 function deliver(w, wire, toId, text) {
-  const dst = rt(toId);
+  const dst = endState(toId);
   if (!dst || !dst.alive) { toast(`${titleOf(toId)} is not running, so the handoff waits`, 'warn'); wire.pending = { to: toId, text }; return; }
-  if (statusOf(toId) === 'working' || statusOf(toId) === 'needs') { wire.pending = { to: toId, text }; return; }
+  if (dst.status === 'working' || dst.status === 'needs') { wire.pending = { to: toId, text }; return; }
   wire.pending = null;
-  const b = briefs.get(toId); if (b) { briefs.delete(toId); text = `${b}
-
-${text}`; }
-  sendTo(toId, text);
+  const ids = isGroupId(toId) ? agentsIn(toId).map((a) => a.id) : [toId];
+  for (const id of ids) {
+    let t = text;
+    const b = briefs.get(id); if (b) { briefs.delete(id); t = `${b}\n\n${t}`; }
+    sendTo(id, t);
+  }
   packet(w, wire, toId === wire.from);
   emit('handoff', wire.from, wire.to, wire.mode);
 }
 
 function fire(w, wire, now) {
-  const text = replyText(wire.from);
+  const text = textOf(wire.from);
   if (!text) return;
   if (wire.mode === 'if') {
     let ok = false;
@@ -84,7 +114,7 @@ function fire(w, wire, now) {
 
 // The reviewer answered: APPROVED ends it, anything else goes back to the author.
 function reviewed(w, wire) {
-  const text = replyText(wire.to);
+  const text = textOf(wire.to);
   wire.waiting = null;
   if (/\bAPPROVED\b/.test(text)) { wire.state = 'approved'; toast(`${titleOf(wire.to)} approved ${titleOf(wire.from)}'s work`, 'ok'); save(); return; }
   wire.rounds = (wire.rounds || 0) + 1;
@@ -99,7 +129,7 @@ function engine() {
   for (const w of S.data.workspaces) {
     for (const wire of wiresOf(w)) {
       if (wire.pending) { deliver(w, wire, wire.pending.to, wire.pending.text); continue; }
-      const src = rt(wire.from), dst = rt(wire.to);
+      const src = endState(wire.from), dst = endState(wire.to);
       if (!src || !src.alive || !dst) continue;
       // a real keystroke from you resets the loop guard and a finished review
       if ((src.lastIn || 0) > (wire.firedAt || 0) && wire.autoCount) { wire.autoCount = 0; if (wire.state === 'approved' || wire.state === 'stuck') { wire.state = null; wire.rounds = 0; } }
@@ -111,7 +141,7 @@ function engine() {
       }
       if (wire.mode === 'review' && (wire.state === 'approved' || wire.state === 'stuck')) continue;
       if (wire.mode === 'context' && wire.used) continue;
-      const inp = inputAt(src);
+      const inp = src.inp;
       if (!inp || src.status !== 'resting' || src.lastOut <= inp) continue;
       const settle = wire.mode === 'reply' ? 1800 : idle;
       if (now - src.lastOut < settle) continue;
@@ -167,7 +197,7 @@ function curve(p1, p2, dir) {
   const c = Math.max(60, Math.abs(x2 - x1) / 2) * dir;
   return `M${x1},${y1} C${x1 + c},${y1} ${x2 - c},${y2} ${x2},${y2}`;
 }
-const colorOf = (id) => { const n = nodeOf(id); return n ? agentByKey(n.data.agent, S.data.customAgents).color : 'var(--accent)'; };
+const colorOf = (id) => { const n = nodeOf(id); return !n ? 'var(--accent)' : n.type === 'group' ? (n.data.color || 'var(--accent)') : agentByKey(n.data.agent, S.data.customAgents).color; };
 const chipText = (wire) => {
   const m = MODES[wire.mode] || MODES.done;
   if (wire.paused) return '⏸ paused';
@@ -188,7 +218,7 @@ function draw() {
     if (!p) { p = document.createElementNS(NS, 'path'); p.dataset.w = wire.id; s.append(p); }
     const [p1, p2, dir] = ends(a, b), d = curve(p1, p2, dir);
     if (p.getAttribute('d') !== d) p.setAttribute('d', d);
-    const working = statusOf(wire.from) === 'working';
+    const working = endStatus(wire.from) === 'working';
     if (working && wire.handed) wire.handed = false; // started on something new
     // Orange and quick while the source works; green once it has handed over (dots keep moving until the handoff lands).
     const ok = wire.state === 'approved' || ((wire.handed || wire.pending) && !working);
@@ -232,8 +262,13 @@ function dragWire(w, node, e) {
   let hot = null;
   const hit = (m) => {
     for (const el of document.elementsFromPoint(m.clientX, m.clientY)) {
-      const t = el.closest && el.closest('.tile.console');
-      if (t && t.dataset.id !== node.id) { const n = w.nodes.find((x) => x.id === t.dataset.id); if (n && !isPipe(n)) return n; }
+      const t = el.closest && el.closest('.tile.console, .tile.group');
+      if (!t || t.dataset.id === node.id) continue;
+      const n = w.nodes.find((x) => x.id === t.dataset.id);
+      if (!n || isPipe(n)) continue;
+      if (n.type === 'group' && agentsIn(n.id).some((a) => a.id === node.id)) continue; // a console can't wire into its own group
+      if (node.type === 'group' && agentsIn(node.id).some((a) => a.id === n.id)) continue; // nor a group into its own members
+      return n;
     }
     return null;
   };
@@ -489,6 +524,14 @@ function initDictation() {
 // wiring it all in
 // ====================================================================================
 function decorate(node, el, w) {
+  if (node.type === 'group' && !isPipe(node)) {
+    if (!el.querySelector(':scope > .wire-dot')) {
+      const dot = h('div', { class: 'wire-dot', title: 'Drag onto a console or another group: everyone in this group hands over together' });
+      dot.addEventListener('pointerdown', (e) => { if (e.button === 0) dragWire(w, node, e); });
+      el.append(dot);
+    }
+    return;
+  }
   if (node.type !== 'console' || isPipe(node)) return;
   if (!el.querySelector(':scope > .wire-dot')) {
     const dot = h('div', { class: 'wire-dot', title: 'Drag onto another console to hand work over' });

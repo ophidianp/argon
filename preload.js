@@ -25,6 +25,7 @@ contextBridge.exposeInMainWorld('argon', {
   },
   pickFolder: () => ipcRenderer.invoke('dialog:folder'),
   claudeContext: (cwd, count) => ipcRenderer.invoke('claude:context', cwd, count),
+  setAppIcon: (png) => ipcRenderer.invoke('app:icon', Array.from(png)),
   dictateWin: () => ipcRenderer.invoke('dictate:win'),
   openExternal: (url) => ipcRenderer.invoke('shell:open', url),
   reveal: (p) => ipcRenderer.invoke('shell:reveal', p),
@@ -38,6 +39,7 @@ contextBridge.exposeInMainWorld('argon', {
   fs: {
     list: (dir) => ipcRenderer.invoke('fs:list', dir),
     read: (file) => ipcRenderer.invoke('fs:read', file),
+    changed: (dir, since, limit) => ipcRenderer.invoke('fs:changed', dir, since, limit),
     write: (file, text) => ipcRenderer.invoke('fs:write', file, text),
     exists: (file) => ipcRenderer.invoke('fs:exists', file),
   },

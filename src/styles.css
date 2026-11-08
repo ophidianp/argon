@@ -1011,3 +1011,22 @@ body.no-anim .sup-row.busy .sup-dot { animation: none; }
 
 /* Light on the GPU: when Argon isn't the focused window, looping animations rest */
 body.idle *, body.idle *::before, body.idle *::after { animation-play-state: paused !important; }
+
+/* Secretary: which project, and the output files by folder */
+.sec-proj { display: flex; gap: 8px; align-items: baseline; font-size: 12px; color: var(--muted); padding: 2px 2px 6px; border-bottom: 1px solid var(--line); min-width: 0; }
+.sec-proj:empty { display: none; }
+.sec-proj b { color: var(--text); font-weight: 600; flex: none; }
+.sec-proj span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; }
+.po-files { display: flex; flex-direction: column; gap: 6px; padding: 8px; border-radius: 10px; background: rgba(0,0,0,.16); box-shadow: inset 0 0 0 1px var(--line); }
+.po-files-t { font: 600 10.5px var(--mono); letter-spacing: .06em; text-transform: uppercase; color: var(--dim); }
+.po-dir { display: flex; flex-direction: column; gap: 4px; }
+.po-dir-name { text-align: left; font: 500 12px var(--mono); color: var(--accent-light); padding: 2px 4px; border-radius: 6px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.po-dir-name:hover { background: rgba(255,255,255,.06); }
+.po-dir-files { display: flex; flex-wrap: wrap; gap: 4px; padding-left: 14px; }
+.po-file { font: 11.5px var(--mono); color: var(--text); padding: 3px 8px; border-radius: 6px; background: rgba(255,255,255,.05); box-shadow: inset 0 0 0 1px var(--line); max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.po-file:hover { background: rgba(255,255,255,.1); }
+
+/* Groups get a wire socket too: wire the whole group instead of each agent */
+.tile.group > .wire-dot { top: 14px; }
+.tile.group:hover > .wire-dot, .tile.group.selected > .wire-dot { opacity: 1; transform: scale(1); }
+.tile.group.wire-hot { box-shadow: 0 0 0 2px var(--accent-light), 0 0 30px -6px var(--accent-light); }

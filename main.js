@@ -1,6 +1,6 @@
 // Argon — main process
 // Owns the real terminals (node-pty), saving, git, file reads and token stats.
-const { app, BrowserWindow, ipcMain, dialog, shell } = require('electron');
+const { app, BrowserWindow, ipcMain, dialog, shell, nativeImage } = require('electron');
 const path = require('path');
 const fs = require('fs');
 const os = require('os');
@@ -288,6 +288,16 @@ ipcMain.handle('fs:write', (_e, file, text) => {
   catch (_) { return false; }
 });
 ipcMain.handle('fs:exists', (_e, file) => fs.existsSync(file));
+ipcMain.handle('fs:changed', (_e, dir, since, limit = 400) => {
+  const SKIP = new Set(['node_modules', 'dist', 'build', 'target', '__pycache__']); const out = []; const stack = [[dir, 0]]; let seen = 0;
+  while (stack.length && seen < 40000) {
+    const [d, depth] = stack.pop(); let ents = []; try { ents = fs.readdirSync(d, { withFileTypes: true }); } catch (_) { continue; }
+    for (const e of ents) { seen++; const p = path.join(d, e.name);
+      if (e.isDirectory()) { if (depth < 8 && !e.name.startsWith('.') && !SKIP.has(e.name)) stack.push([p, depth + 1]); }
+      else { try { const st = fs.statSync(p); if (st.mtimeMs >= since) out.push({ path: p, size: st.size, t: st.mtimeMs }); } catch (_) {} } }
+  }
+  return out.sort((a, b) => b.t - a.t).slice(0, limit).map(({ path: f, size }) => ({ path: f, size }));
+});
 
 // ---------- token usage (read from local Claude Code / Codex logs) ----------
 function walk(dir, ext, out, depth = 0) {
@@ -324,6 +334,7 @@ function lastUsage(file) {
     return { used: 0, model: '', mtime: st.mtimeMs, file };
   } catch (_) { return null; }
 }
+ipcMain.handle('app:icon', (_e, png) => { try { if (win) win.setIcon(nativeImage.createFromBuffer(Buffer.from(png))); return true; } catch (_) { return false; } });
 ipcMain.handle('claude:context', async (_e, cwd, count = 4) => {
   const bases = [process.env.CLAUDE_CONFIG_DIR, path.join(os.homedir(), '.claude')].filter(Boolean);
   const files = [];

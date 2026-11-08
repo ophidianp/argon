@@ -33,22 +33,26 @@ function chainOf(w, p) {
   const direct = targets(w, p);
   const rows = direct.map((t) => ({ node: t, via: null }));
   const seen = new Set(direct.flatMap((t) => [t.id, ...agentsFor(w, t).map((a) => a.id)]));
-  const queue = direct.flatMap((t) => agentsFor(w, t));
+  // wires can leave a console or a whole group, and lead into a console or a whole group
+  const outOf = (n) => [n, ...(n.type === 'group' ? agentsFor(w, n) : [])];
+  const queue = direct.flatMap(outOf);
   while (queue.length) {
     const a = queue.shift();
     for (const x of w.wires || []) {
       if (x.from !== a.id || x.paused) continue;
       const n = find(w, x.to);
-      if (!n || n.type !== 'console' || seen.has(n.id)) continue;
-      seen.add(n.id); rows.push({ node: n, via: a }); queue.push(n);
+      if (!n || (n.type !== 'console' && n.type !== 'group') || seen.has(n.id)) continue;
+      seen.add(n.id); for (const m of agentsFor(w, n)) seen.add(m.id);
+      rows.push({ node: n, via: a }); queue.push(...outOf(n));
     }
   }
   return rows;
 }
 // The ends of the chain: rows whose agents hand off to no one else on the team. Their wires lead into the Secretary.
 function tailsOf(w, rows) {
-  const ids = new Set(rows.flatMap((r) => agentsFor(w, r.node).map((a) => a.id)));
-  return rows.filter((r) => !agentsFor(w, r.node).some((a) => (w.wires || []).some((x) => x.from === a.id && ids.has(x.to) && !x.paused)));
+  const idsOf = (n) => [n.id, ...agentsFor(w, n).map((a) => a.id)];
+  const ids = new Set(rows.flatMap((r) => idsOf(r.node)));
+  return rows.filter((r) => !idsOf(r.node).some((id) => (w.wires || []).some((x) => x.from === id && ids.has(x.to) && !x.paused)));
 }
 // Managers and Secretaries follow a Prompter: the one they were set to, else the nearest.
 function sourceOf(w, n) {
@@ -86,7 +90,8 @@ function renderPrompter(node, w, { el, body, extras, btns }) {
     el.classList.toggle('running', active);
     state.textContent = active ? `Running · ${Object.keys(r.done || {}).length}/${Object.keys(r.files || {}).length}` : node.data.result ? 'Done' : rows.length ? `${rows.length} on the team` : 'No team yet';
     run.textContent = active ? '■ Stop' : '▶ Run';
-    if (team.contains(document.activeElement)) { paintRowStates(); return; } // don't rebuild under the cursor
+    const typing = document.activeElement && document.activeElement.matches('input, textarea');
+    if (typing && team.contains(document.activeElement)) { paintRowStates(); return; } // don't rebuild while you type a task
     team.innerHTML = '';
     if (!rows.length) team.append(h('p', { class: 'mgr-hint' }, 'Drag from the ● on the left edge onto the first agent or group. Wire agents to each other and they join the list here.'));
     for (const { node: t, via } of rows) {
@@ -96,7 +101,7 @@ function renderPrompter(node, w, { el, body, extras, btns }) {
       task.addEventListener('pointerdown', stop);
       const sub = h('span', {});
       const x = via ? h('span', { class: 'mgr-via', title: 'Joined through a wire. Remove the wire to take it off.' }, '↳')
-        : h('button', { class: 'tile-btn', title: 'Take off the team', onclick: (e) => { stop(e); node.data.links = node.data.links.filter((k) => k !== t.id); save(); emit('nodes'); } }, '✕');
+        : h('button', { class: 'tile-btn', title: 'Take off the team', onclick: (e) => { stop(e); node.data.links = node.data.links.filter((k) => k !== t.id); if (!chainOf(w, node).length && !(node.data.run && node.data.run.active)) node.data.result = null; save(); emit('nodes'); repaintAll(w); } }, '✕');
       const row = h('div', { class: 'mgr-row' + (via ? ' chained' : ''), 'data-id': t.id },
         h('i', { style: { background: colorOf(t) } }),
         h('div', { class: 'mgr-who' }, h('b', {}, label(t)), sub), task, x);
@@ -121,7 +126,7 @@ function prompterMenu(node, w, x, y) {
     { label: 'Add a Manager', note: 'shows what each one is doing', onClick: () => addFollower(node, w, 'manager') },
     { label: 'Add a Secretary', note: 'collects the results', onClick: () => addFollower(node, w, 'secretary') },
     { label: 'Clear results', onClick: () => { node.data.result = null; save(); repaintAll(w); } },
-    { label: 'Take everyone off the team', onClick: () => { node.data.links = []; save(); emit('nodes'); } },
+    { label: 'Take everyone off the team', onClick: () => { node.data.links = []; if (!(node.data.run && node.data.run.active)) node.data.result = null; save(); emit('nodes'); repaintAll(w); } },
   ]);
 }
 function addFollower(p, w, type) {
@@ -193,21 +198,24 @@ function renderSecretary(node, w, { el, body, extras, btns }) {
   const state = h('span', { class: 'mgr-state' });
   extras.append(state);
   btns.append(h('button', { class: 'tile-btn', title: 'More', onclick: (e) => { stop(e); secretaryMenu(node, w, e.clientX, e.clientY); } }, '⋯'));
+  const proj = h('div', { class: 'sec-proj' });
   const out = h('div', { class: 'po-body mgr-out' });
-  body.append(out);
+  body.append(proj, out);
   let shown = null;
   node._paint = () => {
     if (!document.contains(el)) return;
-    const p = sourceOf(w, node), r = p && p.data.run, res = p && p.data.result;
-    state.textContent = !p ? 'No Prompter' : r && r.active ? `Collecting · ${Object.keys(r.done || {}).length}/${Object.keys(r.files || {}).length}` : res ? 'Done' : 'Waiting';
-    const key = res ? res.at : r && r.active ? 'run' : 'idle';
+    const p = sourceOf(w, node), linked = !!(p && chainOf(w, p).length);
+    proj.replaceChildren(...(p ? [h('b', {}, p.title), h('span', {}, (p.data.goal || '').trim() || 'No prompt yet')] : []));
+    const r = linked && p.data.run, res = linked && p.data.result;
+    state.textContent = !p ? 'No Prompter' : !linked ? 'Not connected' : r && r.active ? `Collecting · ${Object.keys(r.done || {}).length}/${Object.keys(r.files || {}).length}` : res ? 'Done' : 'Waiting';
+    const key = res ? res.at : r && r.active ? 'run' : linked ? 'idle' : 'off';
     if (key === shown) return;
     const reveal = shown !== null && !!res; shown = key;
     out.innerHTML = '';
     if (res) {
       const parts = resultParts(w, res); out.append(...parts);
       if (reveal && animationsOn()) parts.forEach((c, i) => c.animate([{ opacity: 0, transform: 'translateY(8px)' }, { opacity: 1, transform: 'none' }], { duration: 420, delay: 120 + i * 110, easing: 'cubic-bezier(.2,.9,.25,1)', fill: 'backwards' }));
-    } else out.append(h('p', { class: 'po-wait' }, !p ? 'Add a Prompter. When its team finishes, the summary, links and proof land here.' : r && r.active ? 'Collecting each agent’s report…' : 'When the team finishes, the summary, links to the website and repo, and the proof land here.'));
+    } else out.append(h('p', { class: 'po-wait' }, p && !linked ? `Not connected. Wire ${p.title} to an agent or group and the results land here when the team finishes.` : !p ? 'Add a Prompter. When its team finishes, the summary, links and proof land here.' : r && r.active ? 'Collecting each agent’s report…' : 'When the team finishes, the summary, links to the website and repo, and the proof land here.'));
   };
   node._paint();
   on('nodes', () => node._paint && node._paint());
@@ -353,7 +361,7 @@ async function run(p, w) {
         via ? `${via.title} worked before you; what it handed over is below.` : '',
         `Your task: ${task}`,
         others.length ? `Others on the team: ${others.join(', ')}. Do not redo their parts.` : '',
-        `When you are done, write a short report to ${rel} (create the folders if needed). Start it with "## Summary" (2-3 sentences), then "## Links" (URLs of any website, repo or pull request), then "## Proof" (tests, checks, screenshot paths). Then stop.`,
+        `When you are done, write a short report to ${rel} (create the folders if needed). Start it with "## Summary" (2-3 sentences), then "## Links" (URLs of any website, repo or pull request), then "## Proof" (tests, checks, screenshot paths), then "## Files" (every file and folder you created or changed, one full path per line). Then stop.`,
       ].filter(Boolean).join(' ');
       sent++;
       // Agents further down the chain get their task together with the handoff that reaches them.
@@ -395,6 +403,8 @@ async function tick() {
 async function finish(p, w) {
   const r = p.data.run, reports = Object.values(r.files);
   const res = await collectReports(w, reports);
+  // plus every file under the project folder that changed during the run
+  try { if (w.cwd && window.argon.fs.changed) for (const f of await window.argon.fs.changed(w.cwd, r.started - 2000, 400)) if (!res.files.some((x) => x.toLowerCase() === f.path.toLowerCase())) res.files.push(f.path); } catch (_) {}
   p.data.result = { ...res, summary: res.summary || 'The team finished. Open the reports below for details.', reports, run: r.id, at: Date.now() };
   r.active = false; save(); repaintAll(w);
   for (const s of followers(w, p, 'secretary')) { const el = tileEl(s.id); el && animationsOn() && el.animate([{ boxShadow: '0 0 0 0 rgba(127,209,160,.5)' }, { boxShadow: '0 0 0 18px rgba(127,209,160,0)' }], { duration: 800, easing: 'ease-out' }); }

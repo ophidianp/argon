@@ -444,6 +444,32 @@ fn fs_list(dir: String) -> Vec<Value> {
     v.into_iter().map(|(d, n, p)| json!({ "name": n, "dir": d, "path": p })).collect()
 }
 
+// Files changed since a time (ms since 1970) under a folder: what a team run produced. Skips build and dot folders.
+#[tauri::command]
+async fn fs_changed(dir: String, since: u64, limit: Option<usize>) -> Vec<Value> {
+    let limit = limit.unwrap_or(400);
+    let since = std::time::UNIX_EPOCH + std::time::Duration::from_millis(since);
+    let mut out: Vec<(std::time::SystemTime, String, u64)> = vec![];
+    let mut stack = vec![(std::path::PathBuf::from(&dir), 0usize)];
+    let mut seen = 0usize;
+    while let Some((d, depth)) = stack.pop() {
+        let Ok(rd) = fs::read_dir(&d) else { continue };
+        for e in rd.flatten() {
+            seen += 1;
+            if seen > 40000 { break; }
+            let name = e.file_name().to_string_lossy().into_owned();
+            let Ok(ft) = e.file_type() else { continue };
+            if ft.is_dir() {
+                if depth < 8 && !name.starts_with('.') && !SKIP_DIRS.contains(&name.as_str()) { stack.push((e.path(), depth + 1)); }
+            } else if let Ok(m) = e.metadata() {
+                if let Ok(t) = m.modified() { if t >= since { out.push((t, e.path().to_string_lossy().into_owned(), m.len())); } }
+            }
+        }
+    }
+    out.sort_by(|a, b| b.0.cmp(&a.0));
+    out.into_iter().take(limit).map(|(_, p, n)| json!({ "path": p, "size": n })).collect()
+}
+
 #[tauri::command]
 fn fs_read(file: String) -> Value {
     match fs::metadata(&file) {
@@ -602,6 +628,16 @@ async fn usage_tokens(days: Option<f64>) -> Value {
 
 // ---------- window ----------
 /// Native Windows blur behind the window (Mica on Windows 11, Acrylic as a fallback).
+// The window and taskbar icon, drawn by the page in the current accent and theme.
+#[tauri::command]
+fn set_app_icon(app: AppHandle, png: Vec<u8>) -> bool {
+    let Some(w) = app.get_webview_window("main") else { return false };
+    match tauri::image::Image::from_bytes(&png) {
+        Ok(img) => w.set_icon(img).is_ok(),
+        Err(_) => false,
+    }
+}
+
 #[tauri::command]
 fn set_backdrop(app: AppHandle, kind: String) -> bool {
     let Some(w) = app.get_webview_window("main") else { return false };
@@ -640,7 +676,7 @@ pub fn run() {
             pick_folder, shell_open, shell_reveal, app_home,
             agents_detect, agents_auth, git_info, git_action,
             fs_list, fs_read, fs_write, fs_exists,
-            claude_context, dictate_win, usage_tokens, set_backdrop, dev_log,
+            claude_context, dictate_win, usage_tokens, set_backdrop, set_app_icon, fs_changed, dev_log,
         ])
         .setup(|app| {
             // The window is built here (not in tauri.conf.json) so we can tune the web engine.

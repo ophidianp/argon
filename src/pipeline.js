@@ -468,22 +468,50 @@ function sections(text) {
 }
 // Shared with the Manager: read reports into a summary, links and proof, and draw them.
 export async function collectReports(w, reports) {
-  const summary = [], links = [], proof = [];
+  const summary = [], links = [], proof = [], files = [];
   for (const rel of reports) {
     const r = await window.argon.fs.read(absPath(w, rel)); if (!r || !r.ok) continue;
     const sec = sections(r.text), body = sec.summary || (sec._ || r.text).split(/\n\s*\n/)[0];
+    for (const l of (sec.files || '').split(/\n/)) { const f = l.replace(/^\s*([-*•]|\d+\.)\s*/, '').replace(/[`*]/g, '').replace(/\s+[-–—(].*$/, '').trim(); if (f && /[\\/.]/.test(f) && !files.includes(f)) files.push(f); }
     if (body) summary.push(body.replace(/\s+/g, ' ').slice(0, 420));
     for (const u of ((sec.links || r.text).match(/https?:\/\/[^\s)>\]"'`]+/g) || [])) if (!links.includes(u)) links.push(u);
     for (const l of (sec.proof || '').split(/\n/)) { const t = l.replace(/^\s*([-*•]|\d+\.)\s*/, '').trim(); if (t) proof.push(t); }
   }
-  return { summary: summary.join(' '), links: links.slice(0, 8), proof: proof.slice(0, 8) };
+  return { summary: summary.join(' '), links: links.slice(0, 8), proof: proof.slice(0, 8), files };
 }
 export function resultParts(w, res) {
   const parts = [h('p', { class: 'po-sum' }, res.summary)];
   if (res.links.length) parts.push(h('div', { class: 'po-links' }, ...res.links.map((u) => h('button', { class: 'po-link', title: u, onclick: () => window.argon.openExternal(u) }, h('i', {}, linkLabel(u)), h('span', {}, u.replace(/^https?:\/\//, ''))))));
   if (res.proof.length) parts.push(h('div', { class: 'po-proof' }, ...res.proof.map((t) => h('span', {}, '✓ ' + t))));
+  if (res.files && res.files.length) parts.push(filesPart(w, res.files));
   if (res.reports.length) parts.push(h('div', { class: 'po-reports' }, h('span', {}, 'Reports'), ...res.reports.map((rel) => h('button', { onclick: () => window.argon.reveal(absPath(w, rel)) }, rel.split('/').pop()))));
   return parts;
+}
+// Every file the team made or changed, grouped by folder. Click a folder or file to show it in Explorer.
+function filesPart(w, files) {
+  const win = window.argon.platform === 'win32', sep = win ? '\\' : '/';
+  const base = (win ? (w.cwd || '').replace(/\//g, '\\') : (w.cwd || '')).replace(/[\\/]+$/, '');
+  const abs = (f) => (/^([a-z]:[\\/]|[\\/]|~)/i.test(f) || !base ? f : base + sep + f.replace(/^\.[\\/]/, ''));
+  const groups = new Map();
+  for (const f of files) {
+    const a = win ? abs(f).replace(/\//g, '\\') : abs(f);
+    const i = Math.max(a.lastIndexOf('\\'), a.lastIndexOf('/'));
+    const dir = a.slice(0, i), name = a.slice(i + 1);
+    if (!groups.has(dir)) groups.set(dir, []);
+    groups.get(dir).push([name, a]);
+  }
+  const short = (d) => (base && d.toLowerCase().startsWith(base.toLowerCase()) ? (d.slice(base.length).replace(/^[\\/]/, '') || '(project folder)') : d);
+  const box = h('div', { class: 'po-files' }, h('span', { class: 'po-files-t' }, `Output · ${files.length} file${files.length === 1 ? '' : 's'} in ${groups.size} folder${groups.size === 1 ? '' : 's'}`));
+  let shown = 0;
+  for (const [dir, list] of groups) {
+    if (shown > 80) { box.append(h('p', { class: 'mgr-hint' }, `…and ${files.length - shown} more`)); break; }
+    const kids = list.slice(0, 30).map(([name, a]) => h('button', { class: 'po-file', title: a, onclick: () => window.argon.reveal(a) }, name));
+    shown += kids.length;
+    box.append(h('div', { class: 'po-dir' },
+      h('button', { class: 'po-dir-name', title: dir, onclick: () => window.argon.reveal(dir) }, '▸ ' + short(dir)),
+      h('div', { class: 'po-dir-files' }, ...kids, list.length > 30 ? h('span', { class: 'mgr-hint' }, `+${list.length - 30}`) : null)));
+  }
+  return box;
 }
 async function finishOutput(w) {
   const p = w.pipe, run = p.run; run.state[p.out.id] = 'done';

@@ -1,5 +1,6 @@
 // Personalization: theme, accent, liquid glass, backdrop, terminal, layout, motion, name.
 import { S } from './state.js';
+import { syncAppIcon } from './appicon.js';
 import { setRefraction } from './glass.js';
 
 export const ACCENTS = [
@@ -226,6 +227,9 @@ export function applyAppearance() {
     document.documentElement.dataset.backdrop = k;
     if (applyAppearance._bd !== k) { applyAppearance._bd = k; window.argon.backdrop(k).catch(() => {}); }
   }
+  // the taskbar icon takes on the same colors
+  syncAppIcon({ bg: t.light ? t.bg : t.bg, light: !!t.light, accent: p.accent, accentLight: t.light ? p.accent2 : p.accentLight, accentDeep: t.light ? p.accentDeep : p.accent2,
+    nucleus: hsl(p.h, p.s, t.light ? Math.max(30, p.l - 8) : Math.min(92, p.l + 26)), glow: rgba(p.rgb, t.light ? 0.22 : 0.42) });
   const board = document.getElementById('board');
   board.dataset.pattern = L.pattern;
   board.dataset.bg = L.pattern; // older selectors

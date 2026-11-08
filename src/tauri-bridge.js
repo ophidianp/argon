@@ -50,11 +50,13 @@
       read: (file) => invoke('fs_read', { file }),
       write: (file, text) => invoke('fs_write', { file, text }),
       exists: (file) => invoke('fs_exists', { file }),
+      changed: (dir, since, limit) => invoke('fs_changed', { dir, since: Math.floor(since), limit }),
     },
     usage: (days) => invoke('usage_tokens', { days }),
     // Electron tinted its built-in caption buttons; here the buttons are ours and follow the theme.
     setOverlay: () => {},
     backdrop: (kind) => invoke('set_backdrop', { kind }),
+    setAppIcon: (png) => invoke('set_app_icon', { png: Array.from(png) }),
     zoom: (f) => { try { T.webview.getCurrentWebview().setZoom(f); } catch (_) {} },
   };
 
