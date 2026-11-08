@@ -126,6 +126,20 @@ function wiresFor(w) {
 const box = (n) => { const el = tileEl(n.id); return el ? { x: el.offsetLeft, y: el.offsetTop, w: el.offsetWidth, h: el.offsetHeight } : { x: n.x, y: n.y, w: n.w, h: n.h }; };
 const sockPt = (m) => { const b = box(m); return [b.x, b.y + 18]; };
 function fromPt(t, m) { const b = box(t), mb = box(m); const right = b.x + b.w / 2 < mb.x + mb.w / 2; return [right ? b.x + b.w : b.x, b.y + Math.min(24, b.h / 2)]; }
+// Joins an agent (b) and the Manager (M) on the sides that face each other: left/right when they sit side by side, top/bottom when stacked.
+function wireEnds(b, M) {
+  const ty = b.y + Math.min(24, b.h / 2), my = M.y + 18;
+  if (b.x >= M.x + M.w - 20) return [[b.x, ty], [-1, 0], [M.x + M.w, my], [1, 0]];
+  if (b.x + b.w <= M.x + 20) return [[b.x + b.w, ty], [1, 0], [M.x, my], [-1, 0]];
+  if (b.y + b.h <= M.y + 10) return [[b.x + b.w / 2, b.y + b.h], [0, 1], [M.x + M.w / 2, M.y], [0, -1]];
+  if (b.y >= M.y + M.h - 10) return [[b.x + b.w / 2, b.y], [0, -1], [M.x + M.w / 2, M.y + M.h], [0, 1]];
+  return [[b.x + b.w, ty], [1, 0], [M.x + M.w, my], [1, 0]];
+}
+function wirePath(b, M) {
+  const [[x1, y1], [ax, ay], [x2, y2], [bx, by]] = wireEnds(b, M);
+  const c = Math.max(50, (ax ? Math.abs(x2 - x1) : Math.abs(y2 - y1)) / 2);
+  return `M${x1},${y1} C${x1 + c * ax},${y1 + c * ay} ${x2 + c * bx},${y2 + c * by} ${x2},${y2}`;
+}
 function curve([x1, y1], [x2, y2]) { const c = Math.max(60, Math.abs(x2 - x1) / 2), d = x2 >= x1 ? 1 : -1; return `M${x1},${y1} C${x1 + c * d},${y1} ${x2 - c},${y2} ${x2},${y2}`; }
 function draw() {
   const w = ws(); if (!w || w.mode === 'pipe') return;
@@ -141,7 +155,7 @@ function draw() {
       const ag = agentsFor(w, t), done = r && ag.length && ag.every((a) => r.done && r.done[a.id]);
       p.setAttribute('class', 'mgr-wire' + (r && r.active ? (done ? ' done' : ' flow') : m.data.result ? ' done' : ''));
       p.style.setProperty('--wc', colorOf(t));
-      p.setAttribute('d', curve(fromPt(t, m), sockPt(m)));
+      p.setAttribute('d', wirePath(box(t), box(m)));
     }
   }
   v.querySelectorAll('path[data-k]').forEach((p) => { if (!keep.has(p.dataset.k)) p.remove(); });
@@ -173,7 +187,10 @@ async function run(m, w) {
   const stamp = new Date().toISOString().slice(0, 19).replace(/[:T]/g, '-');
   const r = m.data.run = { id: stamp, active: true, files: {}, done: {}, started: Date.now() };
   m.data.result = null;
-  const everyone = ts.flatMap((t) => agentsFor(w, t)).map((a) => a.title);
+  const team = ts.flatMap((t) => agentsFor(w, t)), everyone = team.map((a) => a.title);
+  // Follow wires backwards: if another console feeds this agent, the task starts there and the wire carries it on.
+  const headOf = (a) => { const seen = new Set([a.id]); let cur = a; for (;;) { const x = (w.wires || []).find((y) => y.to === cur.id && !seen.has(y.from)); const n = x && w.nodes.find((k) => k.id === x.from); if (!n || n.type !== 'console' || n.data.agent === 'shell') return cur; seen.add(n.id); cur = n; } };
+  const startedHeads = new Set();
   let sent = 0;
   for (const t of ts) {
     const task = ((m.data.tasks || {})[t.id] || '').trim() || defaultTask(t);
@@ -183,9 +200,20 @@ async function run(m, w) {
       if (a.data.agent === 'shell') { toast(`${a.title} is a plain terminal, so it gets no prompt.`); continue; }
       const rel = `.argon/manager/${r.id}/${slug(a.title)}.md`; r.files[a.id] = rel;
       const others = everyone.filter((x) => x !== a.title);
+      const head = headOf(a), chained = head !== a;
+      if (chained && !team.includes(head) && !startedHeads.has(head.id)) {
+        const hc = rt(head.id);
+        if (hc && hc.alive) {
+          startedHeads.add(head.id);
+          const hp = `[Argon manager] Team goal: ${m.data.goal.trim()} You are ${head.title}. Your task: ${task} When you finish, your result is handed to ${a.title} automatically, so just do the work and stop.`;
+          waitReady(hc, 6000).then(() => { if (m.data.run === r && r.active) sendTo(head.id, hp); });
+          toast(`${head.title} starts, then its wire hands the work to ${a.title}`);
+        }
+      }
       const prompt = [
         `[Argon manager] Team goal: ${m.data.goal.trim()}`,
         t.type === 'group' ? `You are ${a.title} on team #${groupTag(t)} (with ${ag.filter((x) => x !== a).map((x) => x.title).join(', ') || 'no one else'}).` : `You are ${a.title}.`,
+        chained ? `${head.title} does the first part. Its result will be handed to you when it finishes. Wait for it, then do your task.` : '',
         `Your task: ${task}`,
         others.length ? `Others working on the goal: ${others.join(', ')}. Do not redo their parts.` : '',
         `When you are done, write a short report to ${r.files[a.id]} (create the folders if needed). Start it with "## Summary" (2-3 sentences), then "## Links" (URLs of any website, repo or pull request), then "## Proof" (tests, checks, screenshot paths). Then stop.`,

@@ -10,6 +10,7 @@ import { glassify, initGlassFx, attachLens } from './glass.js';
 import { initManager } from './manager.js';
 import { initTeamwork, presetMenu } from './teamwork.js';
 import { initMissionMap, openMissionMap } from './missionmap.js';
+import { initFlowDots } from './flowdots.js';
 import { openOnboarding } from './onboarding.js';
 import { initPipeline, afterMount, applyMode, setMode, inPipe, toggleRun, addStage, pipeSpawnOpts, dropWorkspace } from './pipeline.js';
 import { setMorphSource } from './ui.js';
@@ -50,6 +51,7 @@ async function boot() {
   startTicking();
   initTeamwork();  // console wires, presets, question buttons, context gauge, dictation
   initMissionMap();
+  initFlowDots();
   renderMission();
 
   // First run (and once for anyone who has not seen it yet): the welcome screen. /welcome brings it back.

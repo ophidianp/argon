@@ -482,6 +482,23 @@ function decorate(node, el, w) {
     dot.addEventListener('pointerdown', (e) => { if (e.button === 0) dragWire(w, node, e); });
     el.append(dot);
   }
+  if (!el.querySelector(':scope > .tell')) {
+    // A box to give this console a task without clicking into the terminal.
+    const inp = h('input', { type: 'text', autocomplete: 'off', spellcheck: 'false' });
+    const bar = h('form', { class: 'tell' }, inp, h('button', { type: 'submit', title: 'Send (Enter)', 'aria-label': 'Send' }, '↵'));
+    const name = () => node.title || node.data.agent || 'this console';
+    const paint = () => { inp.placeholder = node.data.agent === 'shell' ? `Run a command in ${name()}…` : `Tell ${name()} what to do…`; inp.setAttribute('aria-label', inp.placeholder); };
+    paint(); inp.addEventListener('focus', paint);
+    bar.addEventListener('pointerdown', (e) => e.stopPropagation());
+    bar.addEventListener('submit', (e) => {
+      e.preventDefault(); const v = inp.value.trim(); if (!v) return;
+      if (!sendTo(node.id, v)) { toast(`${name()} isn't running. Restart it first`); return; }
+      inp.value = '';
+      const out = (w.wires || []).filter((x) => x.from === node.id).map((x) => findNode(x.to)?.node.title).filter(Boolean);
+      if (out.length) toast(`Sent. When ${name()} finishes, its wire hands off to ${out.join(' and ')}`);
+    });
+    el.append(bar);
+  }
   if (node.data.agent === 'claude' && ctx.has(node.id)) paintGauge(node);
 }
 
