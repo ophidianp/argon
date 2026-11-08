@@ -4,13 +4,17 @@
   "description": "Argon - a command deck for your coding agents",
   "main": "main.js",
   "scripts": {
-    "start": "electron ."
+    "start": "electron .",
+    "tauri": "tauri",
+    "app": "tauri dev",
+    "build:app": "tauri build"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "type": "commonjs",
   "devDependencies": {
+    "@tauri-apps/cli": "^2.12.4",
     "electron": "^45.2.3"
   },
   "dependencies": {

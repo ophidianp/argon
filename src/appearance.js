@@ -78,7 +78,7 @@ export function defaults() {
     name: '', greeting: true,
     theme: 'midnight', accent: '#9a83d4',
     glass: 'liquid', blur: 2, tint: 12, refraction: true, refractStrength: 70, aberration: 25, glassV: 2, specular: true, glassTiles: true,
-    bgColor: '', pattern: 'dots', patternSize: 24,
+    bgColor: '', pattern: 'dots', patternSize: 24, backdrop: 'off',
     termScheme: 'auto', termFont: 'Cascadia Code', lineHeight: 1.15, letterSpacing: 0, cursor: 'block', cursorBlink: true, termOpacity: 100, termPadding: 6,
     layout: 'floating', dock: 'left', density: 'comfortable', radius: 14, uiFont: 'Segoe UI Variable Text', uiScale: 100, shadow: 60,
     animations: true, motion: 'normal', bounce: true,
@@ -204,6 +204,12 @@ export function applyAppearance() {
   body.dataset.bounce = L.bounce ? '1' : '0';
   // background: always one solid color
   set('--canvas', L.bgColor || t.bg2);
+  // Tauri build: Windows' own blur behind the window (Mica / Acrylic), drawn by the OS compositor.
+  if (window.argon && window.argon.backdrop) {
+    const k = ['mica', 'acrylic'].includes(L.backdrop) ? L.backdrop : 'off';
+    document.documentElement.dataset.backdrop = k;
+    if (applyAppearance._bd !== k) { applyAppearance._bd = k; window.argon.backdrop(k).catch(() => {}); }
+  }
   const board = document.getElementById('board');
   board.dataset.pattern = L.pattern;
   board.dataset.bg = L.pattern; // older selectors

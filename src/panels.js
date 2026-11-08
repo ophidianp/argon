@@ -605,6 +605,8 @@ function backgroundPane({ changed }) {
     ...group('Board pattern',
       row('Pattern', 'Faint dots or lines that move with the board. None keeps it a plain solid color.', segCtl([['dots', 'Dots'], ['grid', 'Grid'], ['none', 'None']], () => L.pattern, (v) => { L.pattern = v; changed(); })),
       row('Pattern size', '', rangeCtl(12, 48, 2, () => L.patternSize, (v, done) => { L.patternSize = v; applyView(); if (done) save(); }, (v) => v + 'px'))),
+    ...(window.argon && window.argon.backdrop ? group('Window',
+      row('Windows blur', 'Let Windows blur your desktop behind the board. Drawn by Windows itself, so it costs Argon nothing. Mica needs Windows 11.', segCtl([['off', 'Off'], ['mica', 'Mica'], ['acrylic', 'Acrylic']], () => L.backdrop || 'off', (v) => { L.backdrop = v; changed(); }))) : []),
   ];
 }
 

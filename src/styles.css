@@ -951,3 +951,16 @@ body.dragging .tile.group { transition: background-color .25s, border-color .25s
 .mx-hint { margin-left: auto; }
 @media (max-width: 900px) { .mx-scrim { padding: 10px; } .mx-detail { width: 250px; } .mx-graph, .mx-row { gap: 60px; } .mx-hint { display: none; } }
 @media (prefers-reduced-motion: reduce) { .mx-l.working { animation: none; } }
+
+/* ---------- Tauri build: our own caption buttons (Electron drew these natively) ---------- */
+.win-ctl { position: fixed; top: 0; right: 0; z-index: 90; display: flex; height: calc(var(--bar-h) + var(--gap) * 2); }
+.win-ctl button { width: 46px; height: 100%; display: grid; place-items: center; border: 0; background: transparent; color: var(--accent-light); cursor: default; transition: background .12s, color .12s; }
+.win-ctl svg { width: 10px; height: 10px; }
+.win-ctl button:hover { background: color-mix(in srgb, var(--text) 10%, transparent); color: var(--text); }
+.win-ctl .wc-close:hover { background: #c42b1c; color: #fff; }
+html.tauri #topbar { user-select: none; }
+.web-frame { width: 100%; height: 100%; border: 0; background: #fff; display: block; }
+/* Windows blur behind the window: let the board show it through a tint of the background color */
+html[data-backdrop="mica"], html[data-backdrop="mica"] body, html[data-backdrop="acrylic"], html[data-backdrop="acrylic"] body { background: transparent; }
+html[data-backdrop="mica"] #board { background-color: color-mix(in srgb, var(--canvas) 45%, transparent); }
+html[data-backdrop="acrylic"] #board { background-color: color-mix(in srgb, var(--canvas) 30%, transparent); }

@@ -470,6 +470,22 @@ const RENDER = {
 
   web(node, w, { body, btns }) {
     const input = h('input', { type: 'text', value: node.data.url, spellcheck: 'false' });
+    if (!window.process && window.argon && window.argon.shell === 'tauri') {
+      // Tauri has no <webview> tag: an iframe shows the local dev server instead.
+      const fr = h('iframe', { class: 'web-frame', src: normUrl(node.data.url), allow: 'clipboard-read; clipboard-write' });
+      const hist = [normUrl(node.data.url)];
+      const go = () => { node.data.url = input.value.trim(); const u = normUrl(node.data.url); hist.push(u); fr.src = u; save(); };
+      input.addEventListener('keydown', (e) => { if (e.key === 'Enter') go(); });
+      body.append(
+        h('div', { class: 'webbar' },
+          h('button', { class: 'tile-btn', title: 'Back', onclick: () => { if (hist.length > 1) { hist.pop(); const u = hist[hist.length - 1]; input.value = u; node.data.url = u; fr.src = u; save(); } } }, '‹'),
+          h('button', { class: 'tile-btn', title: 'Reload', onclick: () => { fr.src = 'about:blank'; setTimeout(() => { fr.src = normUrl(input.value); }, 30); } }, '⟳'),
+          input,
+          h('button', { class: 'tile-btn', title: 'Open in browser', onclick: () => window.argon.openExternal(normUrl(input.value)) }, '↗')),
+        h('div', { class: 'web-wrap' }, fr),
+        h('div', { class: 'web-shield' }));
+      return;
+    }
     const wv = document.createElement('webview');
     wv.setAttribute('src', normUrl(node.data.url));
     wv.setAttribute('partition', 'persist:argon-web');
