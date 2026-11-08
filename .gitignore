@@ -1,6 +1,9 @@
 node_modules/
 dist/
+release/
+.tmp/
+.claude/
 *.log
-.argon/
-src-tauri/target/
-src-tauri/gen/schemas/
+.DS_Store
+*.tsbuildinfo
+.impeccable/
