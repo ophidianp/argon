@@ -19,6 +19,7 @@ export type Look = {
   backdrop: Backdrop
   font: string
   scale: number // interface size, %
+  anim: boolean // springs, glides and fly-to
 }
 
 export const DEFAULT_LOOK: Look = {
@@ -34,6 +35,7 @@ export const DEFAULT_LOOK: Look = {
   backdrop: 'off',
   font: 'Segoe UI Variable Text',
   scale: 100,
+  anim: true,
 }
 
 export const ACCENTS = [
@@ -134,6 +136,9 @@ const shade = (hexColor: string, dl: number, ds = 1) => {
   const [h, s, l] = rgbToHsl(hexToRgb(hexColor))
   return hex(hslToRgb(h, clamp(s * ds, 0, 100), clamp(l + dl, 0, 100)))
 }
+
+// A spring that overshoots a touch and settles, used for every animation while Animations is on.
+export const BOUNCE = 'linear(0, 0.0066, 0.0263 2.1%, 0.1023 4.4%, 0.2319 7.3%, 0.4103 10.6%, 0.6029 14.4%, 0.7663 18.3%, 0.8897 22.6%, 0.9582 26.6%, 1.0047 31.3%, 1.0272 36.7%, 1.0311 41.2%, 1.0219 48.3%, 1.0052 61.3%, 0.9989 77.7%, 1)'
 
 // ---- the current look ----
 const KEY = 'argon-look'
@@ -243,6 +248,9 @@ export function paintLook(t: 'light' | 'dark') {
       : `inset 0 0 0 1px rgb(255 255 255 / ${0.08 + 0.04 * rim}), inset 0 1px 0.5px rgb(255 255 255 / ${0.3 * rim}), inset 0 -1px 1px rgb(255 255 255 / ${0.06 * rim}), inset 0 0 14px rgb(255 255 255 / ${0.04 * rim})`,
   )
   document.body.dataset.glass = L.glass
+  // Motion: springs that overshoot a little, or none at all.
+  document.body.classList.toggle('no-anim', !L.anim)
+  set('--spring', L.anim ? BOUNCE : 'cubic-bezier(0.22, 1, 0.36, 1)')
   document.body.dataset.tone = t
   root.dataset.backdrop = bd ? L.backdrop : 'off'
   setRefraction(solid ? 0 : L.refraction * g.lens, solid ? 0 : clamp(L.prism, 0, 100) / 100)

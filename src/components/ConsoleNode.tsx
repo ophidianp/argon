@@ -71,7 +71,7 @@ export type ConsoleStatus = 'idle' | 'working' | 'needs' | 'done' | 'paused' | '
 export function StatusPill({ status }: { status: ConsoleStatus }) {
   const label = { idle: 'Ready', working: 'Working', needs: 'Needs you', done: 'Done', paused: 'Paused', stopped: 'Stopped' }[status]
   return (
-    <span className={`status-pill ${status}`}>
+    <span key={status} className={`status-pill ${status}`}>
       <span className="dot" />
       {label}
     </span>

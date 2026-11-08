@@ -140,8 +140,39 @@ function drop(el: HTMLElement) {
   items.delete(el)
 }
 
+// A soft pill that glides to whichever button you point at inside a bar.
+function attachLens(box: HTMLElement) {
+  if (box.querySelector(':scope > .lens')) return
+  const lens = document.createElement('div')
+  lens.className = 'lens'
+  box.prepend(lens)
+  let shown = false
+  box.addEventListener('pointerover', (e) => {
+    const b = (e.target as Element).closest<HTMLElement>('button')
+    if (!b || b.parentElement !== box) return
+    const place = () => {
+      lens.style.width = b.offsetWidth + 'px'
+      lens.style.height = b.offsetHeight + 'px'
+      lens.style.transform = `translate(${b.offsetLeft}px, ${b.offsetTop}px)`
+    }
+    if (!shown) {
+      lens.classList.add('snap')
+      place()
+      void lens.offsetWidth
+      lens.classList.remove('snap')
+    } else place()
+    shown = true
+    lens.classList.add('on')
+  })
+  box.addEventListener('pointerleave', () => {
+    shown = false
+    lens.classList.remove('on')
+  })
+}
+
 function glassify(el: HTMLElement) {
   el.classList.add('lg')
+  if (el.classList.contains('toolbar')) attachLens(el)
   if (items.has(el)) return
   const it: Item = { id: 'lgf' + ++seq, w: 0, h: 0, s: 0, p: 0, ro: null!, timer: 0 }
   // Rebuilt once the size settles: panels animate their size.

@@ -65,7 +65,7 @@ To build an installer: `npm run dist` (writes `release\Argon Setup *.exe`).
 
 ## Make it yours
 
-Settings → **Personalize**:
+Settings → **Appearance**:
 
 - **Looks** in one click: Liquid Lavender, Obsidian, Campfire, Lagoon, Ember, Claude, Codex, Gemini,
   Copilot, Daybreak, Paper.
@@ -76,7 +76,7 @@ Settings → **Personalize**:
   split and a glare that follows the mouse. Or Frosted, Tinted, Solid; blur, opacity and refraction
   are yours to tune.
 - **Mica or Acrylic** behind the window on Windows 11.
-- **Font and interface size.**
+- **Font, interface size and animations** (springs and glides, or none).
 
 <p align="center">
   <img src="docs/screenshots/personalize.png" alt="Settings, Personalize: looks, accents, palettes, glass and Windows blur" width="860">

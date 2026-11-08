@@ -11,8 +11,8 @@ terminals side by side, grouped into teams that hand work to one another along w
   stopping process trees, revealing files, data folder). Keep platform differences in that file.
 - `src/` — React 19 + Vite + React Flow + zustand board. `store.ts` is the state; `theme.ts` light/dark;
   `appearance.ts` personalization (palettes, accent, glass, Mica, font, size); `glass.ts` the liquid
-  glass refraction; `appicon.ts` the taskbar icon drawn in the accent; `components/Personalize.tsx` its
-  Settings section.
+  glass refraction; `appicon.ts` the taskbar icon drawn in the accent; `components/SettingsSheet.tsx` the
+  tabbed Settings sheet.
 - `desktop/` — Electron window (`main.cjs`) and bridge (`preload.cjs`, exposed as `window.vibeboardDesktop`).
 - `shared/` — code used by both server and page.
 
