@@ -24,17 +24,17 @@ import { createDocs } from './docs.mjs'
 import { createDiagrams } from './diagrams.mjs'
 import * as files from './files.mjs'
 import { approved, linkMessage, matches } from '../shared/links.js'
+import { WIN, DATA_DIR as DATA_HOME, shq, agentArgs, runArgs, shellArgs, findCommands, killTree, reveal, launch } from './platform.mjs'
 
 const PORT = Number(process.env.PORT) || 4317
 const ROOT = path.dirname(path.dirname(fileURLToPath(import.meta.url)))
 // VIBEBOARD_DATA runs a second, separate board (a demo, a test) without touching your real one.
-const DATA_DIR = process.env.VIBEBOARD_DATA || path.join(os.homedir(), '.vibeboard')
+const DATA_DIR = DATA_HOME
 const STATE_FILE = path.join(DATA_DIR, 'state.json')
 const HOOKS_FILE = path.join(DATA_DIR, 'claude-hooks.json')
 // One sign-in folder per account profile; the id becomes a path, so it is held to a strict shape.
 const PROFILES_DIR = path.join(DATA_DIR, 'profiles')
 const PROFILE = /^[\w-]{1,40}$/
-const SHELL = process.env.SHELL || '/bin/zsh'
 const MAX_BUF = 512 * 1024
 const FLUSH_MS = 8 // output is sent in small batches: one message per chunk would flood the page
 // The page acknowledges what its terminal has drawn. Past the high mark the process is paused, as a
@@ -213,8 +213,6 @@ function setStatus(s, status) {
   loops.onStatus(s, status)
 }
 
-// No `=` in the bare set: zsh expands a leading `=word` to a command path.
-const shq = (v) => (/^[\w@%+:,./-]+$/.test(v) ? v : `'${v.replace(/'/g, `'\\''`)}'`)
 
 const LEAD_PROMPT =
   'You run inside vibeboard, a board where the user watches every agent. You are the lead: when a job splits into ' +
@@ -235,7 +233,10 @@ function commandFor(agent, { id, sessionId, resume, yolo, lead, dirs = [] }) {
     // The system-prompt line is what makes it reach for them unprompted, over other ways to run agents.
     if (lead) {
       const config = { mcpServers: { vibeboard: { type: 'http', url: `http://127.0.0.1:${PORT}/mcp/${id}` } } }
-      parts.push('--mcp-config', JSON.stringify(config), '--allowedTools', 'mcp__vibeboard')
+      // On Windows the JSON goes through a file: PowerShell 5.1 mangles quotes inside arguments.
+      let mcp = JSON.stringify(config)
+      if (WIN) { mcp = path.join(DATA_DIR, `mcp-${id}.json`); fs.writeFileSync(mcp, JSON.stringify(config)) }
+      parts.push('--mcp-config', mcp, '--allowedTools', 'mcp__vibeboard')
     }
     const told = [lead && LEAD_PROMPT, dirs.length && foldersPrompt(dirs)].filter(Boolean).join('\n\n')
     if (told) parts.push('--append-system-prompt', told)
@@ -276,7 +277,7 @@ function holdOutput(s) {
   } else if (s.paused_output && most < LOW_WATER) {
     s.paused_output = false
     clearInterval(s.stallTimer)
-    if (sessions.get(s.id) === s) s.pty.resume()
+    if (sessions.get(s.id) === s && !s.userPaused) s.pty.resume()
   }
 }
 
@@ -291,8 +292,8 @@ function spawnSession({ id, agentId, cwd, cols, rows, sessionId, resume, yolo, l
   const account = profile && agent.configEnv ? { [agent.configEnv]: path.join(PROFILES_DIR, profile) } : {}
   for (const d of Object.values(account)) fs.mkdirSync(d, { recursive: true })
   // Agents run through a login+interactive shell so they see the same PATH as iTerm.
-  const args = agent.cmd ? ['-lic', `exec ${commandFor(agent, { id, sessionId, resume, yolo, lead, dirs })}`] : ['-l']
-  const p = pty.spawn(SHELL, args, {
+  const [file, args] = agent.cmd ? agentArgs(commandFor(agent, { id, sessionId, resume, yolo, lead, dirs })) : shellArgs()
+  const p = pty.spawn(file, args, {
     name: 'xterm-256color',
     cols: cols || 100,
     rows: rows || 30,
@@ -351,6 +352,7 @@ function spawnSession({ id, agentId, cwd, cols, rows, sessionId, resume, yolo, l
 // and the dev servers it starts sit in groups of their own, out of reach of `kill(-pid)`.
 function groupsOf(s, into = new Set()) {
   into.add(s.pty.pid)
+  if (WIN) return into // Windows has no process groups: killTree follows the children instead
   try {
     const kids = new Map()
     for (const line of execFileSync('ps', ['-A', '-o', 'pid=,ppid=,pgid='], { encoding: 'utf8' }).split('\n')) {
@@ -371,6 +373,7 @@ function groupsOf(s, into = new Set()) {
 }
 
 const signalGroups = (groups, sig) => {
+  if (WIN) return
   for (const g of groups) {
     try {
       process.kill(-g, sig)
@@ -381,6 +384,12 @@ const signalGroups = (groups, sig) => {
 // Claude Code ignores SIGHUP, so escalate until the exit handler has removed the session.
 // Groups are collected up front: once the agent dies its children reparent to launchd.
 function kill(s) {
+  if (WIN) {
+    killTree(s.pty.pid)
+    setTimeout(() => sessions.get(s.id) === s && killTree(s.pty.pid, true), 1500)
+    setTimeout(() => { if (sessions.get(s.id) === s) try { s.pty.kill() } catch {} }, 4000)
+    return
+  }
   const groups = groupsOf(s)
   signalGroups(groups, 'SIGCONT')
   signalGroups(groups, 'SIGHUP')
@@ -389,7 +398,10 @@ function kill(s) {
 }
 
 function signal(s, sig) {
-  signalGroups(groupsOf(s), sig)
+  // Windows cannot freeze a process from here: the console stops reading its output instead, and an agent
+  // that cannot write waits, which pauses it in practice.
+  if (WIN) { s.userPaused = sig === 'SIGSTOP'; try { s.userPaused ? s.pty.pause() : !s.paused_output && s.pty.resume() } catch {} }
+  else signalGroups(groupsOf(s), sig)
   s.paused = sig === 'SIGSTOP'
   broadcast({ type: 'paused', id: s.id, paused: s.paused })
 }
@@ -440,7 +452,7 @@ function resize(s, cols, rows) {
 }
 
 const loops = createLoops({ sessions, sendPrompt, broadcast, run: runCommand })
-const launchCli = (command, cwd) => spawn(SHELL, ['-lic', command], { cwd, env: CLEAN_ENV, detached: true, stdio: ['ignore', 'pipe', 'pipe'] })
+const launchCli = (command, cwd) => launch(command, cwd, CLEAN_ENV)
 const scans = createScans({ broadcast, launch: launchCli })
 const docs = createDocs({ dir: path.join(DATA_DIR, 'docs'), broadcast, launch: launchCli })
 const diagrams = createDiagrams({ broadcast, launch: launchCli })
@@ -473,17 +485,15 @@ function runCommand(cmd, args, opts = {}) {
 let installed = null
 async function detectAgents() {
   const cmds = AGENTS.filter((a) => a.cmd).map((a) => a.cmd)
-  const script = `for c in ${cmds.join(' ')}; do command -v $c >/dev/null 2>&1 && echo $c; done; true`
-  const { code, stdout } = await runCommand(SHELL, ['-lic', script], { timeout: 10000 })
-  const found = new Set(stdout.split('\n').map((l) => l.trim()))
+  const { ok, found } = await findCommands(cmds, CLEAN_ENV)
   const ids = AGENTS.filter((a) => !a.cmd || found.has(a.cmd)).map((a) => a.id)
-  if (code === 0) installed = ids // a slow .zshrc that timed out gets another try next time
+  if (ok) installed = ids // a slow .zshrc that timed out gets another try next time
   return ids
 }
 
 // `claude -p --output-format json` ends with one JSON line; anything before it is shell-rc noise.
 async function askClaude(model, prompt, opts) {
-  const r = await runCommand(SHELL, ['-lic', `claude -p --model ${model} --output-format json ${shq(prompt)}`], opts)
+  const r = await runCommand(...runArgs(`claude -p --model ${model} --output-format json ${shq(prompt)}`), opts)
   let out
   try {
     out = JSON.parse(r.stdout.trim().split('\n').pop())
@@ -812,7 +822,6 @@ const profileDirs = (sub) => (isDir(PROFILES_DIR) ? fs.readdirSync(PROFILES_DIR)
 const usage = createUsage({
   dataDir: DATA_DIR,
   env: CLEAN_ENV,
-  shell: SHELL,
   claudeDirs: claudeProjectDirs,
   codexDirs: () => [path.join(process.env.CODEX_HOME || path.join(os.homedir(), '.codex'), 'sessions'), ...profileDirs('sessions')],
   profileEnv: (profile) => (profile && PROFILE.test(profile) ? { CLAUDE_CONFIG_DIR: path.join(PROFILES_DIR, profile) } : {}),
@@ -1029,7 +1038,7 @@ const server = http.createServer(async (req, res) => {
       const { cwd } = JSON.parse(await readBody(req, 64 * 1024))
       if (!isDir(cwd)) return json(res, 400, { error: 'not a directory' })
       // `open X.app` launches the app; a folder with an extension may be a bundle, so reveal it instead.
-      await runCommand('open', path.extname(cwd) ? ['-R', cwd] : [cwd])
+      reveal(cwd)
       return json(res, 200, { ok: true })
     }
     if (route === 'scan' && req.method === 'POST') {

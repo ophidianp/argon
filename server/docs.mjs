@@ -111,7 +111,8 @@ export function createDocs({ dir, broadcast, launch, command = commandFor, timeo
 }
 
 // `node server/docs.mjs`: a whole run against a fake Claude, saved and read back from a temp library.
-if (process.argv[1] === fileURLToPath(import.meta.url)) {
+if (process.argv[1] === fileURLToPath(import.meta.url) && process.platform === 'win32') console.log('self-test skipped on Windows (it drives /bin/sh)')
+else if (process.argv[1] === fileURLToPath(import.meta.url)) {
   const assert = (await import('node:assert/strict')).default
   const os = await import('node:os')
   const q = (v) => `'${v.replace(/'/g, `'\\''`)}'`
@@ -125,7 +126,7 @@ if (process.argv[1] === fileURLToPath(import.meta.url)) {
     dir,
     broadcast: (m) => seen.push(m.docs[0]?.status),
     command: (agent, prompt, model) => (assert.equal(model, 'haiku'), { claude: `printf '%s\\n' ${stream.map(q).join(' ')}`, slow: 'sleep 30' }[agent]),
-    launch: (cmd, cwd) => spawn('/bin/sh', ['-c', cmd], { cwd, detached: true, stdio: ['ignore', 'pipe', 'pipe'] }),
+    launch: (cmd, cwd) => spawn('/bin/sh', ['-c', cmd], { cwd, detached: true, stdio: ['ignore', 'pipe', 'pipe'] }), // POSIX only: skipped on Windows
   })
   assert.throws(() => docs.start(process.cwd(), { template: 'ask', ask: ' ' }), /say what/)
   docs.start(process.cwd(), { template: 'overview', depth: 'quick' })
@@ -143,8 +144,8 @@ if (process.argv[1] === fileURLToPath(import.meta.url)) {
   assert.ok(seen.includes('running') && seen.at(-1) === 'done')
 
   docs.clear(process.cwd())
-  docs.start('/tmp', { template: 'ask', ask: 'the build', agent: 'slow', depth: 'quick' })
-  docs.clear('/tmp')
+  docs.start(os.tmpdir(), { template: 'ask', ask: 'the build', agent: 'slow', depth: 'quick' })
+  docs.clear(os.tmpdir())
   assert.equal(docs.list().length, 0)
   fs.rmSync(dir, { recursive: true })
   console.log('docs runs ok')

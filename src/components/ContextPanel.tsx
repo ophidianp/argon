@@ -159,7 +159,7 @@ export function AgentsTab() {
   )
 }
 
-const folderName = (path: string) => path.split('/').filter(Boolean).pop() ?? path
+const folderName = (path: string) => path.split(/[\\/]/).filter(Boolean).pop() ?? path
 
 // Folders that live outside the project, such as a second brain: connected here, reachable everywhere.
 export function FoldersTab() {

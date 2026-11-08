@@ -5419,6 +5419,11 @@ body.desktop::before {
   left: 84px; /* the traffic lights */
   -webkit-app-region: drag;
 }
+/* Windows: no traffic lights on the left; the caption buttons sit on the right */
+.desktop.win .topbar {
+  left: 16px;
+  right: 150px;
+}
 .desktop .topbar button,
 .desktop .topbar a,
 .desktop .topbar input,

@@ -136,7 +136,7 @@ export function MarkdownStudio() {
                 <select className="root-pick" aria-label="Which folder" value={root} onChange={(e) => switchRoot(e.target.value)}>
                   {roots.map((r) => (
                     <option key={r} value={r}>
-                      {r === p.path ? p.name : r.split('/').filter(Boolean).pop()}
+                      {r === p.path ? p.name : r.split(/[\\/]/).filter(Boolean).pop()}
                     </option>
                   ))}
                 </select>

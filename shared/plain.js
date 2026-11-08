@@ -1,5 +1,5 @@
 // What an agent is doing, in words for someone who has never seen a terminal.
-const base = (p) => String(p ?? '').split('/').filter(Boolean).pop() || 'a file'
+const base = (p) => String(p ?? '').split(/[\\/]/).filter(Boolean).pop() || 'a file'
 const clip = (text, max = 60) => {
   const line = String(text ?? '').trim().split('\n')[0]
   return line.length > max ? `${line.slice(0, max - 1)}…` : line

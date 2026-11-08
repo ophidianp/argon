@@ -8,6 +8,7 @@ const http = require('node:http')
 const path = require('node:path')
 
 const PORT = Number(process.env.PORT) || 4317
+const WIN = process.platform === 'win32'
 const ORIGIN = `http://127.0.0.1:${PORT}`
 const ROOT = path.join(__dirname, '..')
 let server = null
@@ -32,6 +33,7 @@ const logFile = () => path.join(app.getPath('logs'), 'server.log')
 // ships prebuilt for it). From a checkout, the system's Node, as in `npm run dev`.
 function startServer() {
   const env = { ...process.env, NODE_ENV: 'production', PORT: String(PORT) }
+  if (!app.isPackaged && WIN) return spawn('node', [path.join(ROOT, 'server', 'index.mjs')], { cwd: ROOT, env, stdio: 'inherit', windowsHide: true })
   if (!app.isPackaged) {
     const shell = process.env.SHELL || '/bin/zsh'
     return spawn(shell, ['-lic', 'exec node server/index.mjs'], { cwd: ROOT, env, stdio: 'inherit' })
@@ -64,7 +66,7 @@ async function ensureServer() {
 async function restartServer() {
   restarts = [...restarts.filter((t) => Date.now() - t < RESTART_WINDOW_MS), Date.now()]
   if (restarts.length > MAX_RESTARTS) {
-    dialog.showErrorBox('vibeboard stopped working', `Its server keeps stopping. Details are in ${logFile()}.`)
+    dialog.showErrorBox('Argon stopped working', `Its server keeps stopping. Details are in ${logFile()}.`)
     return app.quit()
   }
   try {
@@ -103,10 +105,12 @@ function createWindow() {
     height: 940,
     minWidth: 900,
     minHeight: 600,
-    title: 'vibeboard',
+    title: 'Argon',
+    icon: path.join(ROOT, 'build', 'icon.ico'),
     backgroundColor: nativeTheme.shouldUseDarkColors ? '#0a0908' : '#f5f1ea',
-    titleBarStyle: 'hiddenInset',
-    trafficLightPosition: { x: 16, y: 18 },
+    ...(WIN
+      ? { titleBarStyle: 'hidden', titleBarOverlay: { color: nativeTheme.shouldUseDarkColors ? '#0a0908' : '#f5f1ea', symbolColor: nativeTheme.shouldUseDarkColors ? '#ece8e2' : '#2a2520', height: 52 } }
+      : { titleBarStyle: 'hiddenInset', trafficLightPosition: { x: 16, y: 18 } }),
     show: !process.env.VIBEBOARD_DESKTOP_HIDDEN, // tests drive a hidden window over CDP
     // Agents keep working while the window is behind others: their output must keep being drawn.
     webPreferences: { preload: path.join(__dirname, 'preload.cjs'), contextIsolation: true, sandbox: true, backgroundThrottling: false },
@@ -135,6 +139,8 @@ ipcMain.on('inspect', (e, x, y) => {
 // The traffic lights and native dialogs follow the theme chosen in Settings.
 ipcMain.on('theme', (_e, mode) => {
   if (['system', 'light', 'dark'].includes(mode)) nativeTheme.themeSource = mode
+  // Windows draws its own caption buttons over the top bar: they follow the theme too.
+  if (WIN) for (const w of BrowserWindow.getAllWindows()) { const dark = nativeTheme.shouldUseDarkColors; try { w.setTitleBarOverlay({ color: dark ? '#0a0908' : '#f5f1ea', symbolColor: dark ? '#ece8e2' : '#2a2520' }) } catch {} }
 })
 
 ipcMain.handle('pick-folder', async (e) => {
@@ -160,7 +166,7 @@ app.on('before-quit', async (e) => {
   if (n) {
     const { response } = await dialog.showMessageBox({
       type: 'warning',
-      message: `Quit vibeboard and stop ${n} running agent${n > 1 ? 's' : ''}?`,
+      message: `Quit Argon and stop ${n} running agent${n > 1 ? 's' : ''}?`,
       detail: 'Claude conversations can be picked up again next time.',
       buttons: ['Quit', 'Cancel'],
       defaultId: 1,
@@ -172,7 +178,8 @@ app.on('before-quit', async (e) => {
   app.quit()
 })
 
-app.setName('vibeboard')
+app.setName('Argon')
+if (WIN) app.setAppUserModelId('io.github.ophidianp.argon')
 
 // Opening it a second time brings the window that is already there to the front.
 if (!app.requestSingleInstanceLock()) app.exit(0)
@@ -189,7 +196,7 @@ app.whenReady().then(async () => {
     await ensureServer()
   } catch (err) {
     console.error(err.message)
-    dialog.showErrorBox('vibeboard could not start', `${err.message}. Another program may be using the port, or the details may be in ${logFile()}.`)
+    dialog.showErrorBox('Argon could not start', `${err.message}. Another program may be using the port, or the details may be in ${logFile()}.`)
     app.quit()
     return
   }

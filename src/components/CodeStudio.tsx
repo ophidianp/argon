@@ -8,7 +8,7 @@ import { CodeView, langLabel } from './CodeView'
 
 const size = (n: number) => (n < 1024 ? `${n} B` : n < 1024 * 1024 ? `${(n / 1024).toFixed(1)} KB` : `${(n / 1024 / 1024).toFixed(1)} MB`)
 const lines = (text: string) => (text ? text.split('\n').length - (text.endsWith('\n') ? 1 : 0) : 0)
-const base = (p: string) => p.split('/').pop() || p
+const base = (p: string) => p.split(/[\\/]/).pop() || p
 
 export function FileIcon({ name }: { name: string }) {
   const e = name.split('.').pop()?.toLowerCase()

@@ -91,7 +91,8 @@ export function createScans({ broadcast, launch, command = commandFor, timeoutMs
 }
 
 // `node server/scan.mjs`: checks the parser and a whole run against a fake Claude.
-if (process.argv[1] === fileURLToPath(import.meta.url)) {
+if (process.argv[1] === fileURLToPath(import.meta.url) && process.platform === 'win32') console.log('self-test skipped on Windows (it drives /bin/sh)')
+else if (process.argv[1] === fileURLToPath(import.meta.url)) {
   const assert = (await import('node:assert/strict')).default
   const fact = (title, kind = 'Commands') => JSON.stringify({ kind, title, text: `about ${title}` })
   assert.deepEqual(parseFacts(`Here you go\n${fact('a')}\n${fact('b', 'Weird')}\n{"kind":"Gotchas","ti`).map((f) => [f.kind, f.title]), [
@@ -115,7 +116,7 @@ if (process.argv[1] === fileURLToPath(import.meta.url)) {
   const scans = createScans({
     broadcast: (m) => seen.push(m.scans[0] && { ...m.scans[0] }),
     command: (agent) => ({ claude: `printf '%s\\n' ${stream.map(q).join(' ')}`, slow: 'sleep 30' })[agent],
-    launch: (cmd, cwd) => spawn('/bin/sh', ['-c', cmd], { cwd, detached: true, stdio: ['ignore', 'pipe', 'pipe'] }),
+    launch: (cmd, cwd) => spawn('/bin/sh', ['-c', cmd], { cwd, detached: true, stdio: ['ignore', 'pipe', 'pipe'] }), // POSIX only: skipped on Windows
   })
   scans.start(process.cwd(), 'claude')
   assert.throws(() => scans.start(process.cwd(), 'claude'), /already being scanned/)
@@ -126,8 +127,8 @@ if (process.argv[1] === fileURLToPath(import.meta.url)) {
   assert.equal(done.step, 3)
   assert.ok(seen.length >= 2) // started, then streamed or finished
 
-  scans.start('/tmp', 'slow')
-  scans.clear('/tmp')
+  scans.start(os.tmpdir(), 'slow')
+  scans.clear(os.tmpdir())
   assert.equal(scans.list().length, 1)
   console.log('scan parsers ok')
 }

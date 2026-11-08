@@ -2,7 +2,7 @@
 // Claude streams JSON events (text as it is typed, tool use, a final result); any other CLI is read as
 // plain text from stdout.
 
-const q = (v) => `'${v.replace(/'/g, `'\\''`)}'`
+import { shq as q, killTree } from './platform.mjs'
 
 // The command line for a one-off, read-only run of each CLI in the repo folder.
 // ponytail: only the Claude line is tried on this machine; the others follow each CLI's documented one-shot mode.
@@ -39,11 +39,7 @@ export function runCli({ command, claude, cwd, launch, timeoutMs = 5 * 60_000, o
   const advance = (n) => n > step && ((step = n), onStep(n))
   const child = launch(command, cwd)
   const kill = () => {
-    try {
-      process.kill(-child.pid, 'SIGTERM')
-    } catch {
-      // the group already exited
-    }
+    killTree(child.pid)
   }
   const timer = setTimeout(() => {
     failure = `no answer after ${Math.round(timeoutMs / 60_000)} minutes`

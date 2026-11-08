@@ -6,6 +6,7 @@ import path from 'node:path'
 import readline from 'node:readline'
 import pty from 'node-pty'
 import headless from '@xterm/headless'
+import { agentArgs, killTree } from './platform.mjs'
 
 const { Terminal } = headless
 const COLS = 110
@@ -232,7 +233,8 @@ export function createUsage({ dataDir, env, shell, claudeDirs, codexDirs, profil
     fs.mkdirSync(dir, { recursive: true })
     return new Promise((resolve, reject) => {
       const term = new Terminal({ cols: COLS, rows: ROWS, allowProposedApi: true })
-      const p = pty.spawn(shell, ['-lic', 'exec claude --setting-sources local --strict-mcp-config'], {
+      const [file, args] = agentArgs('claude --setting-sources local --strict-mcp-config')
+      const p = pty.spawn(file, args, {
         name: 'xterm-256color',
         cols: COLS,
         rows: ROWS,
@@ -250,9 +252,7 @@ export function createUsage({ dataDir, env, shell, claudeDirs, codexDirs, profil
         // Claude Code ignores SIGHUP.
         for (const sig of ['SIGTERM', 'SIGKILL'])
           setTimeout(() => {
-            try {
-              process.kill(-p.pid, sig)
-            } catch {}
+            killTree(p.pid, sig === 'SIGKILL')
             try {
               p.kill(sig)
             } catch {}

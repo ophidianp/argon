@@ -350,7 +350,7 @@ function ConnectBanner() {
   )
 }
 
-const INSTALL_CLAUDE = 'curl -fsSL https://claude.ai/install.sh | bash'
+const INSTALL_CLAUDE = window.vibeboardDesktop?.platform === 'win32' || /Windows/.test(navigator.userAgent) ? 'irm https://claude.ai/install.ps1 | iex' : 'curl -fsSL https://claude.ai/install.sh | bash'
 
 // No coding agent on this Mac yet: offer to set up Claude Code. The command is typed into a real
 // terminal and left there, so that the person is the one who runs it.

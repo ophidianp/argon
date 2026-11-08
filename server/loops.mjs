@@ -5,14 +5,13 @@ import os from 'node:os'
 import path from 'node:path'
 import crypto from 'node:crypto'
 
-const FILE = path.join(process.env.VIBEBOARD_DATA || path.join(os.homedir(), '.vibeboard'), 'loops.json')
-const SHELL = process.env.SHELL || '/bin/zsh'
+const FILE = path.join(DATA_DIR, 'loops.json')
 const COOLDOWN_MS = 10_000
 const TYPING_MS = 5_000 // no loop types into a console the user touched this recently
 const ECHO_MS = 2_000 // output right after a fire is the echo of our own instruction
 const MAX_TIMER = 2 ** 31 - 1 // setTimeout/setInterval treat anything larger as 1ms
 
-const shq = (v) => `'${String(v).replace(/'/g, `'\\''`)}'`
+import { shq, runArgs, DATA_DIR } from './platform.mjs'
 const ANSI = /\x1b\[[0-9;?]*[ -/]*[@-~]/g
 
 export function createLoops({ sessions, sendPrompt, broadcast, run }) {
@@ -62,13 +61,13 @@ export function createLoops({ sessions, sendPrompt, broadcast, run }) {
     if (!goal) return false
     const cwd = sample.cwd
     if (goal.type === 'command' && goal.command) {
-      const r = await run(SHELL, ['-lic', goal.command], { cwd, timeout: 10 * 60_000 })
+      const r = await run(...runArgs(goal.command), { cwd, timeout: 10 * 60_000 })
       return r.code === 0
     }
     if (goal.type === 'judge' && goal.text) {
       const output = (sample.buf || '').replace(ANSI, '').slice(-6000)
       const prompt = `You judge whether a coding agent reached its goal.\nGoal: ${goal.text}\n\nRecent console output:\n${output}\n\nAnswer with exactly YES or NO.`
-      const r = await run(SHELL, ['-lic', `claude -p --model haiku ${shq(prompt)}`], { cwd, timeout: 180_000 })
+      const r = await run(...runArgs(`claude -p --model haiku ${shq(prompt)}`), { cwd, timeout: 180_000 })
       // The last line is the answer; anything above it is shell-rc noise.
       return /^\s*YES\b/i.test(r.stdout.trim().split('\n').pop() || '')
     }

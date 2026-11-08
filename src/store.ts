@@ -514,7 +514,7 @@ export const useStore = create<S>((set, get) => {
     openProject: (path) =>
       set((s) => {
         const exists = s.projects.some((p) => p.path === path)
-        const name = path.split('/').filter(Boolean).pop() || path
+        const name = path.split(/[\\/]/).filter(Boolean).pop() || path
         const ws = newWorkspace('Workspace 1')
         const projects = exists
           ? s.projects.map((p) => (p.path === path ? { ...p, openedAt: Date.now() } : p))

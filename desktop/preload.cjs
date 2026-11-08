@@ -5,4 +5,5 @@ contextBridge.exposeInMainWorld('vibeboardDesktop', {
   inspect: (x, y) => ipcRenderer.send('inspect', x, y),
   setTheme: (mode) => ipcRenderer.send('theme', mode),
   pickFolder: () => ipcRenderer.invoke('pick-folder'),
+  platform: process.platform,
 })

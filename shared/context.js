@@ -23,7 +23,7 @@ const WHAT = {
   Task: 'Helpers',
   Agent: 'Helpers',
 }
-const short = (p) => String(p).split('/').slice(-2).join('/')
+const short = (p) => String(p).split(/[\\/]/).slice(-2).join('/')
 const nameOf = (tool, input) => (tool === 'Bash' ? String(input?.command ?? 'command').slice(0, 60) : input?.file_path ? short(input.file_path) : tool)
 
 // -> null before Claude has replied, or { used, window, model, parts: [{ label, tokens }], biggest: [{ label, tokens }] }
