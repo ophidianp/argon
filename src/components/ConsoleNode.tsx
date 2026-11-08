@@ -13,6 +13,7 @@ import { AGENTS, agentById } from '../../shared/agents.js'
 import { AgentGlyph, AgentIcon } from './icons'
 import { initials } from './UsagePanel'
 import { currentTheme, useTheme, type Theme } from '../theme'
+import { terminalColors, useLook } from '../appearance'
 import { Conversation, SimpleFooter, StatusStrip } from './SimpleView'
 
 const DARK = {
@@ -62,7 +63,8 @@ const LIGHT = {
   brightWhite: '#3a3a3c',
 }
 // Agent CLIs choose their own colours, often for a dark screen: on white xterm darkens any that are too faint.
-const terminalLook = (theme: Theme) => (theme === 'light' ? { theme: LIGHT, minimumContrastRatio: 4.5 } : { theme: DARK, minimumContrastRatio: 1 })
+// The background, cursor and selection follow the palette and accent chosen in Settings.
+const terminalLook = (theme: Theme) => (theme === 'light' ? { theme: { ...LIGHT, ...terminalColors('light') }, minimumContrastRatio: 4.5 } : { theme: { ...DARK, ...terminalColors('dark') }, minimumContrastRatio: 1 })
 
 export type ConsoleStatus = 'idle' | 'working' | 'needs' | 'done' | 'paused' | 'stopped'
 
@@ -114,7 +116,7 @@ const COMMAND_NOT_FOUND = 127
 function exitMessage(name: string, code: number | undefined, reason: string | null) {
   if (reason?.startsWith('folder not found')) return `This project's folder is gone: ${reason.replace('folder not found: ', '')}`
   if (reason) return `${name} could not start: ${reason}`
-  if (code === COMMAND_NOT_FOUND) return `${name} is not installed on this Mac. Install it, or pick another agent from the menu at the top left of this console.`
+  if (code === COMMAND_NOT_FOUND) return `${name} is not installed on this PC. Install it, or pick another agent from the menu at the top left of this console.`
   if (code === 0 || code === undefined) return `${name} has closed.`
   return `${name} stopped unexpectedly (code ${code}).`
 }
@@ -138,6 +140,7 @@ function TerminalView({ id, epoch, onExit }: { id: string; epoch: number; onExit
   const termRef = useRef<{ term: Terminal; fit: FitAddon } | null>(null)
   const fontSize = useStore((s) => s.settings.fontSize)
   const theme = useTheme()
+  const look = useLook()
 
   useEffect(() => {
     const el = ref.current!
@@ -241,7 +244,7 @@ function TerminalView({ id, epoch, onExit }: { id: string; epoch: number; onExit
   useEffect(() => {
     const t = termRef.current
     if (t) Object.assign(t.term.options, terminalLook(theme))
-  }, [theme])
+  }, [theme, look])
 
   // ponytail: xterm ignores the board's CSS scale, so mouse selection is offset when zoom != 100%.
   // Keyboard is unaffected; double-click the header to snap the console to 100%.

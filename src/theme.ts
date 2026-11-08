@@ -1,4 +1,5 @@
 import { useSyncExternalStore } from 'react'
+import { paintLook } from './appearance'
 
 export type ThemeMode = 'system' | 'light' | 'dark'
 export type Theme = 'light' | 'dark'
@@ -23,6 +24,7 @@ export const currentTheme = (): Theme => (mode === 'system' ? (media.matches ? '
 
 function paint() {
   document.documentElement.dataset.theme = currentTheme()
+  paintLook(currentTheme())
   listeners.forEach((l) => l())
 }
 

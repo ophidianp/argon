@@ -15,6 +15,7 @@ import { agentById } from '../shared/agents.js'
 import { CONSOLE_SIZE, GROUP_HEAD, GROUP_PAD, freeSpot, gridLayout, sizeOf, wouldCycle } from './layout'
 import type { TeamTemplate } from './teams'
 import type { ThemeMode } from './theme'
+import type { Look } from './appearance'
 
 export { CONSOLE_SIZE, freeSpot }
 
@@ -69,7 +70,7 @@ export type Modal = null | 'mission' | 'loops' | 'memory' | 'usage' | 'composer'
 // A second sign-in of a CLI (its own config folder on disk), so two accounts can run side by side.
 export type Profile = { id: string; name: string; agent: string }
 // `active`: the profile each CLI's new consoles start on (none: the CLI's own default sign-in).
-export type Settings = { theme?: ThemeMode; simpleView?: boolean; yolo: boolean; fontSize: number; defaultAgent: string; speak?: boolean; notify?: boolean; profiles?: Profile[]; active?: Record<string, string> }
+export type Settings = { theme?: ThemeMode; look?: Partial<Look>; simpleView?: boolean; yolo: boolean; fontSize: number; defaultAgent: string; speak?: boolean; notify?: boolean; profiles?: Profile[]; active?: Record<string, string> }
 export type UsageView = 'usage' | 'tokens' | 'accounts'
 
 // Stable fallback so selectors never return a fresh [] (that re-renders forever).
@@ -429,7 +430,7 @@ export const useStore = create<S>((set, get) => {
             set({ ...state, loaded: true })
             set((s) => ({ ready: s.liveReady }))
             if (recovered === 'backup') get().notify('Your board file was damaged. It is back as it was at the last backup.')
-            if (recovered === 'empty') get().notify('Your board file was damaged, so this is a fresh board. The old file is kept in ~/.vibeboard.')
+            if (recovered === 'empty') get().notify('Your board file was damaged, so this is a fresh board. The old file is kept in the Argon data folder.')
           })
           .catch(() => setTimeout(load, 1000))
       load()
@@ -1029,7 +1030,7 @@ useStore.subscribe((s, prev) => {
 useStore.subscribe((s, prev) => {
   if (s.live === prev.live) return
   const waiting = Object.values(s.live).filter((l) => l.status === 'needs' && !l.paused).length
-  document.title = waiting ? `(${waiting}) vibeboard` : 'vibeboard'
+  document.title = waiting ? `(${waiting}) Argon` : 'Argon'
 })
 
 // Edits from the last 400ms before the window goes away. Leaving the page is the reliable moment to

@@ -5,6 +5,7 @@ import { BoardScreen } from './components/BoardScreen'
 import { Tips } from './components/Tips'
 import { ConfirmSheet } from './components/Panels'
 import { setThemeMode } from './theme'
+import { setLook } from './appearance'
 
 export function App() {
   const ready = useStore((s) => s.ready)
@@ -13,12 +14,16 @@ export function App() {
   const linkDown = useStore((s) => s.linkDown)
   const toastAction = useStore((s) => s.toastAction)
   const themeMode = useStore((s) => s.settings.theme)
+  const look = useStore((s) => s.settings.look)
 
   useEffect(() => useStore.getState().init(), [])
   // Before the board state arrives the settings hold only defaults: keep the remembered theme until then.
   useEffect(() => {
     if (ready) setThemeMode(themeMode)
   }, [ready, themeMode])
+  useEffect(() => {
+    if (ready) setLook(look)
+  }, [ready, look])
 
   if (!ready) return <div className="home" />
   return (
@@ -34,7 +39,7 @@ export function App() {
           )}
         </div>
       )}
-      {linkDown && <div className="link-down">Reconnecting to vibeboard…</div>}
+      {linkDown && <div className="link-down">Reconnecting to Argon…</div>}
       <ConfirmSheet />
       <Tips />
     </>

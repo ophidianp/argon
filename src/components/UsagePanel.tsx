@@ -443,7 +443,7 @@ function TokensView({ close }: { close: () => void }) {
           <div className="usage-loading">
             <ClaudeMark size={20} color="#8a847c" />
             <div className="t">Reading local session logs</div>
-            <div className="s">Counting tokens straight from each agent's own transcripts on this Mac — nothing leaves your machine.</div>
+            <div className="s">Counting tokens straight from each agent's own transcripts on this PC — nothing leaves your machine.</div>
           </div>
         ) : (
           <>
@@ -623,7 +623,7 @@ function AccountsView({ close }: { close: () => void }) {
         {agent === 'claude' && (
           <div className="acct-warn">
             <KeyRound size={14} color="var(--needs)" />
-            <span>On this Mac, Claude may keep sign-ins in the system Keychain, which profiles can't fully isolate yet. After switching, verify the account with /status inside the console.</span>
+            <span>Claude may keep sign-ins in the system credential store, which profiles can't fully isolate yet. After switching, verify the account with /status inside the console.</span>
           </div>
         )}
         <div className={`acct-row ${active ? '' : 'on'}`}>

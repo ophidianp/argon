@@ -215,9 +215,10 @@ function setStatus(s, status) {
 
 
 const LEAD_PROMPT =
-  'You run inside vibeboard, a board where the user watches every agent. You are the lead: when a job splits into ' +
-  'parts that can run side by side, bring in helpers with the vibeboard create_helper tool instead of sub-agents or ' +
-  'other agent launchers, so the user sees each one on the board. Small jobs you do yourself.'
+  'You run inside Argon, a board where the user watches every agent. You are the lead of a team: when a job splits into ' +
+  'parts that can run side by side, bring in helpers with the argon create_helper tool instead of sub-agents or ' +
+  'other agent launchers, so the user sees each one on the board. You and your helpers work TOGETHER as one team: ' +
+  'hand each one a clear part, then collect, check and combine their work. Small jobs you do yourself.'
 
 // Folders outside the project the person connected: the agent may work in them and knows they are there.
 const foldersPrompt = (dirs) => `The user connected these folders of their own, outside this project: ${dirs.join(', ')}. Look there when they mention their notes or earlier work.`
@@ -232,11 +233,11 @@ function commandFor(agent, { id, sessionId, resume, yolo, lead, dirs = [] }) {
     // A lead gets the team tools (helpers.mjs), pre-approved: asking leave for each helper defeats the point.
     // The system-prompt line is what makes it reach for them unprompted, over other ways to run agents.
     if (lead) {
-      const config = { mcpServers: { vibeboard: { type: 'http', url: `http://127.0.0.1:${PORT}/mcp/${id}` } } }
+      const config = { mcpServers: { argon: { type: 'http', url: `http://127.0.0.1:${PORT}/mcp/${id}` } } }
       // On Windows the JSON goes through a file: PowerShell 5.1 mangles quotes inside arguments.
       let mcp = JSON.stringify(config)
       if (WIN) { mcp = path.join(DATA_DIR, `mcp-${id}.json`); fs.writeFileSync(mcp, JSON.stringify(config)) }
-      parts.push('--mcp-config', mcp, '--allowedTools', 'mcp__vibeboard')
+      parts.push('--mcp-config', mcp, '--allowedTools', 'mcp__argon')
     }
     const told = [lead && LEAD_PROMPT, dirs.length && foldersPrompt(dirs)].filter(Boolean).join('\n\n')
     if (told) parts.push('--append-system-prompt', told)
@@ -786,7 +787,7 @@ async function gitAction(cwd, action, message, picked, branch) {
   else if (action === 'discard') {
     // Back to the last commit: tracked files are restored, new ones removed (the panel asks first).
     if (!paths.length) throw new Error('pick the files to discard')
-    const top = check(await git('rev-parse', '--show-toplevel')).stdout.trim()
+    const top = path.resolve(check(await git('rev-parse', '--show-toplevel')).stdout.trim()) // git writes C:/… on Windows
     const changed = new Map(changedFiles((await git('status', '--porcelain', '-z', '--untracked-files=all')).stdout).map((f) => [f.path, f]))
     for (const p of paths) {
       const f = changed.get(p)

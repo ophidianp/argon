@@ -2,6 +2,26 @@ import { SquareTerminal } from 'lucide-react'
 import { agentById } from '../../shared/agents.js'
 
 // Our own burst glyph for Claude (not the vendor logo).
+// Argon's mark: three orbits and a nucleus, in the accent.
+export function ArgonMark({ size = 26 }: { size?: number }) {
+  return (
+    <svg viewBox="0 0 64 64" width={size} height={size} aria-hidden fill="none" strokeLinecap="round">
+      <defs>
+        <linearGradient id="argon-mark" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0" stopColor="var(--accent-light)" />
+          <stop offset="1" stopColor="var(--accent-deep)" />
+        </linearGradient>
+      </defs>
+      <g strokeWidth={4.2}>
+        <ellipse cx={32} cy={32} rx={24} ry={9} stroke="var(--accent-light)" />
+        <ellipse cx={32} cy={32} rx={24} ry={9} stroke="var(--accent)" transform="rotate(60 32 32)" />
+        <ellipse cx={32} cy={32} rx={24} ry={9} stroke="url(#argon-mark)" transform="rotate(120 32 32)" />
+      </g>
+      <circle cx={32} cy={32} r={5.6} fill="var(--accent-light)" />
+    </svg>
+  )
+}
+
 export function Spark({ size = 18, color = '#e8643c' }: { size?: number; color?: string }) {
   const rays = Array.from({ length: 12 }, (_, i) => {
     const a = (i * Math.PI) / 6 + 0.13

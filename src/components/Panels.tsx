@@ -4,8 +4,9 @@ import { askNotifyPermission, useStore } from '../store'
 import { AGENTS } from '../../shared/agents.js'
 import { useTheme } from '../theme'
 import { AgentIcon } from './icons'
+import { Personalize } from './Personalize'
 
-// Day or night in one click, wherever you are. Settings also offers "Same as my Mac".
+// Day or night in one click, wherever you are. Settings also offers "Same as Windows".
 export function ThemeToggle() {
   const theme = useTheme()
   const flip = () => {
@@ -64,23 +65,14 @@ export function SettingsModal() {
           </span>
           <div style={{ flex: 1 }}>
             <h2>Settings</h2>
-            <div className="sub">Stored on your disk in ~/.vibeboard</div>
+            <div className="sub">{window.vibeboardDesktop?.platform === 'win32' ? 'Saved on this PC in %APPDATA%\\Argon' : 'Saved on your disk'}</div>
           </div>
           <button className="icon-btn" title="Close" onClick={close}>
             <X size={18} />
           </button>
         </div>
         <div className="loops">
-          <div style={{ display: 'grid', gap: 10 }}>
-            <div className="section-label">Appearance</div>
-            <div className="pills">
-              {(['system', 'light', 'dark'] as const).map((m) => (
-                <button key={m} className={(settings.theme ?? 'system') === m ? 'on' : ''} onClick={() => patch({ theme: m })}>
-                  {{ system: 'Same as my Mac', light: 'Light', dark: 'Dark' }[m]}
-                </button>
-              ))}
-            </div>
-          </div>
+          <Personalize />
           <div style={{ display: 'grid', gap: 10 }}>
             <div className="section-label">Default agent</div>
             <div className="pills">

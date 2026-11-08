@@ -79,7 +79,7 @@ function usePanelPos(at: MenuAt, width: number, height: number) {
 type View = 'ring' | 'agents' | 'shapes' | 'group' | 'more'
 const PETALS: { key: string; label: string; hint: string; angle: number; icon: React.ReactNode }[] = [
   { key: 'agents', label: 'New agent', hint: 'Start a coding agent here', angle: -90, icon: <Sparkles size={18} /> },
-  { key: 'image', label: 'Image', hint: 'Pick a picture from your Mac', angle: -30, icon: <Image size={18} /> },
+  { key: 'image', label: 'Image', hint: 'Pick a picture from this PC', angle: -30, icon: <Image size={18} /> },
   { key: 'web', label: 'Web page', hint: 'Open a website on the board', angle: 30, icon: <Globe size={18} /> },
   { key: 'paste', label: 'Paste', hint: 'Put what you copied here', angle: 90, icon: <ClipboardPaste size={18} /> },
   { key: 'shapes', label: 'Shapes', hint: 'Boxes, arrows and sticky notes', angle: 150, icon: <Shapes size={18} /> },
@@ -130,7 +130,7 @@ function RadialMenu({ at, onClose }: { at: MenuAt; onClose: () => void }) {
       if (text.trim()) s.addNode({ id: nid('t'), type: 'text', position: at.flow, data: { text } })
       else s.notify('The clipboard is empty')
     } catch {
-      s.notify('The browser did not let vibeboard read the clipboard')
+      s.notify('The browser did not let Argon read the clipboard')
     }
   }
   const pick = (key: string) => {

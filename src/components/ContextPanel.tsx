@@ -213,7 +213,7 @@ export function FoldersTab() {
           >
             <FileText size={13} /> Notes
           </button>
-          <button className="icon-btn sm" title="Show in Finder" onClick={() => api.reveal(f)}>
+          <button className="icon-btn sm" title="Show in Explorer" onClick={() => api.reveal(f)}>
             <FolderOpen size={14} />
           </button>
           <button className="icon-btn sm" title="Disconnect: the folder itself stays as it is" onClick={() => s.disconnectFolder(f)}>

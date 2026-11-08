@@ -2,7 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import { ArrowUp, ChevronLeft, ChevronUp, Mic, Minus, Plus, RotateCw, Square, X } from 'lucide-react'
 import { consoles, EMPTY, useStore, workspace } from '../store'
 import { AGENTS, agentById } from '../../shared/agents.js'
-import { AgentGlyph, AgentIcon } from './icons'
+import { AgentGlyph, AgentIcon, ArgonMark } from './icons'
 import { command, mentionTargets } from '../planner'
 import { TEAMS } from '../teams'
 
@@ -289,7 +289,7 @@ export function useDictation(text: string, setText: (t: string) => void) {
     rec.onerror = (e: { error: string }) => {
       setListening(false)
       if (e.error === 'no-speech' || e.error === 'aborted') return
-      const why = e.error === 'not-allowed' ? 'The microphone is not allowed for vibeboard.' : 'Dictation is not available here.'
+      const why = e.error === 'not-allowed' ? 'The microphone is not allowed for Argon.' : 'Dictation is not available here.'
       useStore.getState().notify(`${why} Use the Mac's own dictation instead: press the fn key twice in any text field.`)
     }
     rec.start()
@@ -410,7 +410,9 @@ function CommandBar() {
           ))}
         </div>
       )}
-      <div className="orb" />
+      <div className="orb">
+        <ArgonMark size={34} />
+      </div>
       {listening && !text ? (
         <div className="listening-label" style={{ flex: 1 }}>
           <span className="dot" style={{ background: 'var(--accent)', width: 10, height: 10 }} /> listening

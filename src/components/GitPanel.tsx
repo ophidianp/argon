@@ -158,7 +158,7 @@ function GitPanel({
   const sync = !git.remote
     ? "local only"
     : !git.upstream
-      ? "only on this Mac"
+      ? "only on this PC"
       : git.ahead || git.behind
         ? [
             git.ahead && `${git.ahead} to upload`,

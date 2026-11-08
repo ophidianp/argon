@@ -159,7 +159,7 @@ function Board() {
 
   useEffect(() => set({ flow }), [flow])
 
-  // Backspace closes whatever is selected, consoles included; ⌘Z or the Undo button brings it back.
+  // Backspace closes whatever is selected, consoles included; Ctrl+Z or the Undo button brings it back.
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       const t = e.target as HTMLElement
@@ -352,7 +352,7 @@ function ConnectBanner() {
 
 const INSTALL_CLAUDE = window.vibeboardDesktop?.platform === 'win32' || /Windows/.test(navigator.userAgent) ? 'irm https://claude.ai/install.ps1 | iex' : 'curl -fsSL https://claude.ai/install.sh | bash'
 
-// No coding agent on this Mac yet: offer to set up Claude Code. The command is typed into a real
+// No coding agent on this PC yet: offer to set up Claude Code. The command is typed into a real
 // terminal and left there, so that the person is the one who runs it.
 function NoAgentToast() {
   const missing = useStore((s) => !s.installed.some((a) => a !== 'shell'))
@@ -379,7 +379,7 @@ function NoAgentToast() {
     <div className="board-toast">
       <span>
         <div className="t">No coding agent found</div>
-        <div className="s">vibeboard runs the agents installed on your Mac. Claude Code takes a minute to set up.</div>
+        <div className="s">Argon runs the agents installed on this PC. Claude Code takes a minute to set up.</div>
       </span>
       <button className="btn primary" onClick={install}>
         Install Claude Code
@@ -467,11 +467,11 @@ function LeftToolbar() {
             {t.tool === 'ink' && tool === 'ink' && <InkPanel />}
           </span>
         ))}
-        <button className="tool-btn" title="Image: pick a picture from your Mac" onClick={() => fileRef.current?.click()}>
+        <button className="tool-btn" title="Image: pick a picture from this PC" onClick={() => fileRef.current?.click()}>
           <Image size={19} />
         </button>
         <div className="sep" />
-        <button className="tool-btn" title="Fit the board (⌘0)" onClick={() => flow.fitView({ padding: 0.12, duration: 400 })}>
+        <button className="tool-btn" title="Fit the board (Ctrl+0)" onClick={() => flow.fitView({ padding: 0.12, duration: 400 })}>
           <Maximize2 size={18} />
         </button>
       </div>

@@ -17,7 +17,7 @@ async function until(done, ms) {
 }
 
 const INSTRUCTIONS = [
-  'You lead a small team on the user\'s vibeboard board. When a job splits into parts that can run side by side',
+  'You lead a small team on the user\'s Argon board. When a job splits into parts that can run side by side',
   '(build and test, front end and back end, several files to review), create a helper for each part with create_helper:',
   'each one is a real coding agent the user watches on the board. Helpers do not see your conversation, so give each',
   'a complete, self-contained task, and separate files so they do not edit the same ones. Then call wait_for_helpers,',
@@ -112,7 +112,7 @@ export function createHelpers({ sessions, spawn, sendPrompt, setStatus, broadcas
       if (!agentIds.includes(agent)) throw new Error(`unknown agent ${agent}; use one of ${agentIds.join(', ')}`)
       if ([...team.values()].filter((id) => sessions.has(id)).length >= MAX_HELPERS)
         throw new Error(`You already have ${MAX_HELPERS} helpers running. Wait for them, or give one more work with message_helper.`)
-      if (!hasWindow()) throw new Error('The vibeboard window is closed, so the user could not see a helper. Ask them to open it.')
+      if (!hasWindow()) throw new Error('The Argon window is closed, so the user could not see a helper. Ask them to open it.')
       const base = String(args.name || 'Helper').replace(/[^\p{L}\p{N} _-]/gu, '').trim().slice(0, 30) || 'Helper'
       let name = base
       for (let n = 2; team.has(name); n++) name = `${base} ${n}`
@@ -165,7 +165,7 @@ export function createHelpers({ sessions, spawn, sendPrompt, setStatus, broadcas
       return reply({
         protocolVersion: params?.protocolVersion || '2025-06-18',
         capabilities: { tools: {} },
-        serverInfo: { name: 'vibeboard', version: '0.1.0' },
+        serverInfo: { name: 'argon', version: '0.1.0' },
         instructions: INSTRUCTIONS,
       })
     if (method === 'ping') return reply({})

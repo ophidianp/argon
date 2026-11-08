@@ -10,7 +10,7 @@ async function reach(url: string, init: RequestInit) {
     try {
       return await fetch(url, init)
     } catch {
-      if (init.method !== 'GET' || attempt >= READ_RETRIES) throw new Error('vibeboard is not responding')
+      if (init.method !== 'GET' || attempt >= READ_RETRIES) throw new Error('Argon is not responding')
       await wait(300 * 2 ** attempt)
     }
   }

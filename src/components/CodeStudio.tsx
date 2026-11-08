@@ -109,7 +109,7 @@ export function CodeStudio() {
               <b>Code</b>
               <small>{p.name}</small>
             </span>
-            <button className="icon-btn sm" title="Show in Finder" onClick={() => api.reveal(p.path)}>
+            <button className="icon-btn sm" title="Show in Explorer" onClick={() => api.reveal(p.path)}>
               <FolderOpen size={14} />
             </button>
             <button className="icon-btn sm" title="Show another folder here" onClick={() => setAdding((v) => !v)}>
@@ -175,7 +175,7 @@ export function CodeStudio() {
             )}
             <span className="spacer" />
             {edited && (
-              <button className="btn primary sm" onClick={save} title="Save (⌘S)">
+              <button className="btn primary sm" onClick={save} title="Save (Ctrl+S)">
                 <Save size={14} /> Save
               </button>
             )}

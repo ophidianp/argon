@@ -1,10 +1,10 @@
 # Product
 
-vibeboard is a Mac app: a board where several command-line coding agents (Claude Code, Codex, Gemini and others) work side by side on one project.
+Argon is a Windows app: a board where several command-line coding agents (Claude Code, Codex, Gemini and others) work side by side on one project.
 
 ## Platform
 
-web (a local web app, also shipped inside an Electron window for macOS)
+web (a local web app, also shipped inside an Electron window for Windows)
 
 ## Who it is for
 

@@ -64,7 +64,7 @@ const highlight = HighlightStyle.define([
   { tag: t.meta, color: 'var(--syn-meta)' },
 ])
 
-// One CodeMirror editor. Read-only for code cards; editable (with ⌘S) in the Code studio.
+// One CodeMirror editor. Read-only for code cards; editable (with Ctrl+S) in the Code studio.
 export function CodeView({ text, path, readOnly, onChange, onSave }: { text: string; path: string; readOnly?: boolean; onChange?: (text: string) => void; onSave?: () => void }) {
   const host = useRef<HTMLDivElement>(null)
   const view = useRef<EditorView | null>(null)

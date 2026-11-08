@@ -1,7 +1,7 @@
 // vibeboard as a macOS app: starts the local server, then shows the board in a real window. Web tiles
 // become real browsers here: pages that refuse to be framed (Google, GitHub…) load, because the window
 // strips the headers that forbid framing, for frames only.
-const { app, BrowserWindow, dialog, ipcMain, nativeTheme, session, shell } = require('electron')
+const { app, BrowserWindow, dialog, ipcMain, nativeImage, nativeTheme, session, shell } = require('electron')
 const { spawn } = require('node:child_process')
 const fs = require('node:fs')
 const http = require('node:http')
@@ -139,8 +139,31 @@ ipcMain.on('inspect', (e, x, y) => {
 // The traffic lights and native dialogs follow the theme chosen in Settings.
 ipcMain.on('theme', (_e, mode) => {
   if (['system', 'light', 'dark'].includes(mode)) nativeTheme.themeSource = mode
-  // Windows draws its own caption buttons over the top bar: they follow the theme too.
-  if (WIN) for (const w of BrowserWindow.getAllWindows()) { const dark = nativeTheme.shouldUseDarkColors; try { w.setTitleBarOverlay({ color: dark ? '#0a0908' : '#f5f1ea', symbolColor: dark ? '#ece8e2' : '#2a2520' }) } catch {} }
+})
+
+// The look chosen in Settings: Windows draws its caption buttons over the top bar in the board's colours,
+// and can put Mica or Acrylic behind the window (Windows 11), which the board then lets show through.
+const HEX = /^#[0-9a-f]{6}([0-9a-f]{2})?$/i
+ipcMain.on('look', (e, look) => {
+  const w = BrowserWindow.fromWebContents(e.sender)
+  if (!w || !WIN || !look) return
+  const material = ['mica', 'acrylic'].includes(look.backdrop) ? look.backdrop : 'none'
+  try {
+    if (w._material !== material) {
+      w._material = material
+      w.setBackgroundMaterial(material)
+    }
+    w.setBackgroundColor(material === 'none' && HEX.test(look.overlay) && look.overlay.length === 7 ? look.overlay : '#00000000')
+    if (HEX.test(look.overlay) && HEX.test(look.symbol)) w.setTitleBarOverlay({ color: look.overlay, symbolColor: look.symbol })
+  } catch {}
+})
+
+// The taskbar icon drawn by the board in the accent colour.
+ipcMain.on('app-icon', (e, png) => {
+  const w = BrowserWindow.fromWebContents(e.sender)
+  if (!w || !(png instanceof Uint8Array) || png.length > 2_000_000) return
+  const img = nativeImage.createFromBuffer(Buffer.from(png))
+  if (!img.isEmpty()) w.setIcon(img)
 })
 
 ipcMain.handle('pick-folder', async (e) => {

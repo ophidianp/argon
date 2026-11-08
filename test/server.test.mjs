@@ -14,6 +14,7 @@ import { parseAsk } from '../shared/prompts.js'
 
 const ROOT = fileURLToPath(new URL('..', import.meta.url))
 const PORT = 4399
+const WIN = process.platform === 'win32'
 const BASE = `http://127.0.0.1:${PORT}`
 const HOME = fs.mkdtempSync(path.join(os.tmpdir(), 'vibeboard-test-'))
 let server
@@ -43,7 +44,7 @@ before(async () => {
   // Pretend the server was launched from inside a Claude Code session. Consoles run zsh, the Mac's own
   // shell, whatever shell the tests run from: bash 3.2 (CI) cannot take a pasted multi-line brief.
   const SHELL = fs.existsSync('/bin/zsh') ? '/bin/zsh' : process.env.SHELL
-  const env = { ...process.env, SHELL, PORT: String(PORT), HOME, CLAUDECODE: '1', CLAUDE_CODE_CHILD_SESSION: '1', VIBEBOARD_NO_LLM: '1' }
+  const env = { ...process.env, SHELL, PORT: String(PORT), HOME, CLAUDECODE: '1', CLAUDE_CODE_CHILD_SESSION: '1', VIBEBOARD_NO_LLM: '1', ARGON_DATA: path.join(HOME, '.vibeboard') }
   server = spawn(process.execPath, [path.join(ROOT, 'server/index.mjs')], { env, stdio: 'ignore' })
   assert.ok(await until(async () => (await fetch(BASE + '/api/sessions').catch(() => null))?.ok), 'server did not start')
 })
@@ -227,7 +228,7 @@ test('a lead creates a helper on the board, gives it work and gets its answer ba
   const rpc = (body) => api('POST', '/mcp/t-lead', { jsonrpc: '2.0', ...body })
   const mcp = async (method, params) => (await (await rpc({ id: 1, method, params })).json()).result
   const call = (name, args) => mcp('tools/call', { name, arguments: args })
-  assert.equal((await mcp('initialize', { protocolVersion: '2025-06-18' })).serverInfo.name, 'vibeboard')
+  assert.equal((await mcp('initialize', { protocolVersion: '2025-06-18' })).serverInfo.name, 'argon')
   assert.equal((await rpc({ method: 'notifications/initialized' })).status, 202)
   assert.ok((await mcp('tools/list')).tools.some((t) => t.name === 'create_helper'))
 
@@ -273,9 +274,10 @@ test('the git panel saves a snapshot, publishes the branch and pulls', async () 
   const repo = path.join(HOME, 'repo')
   const other = path.join(HOME, 'other')
   await sh(HOME, 'init', '-q', '--bare', remote)
-  await sh(HOME, 'clone', '-q', remote, repo)
+  await sh(HOME, 'clone', '-q', '-c', 'core.autocrlf=false', remote, repo)
   await sh(repo, 'config', 'user.email', 't@t')
   await sh(repo, 'config', 'user.name', 't')
+  await sh(repo, 'config', 'core.autocrlf', 'false')
   const git = (action, message, files) => api('POST', `/api/git/${action}`, { cwd: repo, message, files })
   const info = async () => (await api('GET', `/api/git?cwd=${encodeURIComponent(repo)}`)).json()
   fs.writeFileSync(path.join(repo, 'a.txt'), 'one')
@@ -293,9 +295,10 @@ test('the git panel saves a snapshot, publishes the branch and pulls', async () 
   assert.equal((await git('push')).status, 200, 'first push publishes the branch')
   assert.deepEqual([(await info()).upstream, (await info()).ahead], [true, 0])
   // Someone else pushes; pull brings it in.
-  await sh(HOME, 'clone', '-q', remote, other)
+  await sh(HOME, 'clone', '-q', '-c', 'core.autocrlf=false', remote, other)
   await sh(other, 'config', 'user.email', 'o@o')
   await sh(other, 'config', 'user.name', 'o')
+  await sh(other, 'config', 'core.autocrlf', 'false')
   fs.writeFileSync(path.join(other, 'b.txt'), 'two')
   await sh(other, 'add', '-A')
   await sh(other, 'commit', '-qm', 'add b')
@@ -423,7 +426,7 @@ test('studios read and write files only inside the project', async () => {
   fs.writeFileSync(path.join(root, 'src', 'a.ts'), 'export const a = 1\n')
   fs.writeFileSync(path.join(root, 'README.md'), '# hi\n')
   fs.writeFileSync(path.join(HOME, 'secret.txt'), 'nope')
-  fs.symlinkSync(HOME, path.join(root, 'escape'))
+  fs.symlinkSync(HOME, path.join(root, 'escape'), 'junction') // a junction needs no admin rights on Windows
   const q = (what, p = '') => api('GET', `/api/files/${what}?root=${encodeURIComponent(root)}&path=${encodeURIComponent(p)}`)
   const write = (body) => api('POST', '/api/files/write', { root, ...body })
   const tree = await (await q('tree')).json()
@@ -445,7 +448,9 @@ test('a question is only answered while it is still the one on screen', async ()
   assert.equal((await answer('nothing-asked', 0)).status, 409) // no menu on screen
 
   const menu = 'Do you want to proceed?\\n❯ 1. Yes\\n  2. No\\n'
-  ws.send(JSON.stringify({ t: 'i', d: `clear; printf '${menu}'; cat >/dev/null\r` }))
+  // Windows consoles run PowerShell: the same menu, then a read that waits.
+  const print = WIN ? `cls; Write-Host "${menu.replaceAll('\\n', '`n')}"; [Console]::In.ReadToEnd()\r` : `clear; printf '${menu}'; cat >/dev/null\r`
+  ws.send(JSON.stringify({ t: 'i', d: print }))
   const ask = parseAsk('Do you want to proceed?\n❯ 1. Yes\n  2. No\n')
   assert.ok(await until(async () => (await tail('choose-1')).includes('2. No'))) // printed, before going further
   await sleep(300)
@@ -488,7 +493,8 @@ test('a flooding console is paused until the page catches up, and never for ever
     if (ack) ws.send(JSON.stringify({ t: 'a', n: m.length }))
   })
   await sleep(300)
-  ws.send(JSON.stringify({ t: 'i', d: 'yes xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\r' }))
+  const flood = WIN ? 'while ($true) { "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx" }\r' : 'yes xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\r'
+  ws.send(JSON.stringify({ t: 'i', d: flood }))
   // No acknowledgement: output stops near the high mark instead of growing without limit.
   await sleep(1500)
   const held = got

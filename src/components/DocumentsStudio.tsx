@@ -160,7 +160,7 @@ export function DocumentsStudio() {
                 onChange={(e) => setAsk(e.target.value)}
                 onKeyDown={(e) => e.key === 'Enter' && (e.metaKey || e.ctrlKey) && e.currentTarget.form?.requestSubmit()}
               />
-              <button className="send" disabled={!ask.trim() || !!running} title="Write it (⌘↵)">
+              <button className="send" disabled={!ask.trim() || !!running} title="Write it (Ctrl+Enter)">
                 <ArrowUp size={14} />
               </button>
             </form>

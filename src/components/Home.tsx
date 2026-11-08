@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { ArrowLeft, Folder, FolderGit2, FolderOpen, Plus, Search, X } from 'lucide-react'
 import { api } from '../api'
 import { consoles, useStore } from '../store'
-import { Spark } from './icons'
+import { ArgonMark } from './icons'
 import { ThemeToggle } from './Panels'
 
 export function Home() {
@@ -16,14 +16,14 @@ export function Home() {
       <div className="home-inner">
         <div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 18 }}>
-            <Spark size={26} color="var(--accent)" />
-            <span style={{ fontWeight: 600, fontSize: 15, flex: 1 }}>vibeboard</span>
+            <ArgonMark size={30} />
+            <span style={{ fontWeight: 600, fontSize: 16, flex: 1, letterSpacing: 0.2 }}>Argon</span>
             <ThemeToggle />
           </div>
           <h1>
-            One board for <em>your agents</em>.
+            Your agents, <em>working together</em>.
           </h1>
-          <div className="lead">Open a project folder and your coding agents work side by side.</div>
+          <div className="lead">Open a project folder and a team of coding agents plans, builds and reviews it side by side.</div>
         </div>
 
         {recent.length > 0 && (
