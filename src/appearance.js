@@ -89,11 +89,14 @@ export function look() {
   const cur = S.data.settings.appearance || {};
   // migrate the first personalization version
   if (cur.bg) { cur.pattern = cur.bg === 'grid' ? 'grid' : cur.bg === 'plain' ? 'none' : 'dots'; delete cur.bg; }
-  for (const k of ['backdrop', 'wallDim', 'wallBlur', 'auroraMotion']) delete cur[k]; // backgrounds are solid colors only
+  for (const k of ['wallDim', 'wallBlur', 'auroraMotion']) delete cur[k]; // backgrounds are solid colors only
+  if (cur.backdrop != null && !['off', 'mica', 'acrylic'].includes(cur.backdrop)) delete cur.backdrop; // old wallpaper setting; the new one is Windows blur
   if (cur.corners && cur.radius == null) { cur.radius = { rounded: 14, soft: 10, sharp: 4 }[cur.corners] ?? 14; delete cur.corners; }
   if ((cur.glassV || 1) < 2) { Object.assign(cur, { blur: 2, tint: 12, refractStrength: 70, aberration: 25, glassV: 2 }); if (cur.glass === 'frosted') cur.glass = 'liquid'; } // clear glass
-  S.data.settings.appearance = { ...defaults(), ...cur };
-  return S.data.settings.appearance;
+  // Fill in missing keys on the same object: callers hold on to it and change it, so it must never be swapped for a copy.
+  const d = defaults(); for (const k of Object.keys(d)) if (!(k in cur)) cur[k] = d[k];
+  S.data.settings.appearance = cur;
+  return cur;
 }
 
 // ---- color helpers ----
