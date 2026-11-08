@@ -23,17 +23,17 @@
     <button id="tab-add" class="icon-btn nodrag" title="New workspace (open a folder)">+</button>
     <div id="mode-seg" class="mode-seg nodrag" role="tablist" aria-label="Mode">
       <span class="ms-pill"></span>
-      <button data-mode="board" role="tab" title="Board: a free canvas for agents, notes and tiles (Ctrl+.)"><span class="ms-ico">⬚</span>Board</button>
-      <button data-mode="pipe" role="tab" title="Pipeline: stages wired together, agents hand work down the line (Ctrl+.)"><span class="ms-ico">⧉</span>Pipeline</button>
+      <button data-mode="board" role="tab" title="Board: a free canvas for agents, notes and tiles (Ctrl+.)"><span class="ms-ico" data-ico="board" data-size="15"></span>Board</button>
+      <button data-mode="pipe" role="tab" title="Pipeline: stages wired together, agents hand work down the line (Ctrl+.)"><span class="ms-ico" data-ico="pipeline" data-size="15"></span>Pipeline</button>
     </div>
     <div class="spacer"></div>
     <button id="cmd-open" class="cmd-trigger nodrag" title="Command bar (Ctrl+K)">
       <span class="cmd-ico">›_</span><span class="cmd-text">Tell your agents…</span><kbd>Ctrl K</kbd>
     </button>
     <div class="top-actions nodrag">
-      <button class="icon-btn" data-panel="usage" title="Usage and tokens">◔</button>
-      <button class="icon-btn" data-panel="memory" title="Project memory">✦</button>
-      <button class="icon-btn" data-panel="settings" title="Settings">⚙</button>
+      <button class="icon-btn" data-panel="usage" title="Usage and tokens" data-ico="usage" data-size="17"></button>
+      <button class="icon-btn" data-panel="memory" title="Project memory" data-ico="memory" data-size="17"></button>
+      <button class="icon-btn" data-panel="settings" title="Settings" data-ico="settings" data-size="17"></button>
       <button class="icon-btn" id="mission-toggle" title="Mission map (Ctrl+M)"><svg class="map-ico" viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" stroke-linecap="round"><path d="M3 6.5 9 4l6 2.5L21 4v13.5L15 20l-6-2.5L3 20z"/><path d="M9 4v13.5M15 6.5V20"/><path d="m11.2 10.4 1.6 1.6m0-1.6-1.6 1.6" stroke-width="1.6"/></svg></button>
     </div>
   </header>
@@ -41,37 +41,39 @@
   <div id="main">
     <aside id="dock">
       <div class="dock-group" data-only="board">
-        <button class="tool active" data-tool="select" title="Select / move (V)">⬉</button>
-        <button class="tool" data-tool="pen" title="Ink (P)">✎</button>
-        <button class="tool" data-tool="erase" title="Eraser (E)">⌫</button>
+        <button class="tool active" data-tool="select" title="Select / move (V)" data-ico="select"></button>
+        <button class="tool" data-tool="pen" title="Ink (P)" data-ico="pen"></button>
+        <button class="tool" data-tool="erase" title="Eraser (E)" data-ico="erase"></button>
       </div>
       <div class="dock-sep" data-only="board"></div>
       <div class="dock-group">
-        <button class="add" data-add="console" title="New agent console (N)"><span>›_</span></button>
+        <button class="add" data-add="console" title="New agent console (N)" data-ico="console"></button>
       </div>
       <div class="dock-group" data-only="pipe">
-        <button class="add" data-pipe="stage" title="New stage (S)">◇</button>
-        <button class="add accent run" data-pipe="run" title="Run the pipeline (Ctrl+Enter)">▶</button>
+        <button class="add" data-pipe="stage" title="New stage (S)" data-ico="stage"></button>
+        <button class="add accent run" data-pipe="run" title="Run the pipeline (Ctrl+Enter)" data-ico="play"></button>
       </div>
       <div class="dock-group" data-only="board">
-        <button class="add" data-add="note" title="Sticky note">▤</button>
-        <button class="add" data-add="checklist" title="Checklist">☑</button>
-        <button class="add" data-add="kanban" title="Kanban board">▥</button>
-        <button class="add" data-add="calendar" title="Calendar">▦</button>
-        <button class="add" data-add="text" title="Text label">T</button>
-        <button class="add" data-add="web" title="Web tile (localhost preview)">◍</button>
-        <button class="add" data-add="files" title="Files">❐</button>
-        <button class="add" data-add="git" title="Git card">⑂</button>
-        <button class="add" data-add="group" title="Group (G): frame the selected tile, then drop more in">⬚</button>
+        <button class="add" data-add="note" title="Sticky note" data-ico="note"></button>
+        <button class="add" data-add="checklist" title="Checklist" data-ico="checklist"></button>
+        <button class="add" data-add="kanban" title="Kanban board" data-ico="kanban"></button>
+        <button class="add" data-add="calendar" title="Calendar" data-ico="calendar"></button>
+        <button class="add" data-add="text" title="Text label" data-ico="text"></button>
+        <button class="add" data-add="web" title="Web tile (localhost preview)" data-ico="web"></button>
+        <button class="add" data-add="files" title="Files" data-ico="files"></button>
+        <button class="add" data-add="git" title="Git card" data-ico="git"></button>
+        <button class="add" data-add="group" title="Group (G): frame the selected tile, then drop more in" data-ico="group"></button>
       </div>
       <div class="dock-sep" data-only="board"></div>
       <div class="dock-group" data-only="board">
-        <button class="add" data-add="presets" title="Team presets: start a wired team (Plan › Build › Review and more)">⧉</button>
-        <button class="add accent" data-add="manager" title="Manager: wire it to groups and terminals, give it a goal, it runs them and reports back">◎</button>
+        <button class="add" data-add="presets" title="Team presets: start a wired team (Plan › Build › Review and more)" data-ico="presets"></button>
+        <button class="add accent" data-add="prompter" title="Prompter: write the prompt, give each agent or group its task, then Run. Wire it to the first agent and the wires carry the work on" data-ico="prompter"></button>
+        <button class="add" data-add="manager" title="Manager: watches the team and reports what each agent or group is doing" data-ico="manager"></button>
+        <button class="add" data-add="secretary" title="Secretary: the output at the end. Collects the summary, links and proof when the team finishes" data-ico="secretary"></button>
       </div>
       <div class="dock-fill"></div>
       <div class="dock-group">
-        <button class="tool" id="fit-all" title="Fit everything (F)">⤢</button>
+        <button class="tool" id="fit-all" title="Fit everything (F)" data-ico="fit"></button>
       </div>
     </aside>
 

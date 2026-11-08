@@ -9,9 +9,24 @@ export let tool = 'select';
 export const boardHooks = { items: null };
 const MIN_Z = 0.15, MAX_Z = 2.5;
 
+// Sharp at any zoom, like LODs. While you pan or zoom the board is one GPU layer, which the browser keeps
+// as a bitmap drawn at the zoom it had when the layer was made, so zooming in made text blurry.
+// So: redraw the layer whenever the zoom has moved a step (25%) past what it was drawn at, and once more
+// when you stop, which redraws everything at full sharpness for exactly the zoom you are at.
+let rasterZ = 0, lodIdle = 0, lodFlip = 0;
+function redraw(el, z) { rasterZ = z; el.style.willChange = 'auto'; cancelAnimationFrame(lodFlip); lodFlip = requestAnimationFrame(() => { el.style.willChange = 'transform'; }); }
+function lod(el, z) {
+  if (!rasterZ) rasterZ = z;
+  if (z > rasterZ * 1.25 || z < rasterZ / 1.6) redraw(el, z);
+  clearTimeout(lodIdle);
+  lodIdle = setTimeout(() => { if (Math.abs(z - rasterZ) > 0.001 || el.dataset.sharp !== String(z)) { el.dataset.sharp = String(z); redraw(el, z); } }, 160);
+}
+
 export function applyView() {
   const v = ws().view;
-  world().style.transform = `translate(${v.x}px, ${v.y}px) scale(${v.z})`;
+  const el = world();
+  el.style.transform = `translate(${v.x}px, ${v.y}px) scale(${v.z})`;
+  lod(el, v.z);
   const b = board();
   const g = (+look().patternSize || 24) * v.z;
   b.style.backgroundSize = `${g}px ${g}px`;

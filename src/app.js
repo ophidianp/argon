@@ -11,6 +11,8 @@ import { initManager } from './manager.js';
 import { initTeamwork, presetMenu } from './teamwork.js';
 import { initMissionMap, openMissionMap } from './missionmap.js';
 import { initFlowDots } from './flowdots.js';
+import { initPace } from './pace.js';
+import { paintIcons } from './icons.js';
 import { openOnboarding } from './onboarding.js';
 import { initPipeline, afterMount, applyMode, setMode, inPipe, toggleRun, addStage, pipeSpawnOpts, dropWorkspace } from './pipeline.js';
 import { setMorphSource } from './ui.js';
@@ -49,8 +51,10 @@ async function boot() {
   afterMount();
   switchWs(ws().id);
   startTicking();
+  paintIcons();
   initTeamwork();  // console wires, presets, question buttons, context gauge, dictation
   initMissionMap();
+  initPace();
   initFlowDots();
   renderMission();
 
@@ -129,7 +133,7 @@ function wireUi() {
   document.querySelectorAll('#dock [data-add]').forEach(b => b.onclick = (e) => {
     const t = b.dataset.add;
     if (t === 'console') { const r = b.getBoundingClientRect(); spawnMenu(r.right + 8, r.top, inPipe() ? pipeSpawnOpts() : {}); }
-    else if (t === 'manager') addNode('manager');
+    else if (t === 'manager' || t === 'prompter' || t === 'secretary') addNode(t);
     else if (t === 'presets') { const r = b.getBoundingClientRect(); presetMenu(r.right + 8, r.top); }
     else if (t === 'group') addGroup();
     else addNode(t);

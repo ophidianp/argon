@@ -7,6 +7,7 @@ import { showMenu, askText } from './ui.js';
 import { agentByKey } from './agents.js';
 import { isTyping } from './board.js';
 import { openCommandBar } from './panels.js';
+import { paced } from './pace.js';
 
 const NS = 'http://www.w3.org/2000/svg';
 const isPipe = (n) => !!(n && n.data && n.data.space === 'pipe');
@@ -46,11 +47,19 @@ function brief(w, wire, text) {
   return `${from} finished and handed this to you (${to}):\n\n${text}\n\nContinue from here.`;
 }
 
+// Tasks the Prompter left for agents further down a chain: they ride along with the first handoff that reaches them.
+const briefs = new Map();
+export function setBrief(id, text) { briefs.set(id, text); }
+export function clearBriefs(ids) { for (const id of ids) briefs.delete(id); }
+
 function deliver(w, wire, toId, text) {
   const dst = rt(toId);
   if (!dst || !dst.alive) { toast(`${titleOf(toId)} is not running, so the handoff waits`, 'warn'); wire.pending = { to: toId, text }; return; }
   if (statusOf(toId) === 'working' || statusOf(toId) === 'needs') { wire.pending = { to: toId, text }; return; }
   wire.pending = null;
+  const b = briefs.get(toId); if (b) { briefs.delete(toId); text = `${b}
+
+${text}`; }
   sendTo(toId, text);
   packet(w, wire, toId === wire.from);
   emit('handoff', wire.from, wire.to, wire.mode);
@@ -68,6 +77,7 @@ function fire(w, wire, now) {
   if (wire.autoCount > MAX_AUTO) { wire.paused = true; toast(`Paused ${titleOf(wire.from)} → ${titleOf(wire.to)}: it fired ${MAX_AUTO} times without you. Click its chip to resume.`, 'warn'); save(); return; }
   if (wire.mode === 'context') wire.used = true;
   if (wire.mode === 'review') { wire.waiting = 'reviewer'; wire.state = 'reviewing'; }
+  else wire.handed = true; // the source finished and handed its work over: the wire turns green
   deliver(w, wire, wire.to, brief(w, wire, text));
   save();
 }
@@ -178,9 +188,13 @@ function draw() {
     if (!p) { p = document.createElementNS(NS, 'path'); p.dataset.w = wire.id; s.append(p); }
     const [p1, p2, dir] = ends(a, b), d = curve(p1, p2, dir);
     if (p.getAttribute('d') !== d) p.setAttribute('d', d);
-    const busy = wire.pending || wire.waiting || statusOf(wire.from) === 'working';
-    p.setAttribute('class', 'hwire m-' + wire.mode + (busy ? ' flow' : '') + (wire.paused ? ' paused' : '') + (wire.state === 'approved' ? ' ok' : ''));
-    p.style.setProperty('--wc', colorOf(wire.from));
+    const working = statusOf(wire.from) === 'working';
+    if (working && wire.handed) wire.handed = false; // started on something new
+    // Orange and quick while the source works; green once it has handed over (dots keep moving until the handoff lands).
+    const ok = wire.state === 'approved' || ((wire.handed || wire.pending) && !working);
+    const busy = wire.waiting || working || (ok && wire.pending);
+    p.setAttribute('class', 'hwire m-' + wire.mode + (busy ? ' flow' : '') + (wire.paused ? ' paused' : '') + (ok ? ' ok' : ''));
+    p.style.setProperty('--wc', ok ? 'var(--ok)' : colorOf(wire.from));
     let chip = L.querySelector(`:scope > .wire-chip[data-w="${wire.id}"]`);
     if (!chip) {
       chip = h('button', { class: 'wire-chip', 'data-w': wire.id, title: 'Wire type: click to change' });
@@ -196,7 +210,6 @@ function draw() {
   s.querySelectorAll('path[data-w]').forEach((p) => { if (!keep.has(p.dataset.w)) p.remove(); });
   L.querySelectorAll(':scope > .wire-chip').forEach((c) => { if (!keep.has(c.dataset.w)) c.remove(); });
 }
-function loop() { try { draw(); } catch (e) { console.error(e); } requestAnimationFrame(loop); }
 
 function packet(w, wire, back) {
   if (!animOn()) return;
@@ -285,7 +298,7 @@ export function spawnTeam(p, agentKey) {
   }
   for (const [a, b, mode, pattern] of p.wires) { const wr = addWire(w, nodes[a].id, nodes[b].id, mode); if (wr && pattern) wr.pattern = pattern; }
   if (p.manager && g) {
-    const m = addNode('manager', {}, { x: g.x + g.w + 120, y: g.y });
+    const m = addNode('prompter', {}, { x: g.x - 520, y: g.y });
     m.data.links = [g.id]; save(); emit('nodes');
   }
   save(); emit('nodes');
@@ -518,7 +531,7 @@ export function initTeamwork() {
   });
   setInterval(engine, 500);
   setInterval(pollContext, 5000); setTimeout(pollContext, 1500);
-  requestAnimationFrame(loop);
+  paced(draw);
   initDictation();
   const pb = document.querySelector('#dock [data-add="presets"]');
   if (pb) pb.onclick = (e) => { const r = pb.getBoundingClientRect(); presetMenu(r.right + 8, r.top); };

@@ -1,5 +1,6 @@
 // Mission map, command bar, loops, handoffs, memory, usage, settings, agents setup.
 import { S, ws, save, emit, on, h, esc, toast, uid, basename, findNode, consoles } from './state.js';
+import { iconEl } from './icons.js';
 import { agentList, agentByKey, AGENTS } from './agents.js';
 import { addNode, removeNode, select, tileEl } from './tiles.js';
 import { statusOf, sendTo, startHandoff, rt, refitAll, setFontSize } from './consoles.js';
@@ -323,6 +324,8 @@ async function runCommand(cmd, args, arg = '') {
   const w = ws();
   switch (cmd) {
     case '/manager': addNode('manager'); break;
+    case '/prompter': addNode('prompter'); break;
+    case '/secretary': addNode('secretary'); break;
     case '/welcome': window.__argonOnboard && window.__argonOnboard(); break;
     case '/fit': fitAll(); break;
     case '/agents': openAgentsSetup(); break;
@@ -562,7 +565,8 @@ function lookPane(ctx) {
     ...group('', row('Your name', 'Argon greets you on an empty board.', name), row('Greeting', 'Show “Good evening” on empty boards.', switchCtl(() => L.greeting, (v) => { L.greeting = v; changed(); }))),
     h('div', { class: 'set-group-title' }, 'Looks'), looks,
     h('div', { class: 'set-group-title' }, 'Theme'), themes,
-    ...group('Accent color', stackRow('Accent', 'Used for highlights, the working glow and buttons.', sw)),
+    ...group('Accent color', stackRow('Accent', 'Used for highlights, the working glow and buttons.', sw),
+      row('Tint the window', 'How much the accent colors the background, panels and lines. 0 keeps the theme neutral.', rangeCtl(0, 100, 1, () => L.accentTint ?? 55, (v, done) => { L.accentTint = v; applyAppearance(); if (done) save(); }, (v) => v + '%'))),
   ];
 }
 
@@ -744,9 +748,9 @@ function dataPane({ changed, rerender }) {
 }
 
 const PANES = [
-  ['look', '◐', 'Look', lookPane], ['glass', '◇', 'Liquid glass', glassPane], ['background', '▨', 'Background', backgroundPane],
-  ['terminal', '›_', 'Terminal', terminalPane], ['layout', '▣', 'Layout', layoutPane], ['motion', '≈', 'Motion', motionPane],
-  ['consoles', '●', 'Consoles', consolesPane], ['accounts', '◎', 'Agents', accountsPane], ['data', '⌘', 'Data', dataPane],
+  ['look', 'look', 'Look', lookPane], ['glass', 'glass', 'Liquid glass', glassPane], ['background', 'background', 'Background', backgroundPane],
+  ['terminal', 'terminal', 'Terminal', terminalPane], ['layout', 'layout', 'Layout', layoutPane], ['motion', 'motion', 'Motion', motionPane],
+  ['consoles', 'consoles', 'Consoles', consolesPane], ['accounts', 'agents', 'Agents', accountsPane], ['data', 'data', 'Data', dataPane],
 ];
 
 export function openSettings(paneKey) {
@@ -779,7 +783,7 @@ export function openSettings(paneKey) {
     if (!keepScroll) pane.classList.add('in');
     pane.scrollTop = keepScroll ? top : 0;
   };
-  for (const [key, ico, label] of PANES) nav.append(h('button', { 'data-k': key, onclick: () => show(key) }, h('i', {}, ico), label));
+  for (const [key, ico, label] of PANES) nav.append(h('button', { 'data-k': key, onclick: () => show(key) }, h('i', {}, iconEl(ico, 16)), label));
   modal({ title: 'Settings', sub: 'Make Argon yours. Everything previews live.', cls: 'settings', peek: true, body: [nav, pane] });
   show(lastPane);
   new ResizeObserver(() => movePill(true)).observe(nav);

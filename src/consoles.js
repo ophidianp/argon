@@ -30,7 +30,7 @@ export function mountConsole(node, body, w) {
 
   const term = new window.Terminal({
     ...terminalOptions(),
-    scrollback: 8000,
+    scrollback: 4000,
     allowProposedApi: true,
     allowTransparency: true,
     macOptionIsMeta: true,

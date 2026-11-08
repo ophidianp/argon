@@ -1,5 +1,6 @@
 // Tiles on the board: consoles, notes, checklists, kanban, calendar, text, web, files, git, images.
 import { S, ws, save, uid, emit, on, h, esc, toast, basename, findNode } from './state.js';
+import { iconEl, hasIcon } from './icons.js';
 import { viewCenter, toWorld, tool } from './board.js';
 import { mountConsole, disposeConsole, rt, restartConsole, lastLines, sendTo, queueFit } from './consoles.js';
 import { agentByKey } from './agents.js';
@@ -15,7 +16,7 @@ const SIZES = {
   console: [640, 400], note: [240, 220], checklist: [280, 300], kanban: [620, 360], calendar: [420, 360],
   text: [320, 70], web: [720, 480], files: [620, 420], git: [320, 360], image: [360, 260], group: [620, 420],
 };
-const ICONS = { console: '›_', note: '▤', checklist: '☑', kanban: '▥', calendar: '▦', text: 'T', web: '◍', files: '❐', git: '⑂', image: '▣', group: '⬚' };
+const ICONS = { console: 'console', note: 'note', checklist: 'checklist', kanban: 'kanban', calendar: 'calendar', text: 'text', web: 'web', files: 'files', git: 'git', image: 'image', group: 'group' };
 // Other modules (manager.js) add their own tile types here.
 const EXTRA = {};
 export function registerTile(type, def) { EXTRA[type] = def; SIZES[type] = def.size; ICONS[type] = def.icon; RENDER[type] = def.render; }
@@ -247,7 +248,8 @@ function createTile(node, w) {
   const extras = h('span', { class: 'row', style: { gap: '6px' } });
   const btns = h('span', { class: 'row', style: { gap: '1px' } });
   const close = h('button', { class: 'tile-btn danger', title: 'Close', onclick: (e) => { e.stopPropagation(); removeNode(node.id); } }, '✕');
-  head.append(h('span', { class: 'tile-ico' }, ICONS[node.type] || '•'), titleEl, extras, btns, close);
+  const ico = h('span', { class: 'tile-ico' }); if (hasIcon(ICONS[node.type])) ico.append(iconEl(ICONS[node.type], 15)); else ico.textContent = ICONS[node.type] || '•';
+  head.append(ico, titleEl, extras, btns, close);
 
   // rename
   titleEl.addEventListener('dblclick', (e) => {

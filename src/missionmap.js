@@ -32,10 +32,10 @@ function model() {
   };
   for (const n of cons) { const t = teamOf(n); if (!teams.has(t.key)) teams.set(t.key, { ...t, members: [] }); teams.get(t.key).members.push(n); }
   for (const t of teams.values()) t.members.sort((a, b) => (stOf(a) === 'needs') - (stOf(b) === 'needs') ? (stOf(b) === 'needs') - (stOf(a) === 'needs') : a.x - b.x || a.y - b.y);
-  const leads = w.nodes.filter((n) => n.type === 'manager').map((m) => {
+  const leads = w.nodes.filter((n) => n.type === 'prompter').map((m) => {
     const keys = new Set();
     for (const id of m.data.links || []) { if (teams.has(id)) keys.add(id); else { const c = cons.find((x) => x.id === id); if (c) keys.add(teamOf(c).key); } }
-    return { key: m.id, name: m.title, node: m, sub: m.data.goal ? m.data.goal.slice(0, 40) : 'Manager', teams: keys };
+    return { key: m.id, name: m.title, node: m, sub: m.data.goal ? m.data.goal.slice(0, 40) : 'Prompter', teams: keys };
   });
   const owned = new Set(leads.flatMap((l) => [...l.teams]));
   const loose = [...teams.keys()].filter((k) => !owned.has(k));

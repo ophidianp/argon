@@ -78,6 +78,7 @@ export function defaults() {
     name: '', greeting: true,
     theme: 'midnight', accent: '#9a83d4',
     glass: 'liquid', blur: 2, tint: 12, refraction: true, refractStrength: 70, aberration: 25, glassV: 2, specular: true, glassTiles: true,
+    accentTint: 55,
     bgColor: '', pattern: 'dots', patternSize: 24, backdrop: 'off',
     termScheme: 'auto', termFont: 'Cascadia Code', lineHeight: 1.15, letterSpacing: 0, cursor: 'block', cursorBlink: true, termOpacity: 100, termPadding: 6,
     layout: 'floating', dock: 'left', density: 'comfortable', radius: 14, uiFont: 'Segoe UI Variable Text', uiScale: 100, shadow: 60,
@@ -143,10 +144,22 @@ const GLASS = {
 
 const SPEED = { relaxed: 1.45, normal: 1, snappy: 0.62 };
 
+// Mixes the accent into the theme's backgrounds, panels and lines so the whole window takes on its color.
+const TINT = { bg: .16, bg2: .17, panel: .19, panel2: .21, panel3: .23, line: .3, line2: .32, muted: .14, dim: .14 };
+export function tintTheme(t, rgb, amount) {
+  const k = clamp(+(amount ?? 55) || 0, 0, 100) / 100; if (!k) return t;
+  const out = { ...t }, f = t.light ? .45 : 1;
+  for (const [key, w] of Object.entries(TINT)) {
+    const c = hexToRgb(t[key]), m = w * k * f;
+    out[key] = '#' + c.map((v, i) => Math.round(v * (1 - m) + rgb[i] * m).toString(16).padStart(2, '0')).join('');
+  }
+  return out;
+}
+
 export function applyAppearance() {
   const L = look();
-  const t = THEMES[L.theme] || THEMES.midnight;
   const p = palette(L.accent);
+  const t = tintTheme(THEMES[L.theme] || THEMES.midnight, p.rgb, L.accentTint);
   const g = GLASS[L.glass] || GLASS.liquid;
   const root = document.documentElement.style;
   const body = document.body;
