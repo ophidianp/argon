@@ -45,6 +45,13 @@ The owner is the only user and tester. They write casually and fast. Answer in p
 - Boards: `%APPDATA%\Argon\argon-state.json` (+ up to 25 backups in `backups\`). Shared by both shells.
 - Per project: `.argon/` in the workspace folder (git-ignored): `board/BOARD.md`, `board/inbox/`, `board/results/`, `manager/<run>/<agent>.md` reports, handoff briefs.
 
+## The team in the argon workspace
+Left to right on the board: **Prompter** → **researcher** → **Build** group (**claude-1** + **builder**) → **shipper** → **Secretary**, with the **Manager** under the Prompter. Wires hand work on when each step is done.
+- **researcher**: changes no code. Finds the files involved and writes a step-by-step plan to `.argon/research.md`.
+- **Build** group: builds from `.argon/research.md`. Split the work between you and say who takes what, so you don't edit the same files, then test in the real app as described above.
+- **shipper**: final checkout. Reads the whole diff, syntax-checks changed modules, builds, fixes small things, then commits and pushes to `origin tauri`. Reports anything it couldn't fix.
+If your console's title is one of these, that's your role when a task comes from the Prompter.
+
 ## The board for agents (you can use it now)
 Read `.argon/board/BOARD.md` in the project folder. It lists every tile with its id, position and contents, the groups, agents and wires, and the exact JSON to write into `.argon/board/inbox/` to add notes, checklists, kanban boards, text, web previews or file managers, edit or move tiles, group them, wire agents, message another agent, or delete tiles (never agent consoles). Results come back in `.argon/board/results/`.
 
