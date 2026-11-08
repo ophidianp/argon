@@ -525,91 +525,25 @@ function demoTheme(host) {
 const DEMOS = { command: demoCommand, loop: demoLoop, handoff: demoHandoff, theme: demoTheme };
 document.querySelectorAll("[data-demo]").forEach((host) => DEMOS[host.dataset.demo]?.(host));
 
-/* ---------- Liquid glass lens + chromatic aberration (Chromium only; elsewhere the glass is blur only) ---------- */
+/* ---------- Liquid glass: refraction + chromatic aberration (Chromium), glare, gliding lens (assets/liquid-glass.js) ---------- */
 (() => {
-  const isChromium = !!(navigator.userAgentData && navigator.userAgentData.brands && navigator.userAgentData.brands.some((b) => /Chromium/i.test(b.brand)));
-  if (!isChromium || matchMedia("(prefers-reduced-motion: reduce)").matches) return;
-  document.documentElement.dataset.lens = "1";
-  let AB = 0.25;
-  try { const v = localStorage.getItem("argon-ab"); if (v !== null && !isNaN(+v)) AB = +v / 100; } catch (_) {}
-  const NS = "http://www.w3.org/2000/svg";
-  const svg = document.createElementNS(NS, "svg");
-  svg.setAttribute("aria-hidden", "true");
-  svg.style.cssText = "position:absolute;width:0;height:0;overflow:hidden;pointer-events:none";
-  const defs = document.createElementNS(NS, "defs");
-  svg.append(defs);
-  document.body.append(svg);
-  let seq = 0;
-
-  function maps(w, h, radius) {
-    const k = Math.min(1, 360 / Math.max(w, h));
-    const W = Math.max(4, Math.round(w * k)), H = Math.max(4, Math.round(h * k)), R = radius * k;
-    const bezel = Math.max(8 * k, Math.min(R * 1.25 + 6 * k, Math.min(W, H) / 2, 42 * k));
-    const cv = document.createElement("canvas"); cv.width = W; cv.height = H;
-    const ctx = cv.getContext("2d");
-    const a = ctx.createImageData(W, H), b = ctx.createImageData(W, H);
-    const cx = W / 2, cy = H / 2, hx = W / 2 - R, hy = H / 2 - R;
-    for (let y = 0; y < H; y++) {
-      const py = y + 0.5 - cy, ay = Math.abs(py), sy = Math.sign(py) || 1;
-      for (let x = 0; x < W; x++) {
-        const px = x + 0.5 - cx, ax = Math.abs(px), sx = Math.sign(px) || 1;
-        const qx = ax - hx, qy = ay - hy;
-        let sd, nx, ny;
-        if (qx > 0 && qy > 0) { const l = Math.hypot(qx, qy); sd = l - R; nx = (qx / l) * sx; ny = (qy / l) * sy; }
-        else if (qx > qy) { sd = qx - R; nx = sx; ny = 0; }
-        else { sd = qy - R; nx = 0; ny = sy; }
-        const i = (y * W + x) * 4, inside = -sd;
-        const m = inside >= 0 && inside < bezel ? Math.pow(1 - inside / bezel, 1.5) : 0;
-        a.data[i] = 128 - nx * m * 127; a.data[i + 1] = 128 - ny * m * 127; a.data[i + 2] = 128; a.data[i + 3] = 255;
-        const rx = px / cx, ry = py / cy, rr = Math.min(1, Math.hypot(rx, ry));
-        const base = inside >= 0 ? 0.55 * Math.pow(rr, 1.4) : 0;
-        const ex = Math.max(-1, Math.min(1, rx * base + nx * m * 0.65)), ey = Math.max(-1, Math.min(1, ry * base + ny * m * 0.65));
-        b.data[i] = 128 + ex * 127; b.data[i + 1] = 128 + ey * 127; b.data[i + 2] = 128; b.data[i + 3] = 255;
-      }
-    }
-    ctx.putImageData(a, 0, 0); const lens = cv.toDataURL();
-    ctx.putImageData(b, 0, 0); return [lens, cv.toDataURL()];
-  }
-
-  function build(el, id, s) {
-    const w = Math.round(el.offsetWidth), h = Math.round(el.offsetHeight);
-    if (w < 10 || h < 10) return;
-    const r = Math.min(parseFloat(getComputedStyle(el).borderTopLeftRadius) || 0, w / 2, h / 2);
-    const [lens, disp] = maps(w, h, r);
-    const ab = (6 + s * 0.3) * AB * 2.6;
-    const only = (c) => ({ r: "1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0", g: "0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 1 0", b: "0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 1 0" })[c];
-    const holder = document.createElementNS(NS, "svg");
-    holder.innerHTML = `<filter id="${id}" x="0" y="0" width="${w}" height="${h}" filterUnits="userSpaceOnUse" primitiveUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
-<feImage href="${lens}" x="0" y="0" width="${w}" height="${h}" preserveAspectRatio="none" result="lm"/>
-<feImage href="${disp}" x="0" y="0" width="${w}" height="${h}" preserveAspectRatio="none" result="dm"/>
-<feDisplacementMap in="SourceGraphic" in2="lm" scale="${s}" xChannelSelector="R" yChannelSelector="G" result="lens"/>
-<feDisplacementMap in="lens" in2="dm" scale="${(-ab).toFixed(1)}" xChannelSelector="R" yChannelSelector="G" result="dr"/>
-<feColorMatrix in="dr" type="matrix" values="${only("r")}" result="r"/>
-<feDisplacementMap in="lens" in2="dm" scale="${(-ab / 2).toFixed(1)}" xChannelSelector="R" yChannelSelector="G" result="dg"/>
-<feColorMatrix in="dg" type="matrix" values="${only("g")}" result="g"/>
-<feColorMatrix in="lens" type="matrix" values="${only("b")}" result="b"/>
-<feBlend in="r" in2="g" mode="screen" result="rg"/><feBlend in="rg" in2="b" mode="screen"/></filter>`;
-    defs.querySelector("#" + id)?.remove();
-    defs.append(holder.firstElementChild);
-    el.style.setProperty("--lg-filter", `url(#${id})`);
-  }
-
-  const all = [];
-  const glassify = (el, s = 40) => {
-    const id = "lgf" + ++seq;
-    all.push([el, id, s]);
-    let t = 0, lw = 0, lh = 0;
-    new ResizeObserver(() => {
-      if (el.offsetWidth === lw && el.offsetHeight === lh) return;
-      lw = el.offsetWidth; lh = el.offsetHeight;
-      clearTimeout(t); t = setTimeout(() => build(el, id, s), 120);
-    }).observe(el);
-  };
+  const LG = window.LiquidGlass;
+  if (!LG) return;
+  if (LG.chromium) root.dataset.lens = "1";
+  // Strongest glass first: only the first 25 get the lens filter, the rest stay blur-only (keeps the GPU cool).
+  const tiers = [
+    [".site-header, .mock-top, .mmap, .hero-readout", 70],
+    [".demo, .release-panel", 55],
+    [".card, .platform, .fact", 50],
+    [".btn-ghost, .seg, .chipbtn, .theme-toggle, .menu-toggle, .copy-btn, .field-inline", 44],
+  ];
+  for (const [sel, s] of tiers) document.querySelectorAll(sel).forEach((el) => LG.glassify(el, s));
+  document.querySelectorAll(".mock").forEach((el) => LG.glassify(el, 0));
+  LG.init({ max: 25 });
+  document.querySelectorAll(".seg").forEach((c) => LG.attachLens(c, "button"));
+  document.querySelectorAll(".lab-tabs").forEach((c) => LG.attachLens(c, ".lab-tab"));
   let abT = 0;
-  window.addEventListener("argon:ab", (e) => {
-    AB = Math.max(0, Math.min(1, e.detail / 100));
-    cancelAnimationFrame(abT);
-    abT = requestAnimationFrame(() => all.forEach(([el, id, s]) => build(el, id, s)));
-  });
-  document.querySelectorAll(".site-header, .mock-top, .mmap, .hero-readout").forEach((el) => glassify(el, el.classList.contains("site-header") ? 60 : 44));
+  window.addEventListener("argon:ab", (e) => { cancelAnimationFrame(abT); abT = requestAnimationFrame(() => LG.setAberration(e.detail)); });
+  // phone menu grows out of its button
+  menuToggle?.addEventListener("click", () => { if (siteNav?.classList.contains("is-open")) LG.morphFrom(menuToggle, siteNav, 520); });
 })();

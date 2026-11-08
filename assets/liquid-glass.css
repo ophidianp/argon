@@ -1,0 +1,81 @@
+/* Liquid glass kit (from the Argon app, src/styles.css). Each site sets its own colours
+   through these variables (override them on :root or on any glass element). */
+:root {
+  --spring: linear(0, 0.0066, 0.0263 2.1%, 0.1023 4.4%, 0.2319 7.3%, 0.4103 10.6%, 0.6029 14.4%, 0.7663 18.3%, 0.8897 22.6%, 0.9582 26.6%, 1.0047 31.3%, 1.0272 36.7%, 1.0311 41.2%, 1.0219 48.3%, 1.0052 61.3%, 0.9989 77.7%, 1);
+  --lg-ease: var(--spring);
+  --g-tint: rgba(24, 20, 35, .42);
+  --g-tint-strong: rgba(24, 20, 35, .64);
+  --g-blur: 2px;            /* the app's clear glass: little blur, the lens does the work */
+  --g-blur-flat: 14px;      /* blur used where refraction isn't available (Firefox, Safari) */
+  --g-sat: 1.7;
+  --g-rim: 1;
+  --g-edge: rgba(255, 255, 255, .13);
+  --g-edge-dark: rgba(0, 0, 0, .35);
+  --g-shadow-a: .33;
+  --lens-bg: rgba(255, 255, 255, .10);
+  --lens-shadow: inset 0 1px 0 rgba(255, 255, 255, .22), inset 0 0 0 1px rgba(255, 255, 255, .10), 0 4px 14px -4px rgba(0, 0, 0, .35);
+}
+@media (prefers-reduced-motion: reduce) { :root { --spring: ease-out; } }
+
+@property --lg-filter { syntax: '*'; inherits: false; }
+
+/* zero specificity, so a site's own position: fixed / sticky wins */
+:where(.lg) { position: relative; }
+.lg {
+  isolation: isolate;
+  background: linear-gradient(180deg, rgba(255, 255, 255, calc(.05 * var(--g-rim))), rgba(255, 255, 255, 0) 45%), var(--g-tint);
+  -webkit-backdrop-filter: blur(var(--g-blur-flat)) saturate(var(--g-sat));
+  backdrop-filter: blur(var(--g-blur-flat)) saturate(var(--g-sat));
+  box-shadow:
+    inset 0 1px .5px rgba(255, 255, 255, calc(.34 * var(--g-rim))),
+    inset 0 -1px 1px rgba(255, 255, 255, calc(.07 * var(--g-rim))),
+    inset 0 0 0 1px var(--g-edge),
+    inset 0 0 14px rgba(255, 255, 255, calc(.06 * var(--g-rim))),
+    inset 0 -6px 14px -8px rgba(0, 0, 0, .22),
+    0 0 0 .5px var(--g-edge-dark),
+    0 2px 4px rgba(0, 0, 0, calc(var(--g-shadow-a) * .35)),
+    0 14px 40px -8px rgba(0, 0, 0, var(--g-shadow-a));
+}
+/* Chromium: refraction + chromatic aberration through the SVG filter */
+.lg-refract .lg { backdrop-filter: blur(var(--g-blur)) saturate(var(--g-sat)) var(--lg-filter, ) brightness(1.03); }
+/* a filtered element without a filter slot (over the cap) keeps the flat blur */
+.lg-refract .lg:not([style*="--lg-filter"]) { backdrop-filter: blur(var(--g-blur-flat)) saturate(var(--g-sat)); }
+
+/* specular rim */
+.lg::after {
+  content: ""; position: absolute; inset: 0; border-radius: inherit; padding: 1px; pointer-events: none; z-index: 3;
+  background: linear-gradient(var(--rim-angle, 128deg),
+    rgba(255, 255, 255, calc(.62 * var(--g-rim))) 0%, rgba(255, 255, 255, calc(.14 * var(--g-rim))) 18%, rgba(255, 255, 255, 0) 40%,
+    rgba(255, 255, 255, 0) 62%, rgba(255, 255, 255, calc(.1 * var(--g-rim))) 82%, rgba(255, 255, 255, calc(.42 * var(--g-rim))) 100%);
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor; mask-composite: exclude;
+}
+/* pointer glare */
+.lg::before {
+  content: ""; position: absolute; inset: 0; border-radius: inherit; pointer-events: none; z-index: -1; opacity: 0;
+  transition: opacity .4s;
+  background: radial-gradient(180px circle at var(--mx, 50%) var(--my, 0%), rgba(255, 255, 255, calc(.11 * var(--g-rim))), transparent 70%);
+}
+.lg.lg-hot::before { opacity: 1; }
+.lg-strong { background: linear-gradient(180deg, rgba(255, 255, 255, calc(.06 * var(--g-rim))), rgba(255, 255, 255, 0) 40%), var(--g-tint-strong); }
+.lg-bar { --rim-angle: 100deg; }
+
+/* springy press / hover for anything marked .lg-press */
+.lg-press { transition: transform .5s var(--spring), box-shadow .25s, background-color .2s, color .2s; }
+.lg-press:hover { transform: translateY(-1px) scale(1.03); }
+.lg-press:active { transform: scale(.95); transition-duration: .12s; }
+
+/* gliding hover lens */
+.lens {
+  position: absolute; left: 0; top: 0; width: 0; height: 0; border-radius: 999px; pointer-events: none; z-index: 0; opacity: 0;
+  background: var(--lens-bg); box-shadow: var(--lens-shadow);
+  transition: transform .5s var(--spring), width .5s var(--spring), height .5s var(--spring), opacity .22s;
+}
+.lens.on { opacity: 1; }
+.lens.snap { transition: opacity .22s; }
+:where(.lens ~ *) { position: relative; z-index: 1; }
+
+@media (prefers-reduced-motion: reduce) {
+  .lens, .lg-press { transition: opacity .2s; }
+  .lg-press:hover, .lg-press:active { transform: none; }
+}

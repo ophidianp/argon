@@ -501,6 +501,13 @@ body { background: var(--bg); }
 .terminal-block { border: 0; box-shadow: inset 0 0 0 1px rgba(255,255,255,.08), inset 0 1px 0 rgba(255,255,255,.12); }
 .step .num { background: var(--bubble); box-shadow: var(--bubble-shadow); border: 0; }
 
+/* Liquid glass kit (assets/liquid-glass.css) tuned to this site */
+:root { --g-sat: 1.15; --g-blur-flat: 6px; --lens-bg: var(--bubble); --lens-shadow: var(--bubble-shadow); }
+.mmap { --g-blur: 6px; }
+.site-header { --rim-angle: 100deg; }
+.lab-tabs .lens { border-radius: 16px; }
+.seg { position: relative; }
+
 /* Chromatic aberration slider (shown where the browser can bend what is behind glass) */
 .ab-ctl { display: none; align-items: center; gap: 10px; margin-left: auto; font: 500 13px var(--sans); color: var(--muted); }
 :root[data-lens="1"] .ab-ctl { display: inline-flex; }
