@@ -21,11 +21,6 @@
     </div>
     <nav id="tabs"></nav>
     <button id="tab-add" class="icon-btn nodrag" title="New workspace (open a folder)">+</button>
-    <div id="mode-seg" class="mode-seg nodrag" role="tablist" aria-label="Mode">
-      <span class="ms-pill"></span>
-      <button data-mode="board" role="tab" title="Board: a free canvas for agents, notes and tiles (Ctrl+.)"><span class="ms-ico" data-ico="board" data-size="15"></span>Board</button>
-      <button data-mode="pipe" role="tab" title="Pipeline: stages wired together, agents hand work down the line (Ctrl+.)"><span class="ms-ico" data-ico="pipeline" data-size="15"></span>Pipeline</button>
-    </div>
     <div class="spacer"></div>
     <button id="cmd-open" class="cmd-trigger nodrag" title="Command bar (Ctrl+K)">
       <span class="cmd-ico">›_</span><span class="cmd-text">Tell your agents…</span><kbd>Ctrl K</kbd>
@@ -48,10 +43,6 @@
       <div class="dock-sep" data-only="board"></div>
       <div class="dock-group">
         <button class="add" data-add="console" title="New agent console (N)" data-ico="console"></button>
-      </div>
-      <div class="dock-group" data-only="pipe">
-        <button class="add" data-pipe="stage" title="New stage (S)" data-ico="stage"></button>
-        <button class="add accent run" data-pipe="run" title="Run the pipeline (Ctrl+Enter)" data-ico="play"></button>
       </div>
       <div class="dock-group" data-only="board">
         <button class="add" data-add="note" title="Sticky note" data-ico="note"></button>

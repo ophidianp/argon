@@ -21,6 +21,7 @@ portable-pty = "0.9"
 window-vibrancy = "0.6"
 dirs = "6"
 chrono = { version = "0.4", default-features = false, features = ["clock", "std"] }
+trash = "5"
 
 [target.'cfg(windows)'.dependencies]
 winreg = "0.55"

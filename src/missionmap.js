@@ -2,7 +2,7 @@
 // with filters, search, and a detail panel to jump to, pause, stop or answer any console.
 import { S, ws, on, h, emit, save, toast } from './state.js';
 import { statusOf, sendTo, lastLines, rt, restartConsole } from './consoles.js';
-import { select, tileEl, groupTag } from './tiles.js';
+import { select, tileEl, groupTag, groupColor } from './tiles.js';
 import { flyTo } from './board.js';
 import { agentByKey } from './agents.js';
 import { openCommandBar } from './panels.js';
@@ -28,7 +28,7 @@ function model() {
       return s ? { key: 'st:' + s.id, name: s.title, color: 'var(--accent)', kind: 'stage', id: s.id } : { key: 'pipe', name: 'Pipeline (unassigned)', color: 'var(--muted)', kind: 'stage' };
     }
     const g = n.data.groupId && w.nodes.find((x) => x.id === n.data.groupId);
-    return g ? { key: g.id, name: g.title, color: g.data.color || 'var(--accent)', kind: 'group', id: g.id, node: g } : { key: 'none', name: 'Ungrouped', color: 'var(--muted)', kind: 'none' };
+    return g ? { key: g.id, name: g.title, color: groupColor(g.data.color), kind: 'group', id: g.id, node: g } : { key: 'none', name: 'Ungrouped', color: 'var(--muted)', kind: 'none' };
   };
   for (const n of cons) { const t = teamOf(n); if (!teams.has(t.key)) teams.set(t.key, { ...t, members: [] }); teams.get(t.key).members.push(n); }
   for (const t of teams.values()) t.members.sort((a, b) => (stOf(a) === 'needs') - (stOf(b) === 'needs') ? (stOf(b) === 'needs') - (stOf(a) === 'needs') : a.x - b.x || a.y - b.y);

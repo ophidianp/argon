@@ -4,7 +4,7 @@
 //   Manager   - the supervisor. Shows what each agent or group is doing right now.
 //   Secretary - the output at the end. Collects the summary, links and proof when the team finishes.
 import { S, ws, save, emit, on, h, toast } from './state.js';
-import { registerTile, tileEl, groupMembers, groupTag, addNode, select } from './tiles.js';
+import { registerTile, tileEl, groupMembers, groupTag, addNode, select, groupColor } from './tiles.js';
 import { sendTo, rt, statusOf, waitReady, lastLines } from './consoles.js';
 import { collectReports, resultParts, absPath } from './pipeline.js';
 import { askText, showMenu } from './ui.js';
@@ -26,7 +26,7 @@ function agentsFor(w, t) {
 }
 const label = (t) => (t.type === 'group' ? '#' + groupTag(t) : t.title);
 const defaultTask = (t, via) => (via ? `Take ${via.title}'s work and do the next part.` : t.type === 'group' ? `Handle the ${t.title} part of the goal, splitting it between you.` : 'Do your part of the goal.');
-const colorOf = (t) => (t.type === 'group' ? t.data.color : 'var(--accent-light)');
+const colorOf = (t) => (t.type === 'group' ? groupColor(t.data.color) : 'var(--accent-light)');
 
 // The whole team: what the Prompter is wired to, then everyone the console wires lead to from there.
 function chainOf(w, p) {

@@ -201,6 +201,14 @@ export function waitReady(r, timeout = 20000) {
 export function sendTo(id, text, submit = true) {
   const r = rt(id);
   if (!r || !r.alive) return false;
+  if (!r.boardHinted && submit && !/^\s*\//.test(text) && S.data.settings.boardForAgents !== false) {
+    const f = findNode(id), w = f && f.ws;
+    if (w && w.cwd && f.node.data.agent && f.node.data.agent !== 'shell') {
+      r.boardHinted = true;
+      const s = window.argon.platform === 'win32' ? '\\' : '/', base = (window.argon.platform === 'win32' ? w.cwd.replace(/\//g, '\\') : w.cwd).replace(/[\\/]+$/, '');
+      text = `[Argon] You share a live whiteboard with the user. To see it, or to add notes, checklists and tiles, move things, group or wire agents, read ${base}${s}.argon${s}board${s}BOARD.md and follow it.\n\n${text}`;
+    }
+  }
   const bp = r.term.modes && r.term.modes.bracketedPasteMode;
   const body = bp ? `\x1b[200~${text}\x1b[201~` : text.replace(/\r?\n/g, ' ');
   window.argon.pty.write(id, body);

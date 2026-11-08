@@ -1,6 +1,6 @@
 // Argon — renderer entry: state, workspaces, dock, shortcuts.
 import { S, ws, save, emit, on, h, toast, defaultState, newWorkspace, basename, findNode, consoles } from './state.js';
-import { initBoard, applyView, renderInk, setTool, fitAll, flyTo, tool, isTyping, cycleInk } from './board.js';
+import { initBoard, applyView, renderInk, setTool, fitAll, flyTo, tool, isTyping, cycleInk, INK_COLORS, INK_WIDTHS, inkColor, inkWidth, setInk } from './board.js';
 import { addNode, addGroup, removeNode, showWorkspace, mountAll, initDrops, select, selectedId } from './tiles.js';
 import { startTicking, statusOf, disposeConsole, refitAll } from './consoles.js';
 import { renderMission, spawnMenu, openCommandBar, openUsage, openMemory, openSettings, detectInstalled, openAgentsSetup } from './panels.js';
@@ -11,6 +11,7 @@ import { initManager } from './manager.js';
 import { initTeamwork, presetMenu } from './teamwork.js';
 import { initMissionMap, openMissionMap } from './missionmap.js';
 import { initFlowDots } from './flowdots.js';
+import { initBoardApi } from './boardapi.js';
 import { initPace } from './pace.js';
 import { paintIcons } from './icons.js';
 import { openOnboarding } from './onboarding.js';
@@ -34,7 +35,6 @@ async function boot() {
   applyAppearance();
   setInterval(greet, 10 * 60000);
   for (const id of ['topbar', 'dock', 'mission', 'zoomctl']) glassify(document.getElementById(id));
-  attachLens(document.getElementById('mode-seg'), 'button');
   glassify(document.getElementById('empty-hint'), { refract: false });
   initGlassFx();
   attachLens(document.getElementById('dock'), 'button');
@@ -45,7 +45,8 @@ async function boot() {
   initBoard();
   initDrops();
   initManager();   // registers the Manager tile before anything mounts
-  initPipeline();  // stage nodes first, so docked agents have somewhere to mount
+  for (const w of S.data.workspaces) if (w.mode === 'pipe') { w.mode = 'board'; if (w.views && w.views.board) w.view = w.views.board; } // Pipeline mode was removed
+  initPipeline();  // still provides the report helpers and tile hooks
   wireUi();
   mountAll();      // starts every console on every workspace (they keep running in the background)
   afterMount();
@@ -56,6 +57,7 @@ async function boot() {
   initMissionMap();
   initPace();
   initFlowDots();
+  initBoardApi();
   renderMission();
 
   // First run (and once for anyone who has not seen it yet): the welcome screen. /welcome brings it back.
@@ -121,15 +123,41 @@ async function newWs() {
   toast(`Opened ${w.name}`);
 }
 
+// ---------- pen palette: pops up beside the pen while it's the active tool ----------
+let inkPal = null;
+function closeInkPalette() { if (inkPal) { inkPal.remove(); inkPal = null; } }
+function inkPalette(btn, toggle) {
+  if (inkPal) { if (toggle) { closeInkPalette(); return; } closeInkPalette(); }
+  const pal = inkPal = h('div', { class: 'ink-pal nodrag' });
+  const paint = () => {
+    pal.querySelectorAll('.ink-c').forEach((x) => x.classList.toggle('on', x.dataset.c === inkColor));
+    pal.querySelectorAll('.ink-w').forEach((x) => x.classList.toggle('on', +x.dataset.w === inkWidth));
+    btn.style.color = inkColor;
+  };
+  for (const c of INK_COLORS) pal.append(h('button', { class: 'ink-c', 'data-c': c, title: c.startsWith('var') ? 'Accent' : c, style: { background: c }, onclick: () => { setInk(c); paint(); } }));
+  const custom = h('input', { type: 'color', class: 'ink-custom', title: 'Any color', value: inkColor.startsWith('#') ? inkColor : '#b9a6ec' });
+  custom.addEventListener('input', () => { setInk(custom.value); paint(); });
+  pal.append(custom, h('span', { class: 'ink-sep' }));
+  for (const wd of INK_WIDTHS) pal.append(h('button', { class: 'ink-w', 'data-w': wd, title: ['Thin', 'Medium', 'Thick'][INK_WIDTHS.indexOf(wd)], onclick: () => { setInk(null, wd); paint(); } }, h('i', { style: { width: wd * 2 + 'px', height: wd * 2 + 'px' } })));
+  document.body.append(pal);
+  const r = btn.getBoundingClientRect(), pr = pal.getBoundingClientRect();
+  const dockBottom = r.top > innerHeight * 0.6, dockRight = r.left > innerWidth * 0.6;
+  pal.style.left = Math.max(8, Math.min(innerWidth - pr.width - 8, dockBottom ? r.left + r.width / 2 - pr.width / 2 : dockRight ? r.left - pr.width - 10 : r.right + 10)) + 'px';
+  pal.style.top = Math.max(8, dockBottom ? r.top - pr.height - 10 : r.top + r.height / 2 - pr.height / 2) + 'px';
+  paint();
+}
+
 function wireUi() {
   document.getElementById('tab-add').onclick = newWs;
   document.getElementById('cmd-open').onclick = () => openCommandBar();
   document.getElementById('mission-toggle').onclick = openMissionMap;
   document.querySelectorAll('[data-panel]').forEach(b => b.onclick = () => (setMorphSource(b), { usage: openUsage, memory: openMemory, settings: openSettings })[b.dataset.panel]());
   document.querySelectorAll('#dock [data-tool]').forEach(b => b.onclick = () => {
-    if (b.dataset.tool === 'pen' && tool === 'pen') { const c = cycleInk(); b.style.color = c; return; }
+    if (b.dataset.tool === 'pen' && tool === 'pen') { inkPalette(b, true); return; }
     setTool(b.dataset.tool);
   });
+  // the pen palette shows while the pen is the tool, however it was picked (click or P)
+  addEventListener('argon-tool', (e) => { if (e.detail === 'pen') { if (!inkPal) inkPalette(document.querySelector('#dock [data-tool="pen"]')); } else closeInkPalette(); });
   document.querySelectorAll('#dock [data-add]').forEach(b => b.onclick = (e) => {
     const t = b.dataset.add;
     if (t === 'console') { const r = b.getBoundingClientRect(); spawnMenu(r.right + 8, r.top, inPipe() ? pipeSpawnOpts() : {}); }
@@ -145,8 +173,6 @@ function wireUi() {
     if (e.ctrlKey && e.key.toLowerCase() === 'k') { e.preventDefault(); openCommandBar(); return; }
     if (e.ctrlKey && e.key.toLowerCase() === 'm') { e.preventDefault(); openMissionMap(); return; }
     if (e.ctrlKey && e.key === ',') { e.preventDefault(); if (!document.querySelector('.modal.settings')) { setMorphSource(document.querySelector('[data-panel="settings"]')); openSettings(); } return; }
-    if (e.ctrlKey && e.key === '.') { e.preventDefault(); setMode(inPipe() ? 'board' : 'pipe'); return; }
-    if (e.ctrlKey && e.key === 'Enter' && inPipe() && !isTyping(e)) { e.preventDefault(); toggleRun(); return; }
     if (e.ctrlKey && /^[1-9]$/.test(e.key)) { const w = S.data.workspaces[+e.key - 1]; if (w) { e.preventDefault(); switchWs(w.id); } return; }
     if (e.ctrlKey && e.key.toLowerCase() === 'z' && !isTyping(e) && (tool === 'pen' || tool === 'erase')) { ws().ink.pop(); renderInk(); save(); return; }
     if (isTyping(e) || e.ctrlKey || e.altKey || e.metaKey) return;
@@ -155,7 +181,6 @@ function wireUi() {
     if (k === 'n') { e.preventDefault(); const r = document.getElementById('board').getBoundingClientRect(); spawnMenu(r.left + 20, r.top + 20, inPipe() ? pipeSpawnOpts() : {}); }
     else if (k === 'f') fitAll();
     else if (k === 'g' && !inPipe()) addGroup();
-    else if (k === 's' && inPipe()) addStage();
     else if (k === 'v' || k === 'escape') { setTool('select'); if (k === 'escape') select(null); }
     else if (k === 'p' && !inPipe()) setTool('pen');
     else if (k === 'e' && !inPipe()) setTool('erase');

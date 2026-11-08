@@ -138,12 +138,18 @@ export function setTool(t) {
   const b = board();
   b.classList.toggle('tool-pen', t === 'pen');
   b.classList.toggle('tool-erase', t === 'erase');
+  dispatchEvent(new CustomEvent('argon-tool', { detail: t }));
 }
 
 // ---------- ink ----------
-const INK_COLORS = ['#b9a6ec', '#f0b45a', '#7fd1a0', '#e0727c', '#ebe6f6'];
-export let inkColor = INK_COLORS[0];
-export function cycleInk() { inkColor = INK_COLORS[(INK_COLORS.indexOf(inkColor) + 1) % INK_COLORS.length]; return inkColor; }
+// 'var(--accent-light)' follows your accent. Choice and thickness are remembered.
+export const INK_COLORS = ['var(--accent-light)', '#ebe6f6', '#f0b45a', '#7fd1a0', '#7ea8ec', '#e0889f', '#e0727c'];
+export const INK_WIDTHS = [2, 3.5, 7];
+export let inkColor = INK_COLORS[0], inkWidth = INK_WIDTHS[1];
+try { const p = JSON.parse(localStorage.getItem('argon-ink') || '{}'); if (p.c) inkColor = p.c; if (p.w) inkWidth = p.w; } catch (_) {}
+const keepInk = () => { try { localStorage.setItem('argon-ink', JSON.stringify({ c: inkColor, w: inkWidth })); } catch (_) {} };
+export function setInk(c, w) { if (c) inkColor = c; if (w) inkWidth = w; keepInk(); }
+export function cycleInk() { inkColor = INK_COLORS[(INK_COLORS.indexOf(inkColor) + 1) % INK_COLORS.length]; keepInk(); return inkColor; }
 
 function pathD(pts) {
   if (!pts.length) return '';
@@ -162,7 +168,7 @@ export function renderInk() {
   for (const s of ws().ink || []) {
     const p = document.createElementNS('http://www.w3.org/2000/svg', 'path');
     p.setAttribute('d', pathD(s.pts));
-    p.setAttribute('stroke', s.color);
+    p.style.stroke = s.color;
     p.setAttribute('stroke-width', s.width);
     p.dataset.id = s.id;
     svg.append(p);
@@ -222,9 +228,9 @@ export function initBoard() {
     if (e.button !== 0) return;
     cap.setPointerCapture(e.pointerId);
     const p = toWorld(e.clientX, e.clientY);
-    stroke = { id: uid('ink'), color: inkColor, width: Math.max(1.5, 3 / ws().view.z), pts: [[p.x, p.y]] };
+    stroke = { id: uid('ink'), color: inkColor, width: Math.max(1, inkWidth / ws().view.z), pts: [[p.x, p.y]] };
     livePath = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-    livePath.setAttribute('stroke', stroke.color);
+    livePath.style.stroke = stroke.color;
     livePath.setAttribute('stroke-width', stroke.width);
     document.getElementById('ink').append(livePath);
   });

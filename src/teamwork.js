@@ -2,7 +2,7 @@
 // a context gauge for Claude sessions, and hold-Space dictation.
 import { S, ws, on, emit, save, uid, h, toast, findNode, allConsoles } from './state.js';
 import { rt, statusOf, sendTo, lastLines } from './consoles.js';
-import { tileEl, tileHooks, addNode, addGroup, select, fitGroup, groupMembers, groupTag } from './tiles.js';
+import { tileEl, tileHooks, addNode, addGroup, select, fitGroup, groupMembers, groupTag, groupColor } from './tiles.js';
 import { showMenu, askText } from './ui.js';
 import { agentByKey } from './agents.js';
 import { isTyping } from './board.js';
@@ -197,7 +197,7 @@ function curve(p1, p2, dir) {
   const c = Math.max(60, Math.abs(x2 - x1) / 2) * dir;
   return `M${x1},${y1} C${x1 + c},${y1} ${x2 - c},${y2} ${x2},${y2}`;
 }
-const colorOf = (id) => { const n = nodeOf(id); return !n ? 'var(--accent)' : n.type === 'group' ? (n.data.color || 'var(--accent)') : agentByKey(n.data.agent, S.data.customAgents).color; };
+const colorOf = (id) => { const n = nodeOf(id); return !n ? 'var(--accent)' : n.type === 'group' ? groupColor(n.data.color) : agentByKey(n.data.agent, S.data.customAgents).color; };
 const chipText = (wire) => {
   const m = MODES[wire.mode] || MODES.done;
   if (wire.paused) return '⏸ paused';

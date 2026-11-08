@@ -51,6 +51,11 @@
       write: (file, text) => invoke('fs_write', { file, text }),
       exists: (file) => invoke('fs_exists', { file }),
       changed: (dir, since, limit) => invoke('fs_changed', { dir, since: Math.floor(since), limit }),
+      mkdir: (dir) => invoke('fs_mkdir', { dir }),
+      rename: (from, to) => invoke('fs_rename', { from, to }),
+      trash: (path) => invoke('fs_trash', { path }),
+      remove: (file) => invoke('fs_remove', { file }),
+      open: (path) => invoke('open_path', { path }),
     },
     usage: (days) => invoke('usage_tokens', { days }),
     // Electron tinted its built-in caption buttons; here the buttons are ours and follow the theme.

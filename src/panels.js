@@ -693,6 +693,7 @@ function consolesPane() {
       auto,
       row('Answer questions with buttons', 'When an agent asks (Yes / No, numbered choices), a card with buttons and a diff preview pops over its console.', switchCtl(() => st.askButtons !== false, (v) => { st.askButtons = v; save(); })),
       row('Hold Space to talk', 'Hold Space on the board to dictate into the command bar. Falls back to Windows voice typing.', switchCtl(() => st.holdToTalk !== false, (v) => { st.holdToTalk = v; save(); })),
+      row('Agents can use the board', 'Agents see the board through .argon/board/BOARD.md in your project and can add notes, checklists and tiles, move things, and group or wire each other.', switchCtl(() => st.boardForAgents !== false, (v) => { st.boardForAgents = v; save(); })),
       row('Idle after', 'Seconds of quiet before a console counts as resting.', rangeCtl(1, 30, 1, () => st.idleSeconds || 4, (v, done) => { st.idleSeconds = v; if (done) save(); }, (v) => v + 's'))));
   return [pane];
 }

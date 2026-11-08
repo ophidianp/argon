@@ -21,7 +21,9 @@ const ICONS = { console: 'console', note: 'note', checklist: 'checklist', kanban
 const EXTRA = {};
 export function registerTile(type, def) { EXTRA[type] = def; SIZES[type] = def.size; ICONS[type] = def.icon; RENDER[type] = def.render; }
 export const NOTE_COLORS = ['#d9cdf7', '#f6e3a1', '#bfe6cf', '#f5c6cf', '#bcd7f5'];
-export const GROUP_COLORS = ['#9a83d4', '#6fcfa3', '#7ea8ec', '#e2b15a', '#e0889f', '#5cc2c2'];
+// 'accent' follows your accent color live; it is the default for new groups.
+export const GROUP_COLORS = ['accent', '#6fcfa3', '#7ea8ec', '#e2b15a', '#e0889f', '#5cc2c2'];
+export const groupColor = (c) => (!c || c === 'accent' || c === '#9a83d4' ? 'var(--accent)' : c);
 
 // ---------- groups: drop tiles in and the frame sizes itself around them ----------
 // Pipeline mode (pipeline.js) plugs in here: where a tile lives, how it drags, and extra chrome.
@@ -46,7 +48,7 @@ function retag(n, w) {
   else if (n.data.groupFrame) { n.data.group = ''; n.data.groupFrame = null; }
   if (n.data.group !== old) emit('consoleMeta', n.id);
 }
-const retagAll = (w) => w.nodes.forEach(n => retag(n, w));
+export const retagAll = (w) => w.nodes.forEach(n => retag(n, w));
 // Wrap the frame around its members (springy, see .tile.group in the CSS); empty groups keep a drop pad.
 // Auto-tiling (on unless the group's menu turns it off): members snap into a grid, ordered by where they sit,
 // so dropping a tile between two others puts it there.
@@ -81,7 +83,8 @@ export function fitGroup(g, w) {
 }
 function absorb(g) {
   const el = els.get(g.id); if (!el || !animationsOn()) return;
-  el.animate([{ outline: `2px solid ${g.data.color}`, outlineOffset: '0px' }, { outline: `2px solid ${g.data.color}00`, outlineOffset: '16px' }], { duration: 700, easing: 'ease-out' });
+  const c = groupColor(g.data.color);
+  el.animate([{ outline: `2px solid ${c}`, outlineOffset: '0px' }, { outline: `2px solid color-mix(in srgb, ${c} 0%, transparent)`, outlineOffset: '16px' }], { duration: 700, easing: 'ease-out' });
 }
 // Old free-form groups: whatever sat inside the frame becomes a member.
 function migrateGroups(w) {
@@ -157,7 +160,7 @@ export function addNode(type, data = {}, opts = {}) {
   const el = els.get(node.id);
   el.classList.add('enter');
   el.addEventListener('animationend', () => el.classList.remove('enter'), { once: true });
-  if (w === ws()) { if (!isPipeNode(node)) document.getElementById('empty-hint').classList.add('hidden'); select(node.id); }
+  if (w === ws()) { if (!isPipeNode(node)) document.getElementById('empty-hint').classList.add('hidden'); if (!opts.quiet) select(node.id); }
   save(); emit('nodes');
   return node;
 }
@@ -188,7 +191,7 @@ function defaultData(type, d) {
     case 'files': return { root: null, open: null, ...d };
     case 'git': return { ...d };
     case 'image': return { src: '', ...d };
-    case 'group': return { color: GROUP_COLORS[0], ...d };
+    case 'group': return { color: 'accent', ...d };
     default: return EXTRA[type] && EXTRA[type].data ? EXTRA[type].data(d) : d;
   }
 }
@@ -234,6 +237,15 @@ export function place(node) {
 }
 
 export function tileEl(id) { return els.get(id); }
+// Rebuild a tile after its data changed from outside (an agent edited it through the board).
+export function remountTile(node, w) {
+  if (node.type === 'console') return;
+  const old = els.get(node.id), was = old && old.classList.contains('selected');
+  if (old) old.remove();
+  els.delete(node.id);
+  createTile(node, w);
+  if (was) els.get(node.id)?.classList.add('selected');
+}
 
 function createTile(node, w) {
   const titleEl = h('div', { class: 'tile-title', title: 'Double-click to rename' }, node.title);
@@ -334,6 +346,8 @@ const RENDER = {
     extras.append(group, loopB, badge);
     const paint = () => {
       group.textContent = node.data.group || ''; group.style.display = node.data.group ? '' : 'none';
+      const gn = node.data.groupId && w.nodes.find((x) => x.id === node.data.groupId);
+      group.style.setProperty('--gcc', gn ? groupColor(gn.data.color) : 'var(--accent)');
       const L = node.data.loop;
       loopB.textContent = L && L.on ? `↻ ${L.runs || 0}${L.maxRuns ? '/' + L.maxRuns : ''}` : '';
     };
@@ -507,40 +521,159 @@ const RENDER = {
     btns.append(h('button', { class: 'tile-btn', title: 'Toggle Web Inspector', onclick: () => { try { wv.isDevToolsOpened() ? wv.closeDevTools() : wv.openDevTools(); } catch (_) {} } }, '⚒'));
   },
 
+  // A mini file manager: browse, open, edit and save text files, make files and folders,
+  // rename, drag onto a folder to move, delete to the Recycle Bin.
   files(node, w, { body, btns }) {
-    const tree = h('div', { class: 'ftree' });
-    const pre = h('pre', { class: 'fpreview' }, 'Select a file to preview it.');
-    body.append(h('div', { class: 'files' }, tree, pre));
-    const root = () => node.data.root || w.cwd;
+    const win = window.argon.platform === 'win32', SEP = win ? '\\' : '/';
+    const norm = (p) => (win ? String(p || '').replace(/\//g, '\\') : String(p || '')).replace(/[\\/]+$/, '') || (win ? 'C:\\' : '/');
+    const join = (a, b) => norm(a) + SEP + b;
+    const parent = (p) => { const n = norm(p), i = Math.max(n.lastIndexOf('\\'), n.lastIndexOf('/')); return i > 2 ? n.slice(0, i) : n.slice(0, i + 1) || n; };
+    const nameOf = (p) => norm(p).split(/[\\/]/).pop();
+    const root = () => norm(node.data.root || w.cwd || '');
     const expanded = new Set(node.data.expanded || []);
+    let sel = node.data.open || null, dirty = false, current = null;
+
+    const crumbs = h('div', { class: 'fm-crumbs' });
+    const bar = h('div', { class: 'fm-bar' },
+      h('button', { class: 'fm-b', title: 'Up one folder', onclick: () => setRoot(parent(root())) }, '↑'), crumbs,
+      h('button', { class: 'fm-b', title: 'New file', onclick: () => create(false) }, '+ File'),
+      h('button', { class: 'fm-b', title: 'New folder', onclick: () => create(true) }, '+ Folder'));
+    const tree = h('div', { class: 'ftree' });
+    const pathEl = h('span', { class: 'fm-path' }, 'Select a file');
+    const editBtn = h('button', { class: 'fm-b', hidden: true, onclick: () => toggleEdit() }, 'Edit');
+    const saveBtn = h('button', { class: 'fm-b primary', hidden: true, onclick: () => saveFile() }, 'Save');
+    const openBtn = h('button', { class: 'fm-b', hidden: true, title: 'Open with its default app', onclick: () => sel && window.argon.fs.open(sel) }, 'Open');
+    const pre = h('pre', { class: 'fpreview' }, 'Select a file to preview it.');
+    const ta = h('textarea', { class: 'fm-edit', spellcheck: 'false', hidden: true });
+    ta.addEventListener('input', () => { dirty = true; saveBtn.disabled = false; });
+    ta.addEventListener('keydown', (e) => { if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 's') { e.preventDefault(); saveFile(); } e.stopPropagation(); });
+    ta.addEventListener('pointerdown', (e) => e.stopPropagation());
+    const side = h('div', { class: 'fm-side' }, h('div', { class: 'fm-head' }, pathEl, openBtn, editBtn, saveBtn), pre, ta);
+    body.append(h('div', { class: 'files fm' }, h('div', { class: 'fm-left' }, bar, tree), side));
+
+    const setRoot = (p) => { node.data.root = norm(p); save(); refresh(); };
+    const paintCrumbs = () => {
+      crumbs.innerHTML = '';
+      const parts = root().split(/[\\/]/).filter(Boolean);
+      let acc = win ? '' : '/';
+      parts.forEach((part, i) => {
+        acc = i === 0 && win ? part + '\\' : join(acc, part);
+        const at = acc;
+        crumbs.append(h('button', { class: 'fm-crumb', title: at, onclick: () => setRoot(at) }, part.replace(/\\$/, '')));
+        if (i < parts.length - 1) crumbs.append(h('span', { class: 'fm-sep' }, '›'));
+      });
+      crumbs.scrollLeft = crumbs.scrollWidth;
+    };
+    // where new files go: the selected folder, the selected file's folder, or the top
+    const targetDir = () => { const s = tree.querySelector('.frow.sel'); if (!s) return root(); return s.dataset.dir === '1' ? s.dataset.path : parent(s.dataset.path); };
+    const create = async (folder) => {
+      const dir = targetDir();
+      const name = await askText(folder ? 'New folder' : 'New file', { placeholder: folder ? 'folder name' : 'notes.md', sub: 'In ' + dir });
+      if (!name || !name.trim()) return;
+      const p = join(dir, name.trim());
+      if (await window.argon.fs.exists(p)) { toast('Something with that name is already there.', 'err'); return; }
+      const ok = folder ? (await window.argon.fs.mkdir(p)).ok : await window.argon.fs.write(p, '');
+      if (!ok) { toast("Couldn't create it.", 'err'); return; }
+      expanded.add(dir); node.data.expanded = [...expanded]; save();
+      await refresh(); if (!folder) openFile(p, true);
+    };
+    const rename = async (p) => {
+      const n = await askText('Rename', { value: nameOf(p) });
+      if (!n || !n.trim() || n.trim() === nameOf(p)) return;
+      const to = join(parent(p), n.trim()), r = await window.argon.fs.rename(p, to);
+      if (!r.ok) { toast(r.error || "Couldn't rename it.", 'err'); return; }
+      if (sel === p) { sel = to; node.data.open = to; save(); }
+      refresh();
+    };
+    const move = async (p, dir) => {
+      if (norm(dir).toLowerCase().startsWith(norm(p).toLowerCase())) return; // not into itself
+      const to = join(dir, nameOf(p)); if (norm(to) === norm(p)) return;
+      const r = await window.argon.fs.rename(p, to);
+      if (!r.ok) { toast(r.error || "Couldn't move it.", 'err'); return; }
+      toast(`Moved ${nameOf(p)} to ${nameOf(dir)}`);
+      if (sel === p) { sel = to; node.data.open = to; save(); }
+      expanded.add(dir); node.data.expanded = [...expanded]; save(); refresh();
+    };
+    const trash = async (p, isDir) => {
+      if (!(await confirmBox(`Delete ${nameOf(p)}?`, `${isDir ? 'The folder and everything in it go' : 'It goes'} to the Recycle Bin, so you can get it back from there.`, 'Delete'))) return;
+      const r = await window.argon.fs.trash(p);
+      if (!r.ok) { toast(r.error || "Couldn't delete it.", 'err'); return; }
+      if (sel === p) { sel = null; node.data.open = null; save(); showNothing(); }
+      refresh();
+    };
+    const rowMenu = (it, x, y) => showMenu(x, y, [
+      !it.dir ? { label: 'Open', onClick: () => openFile(it.path) } : { label: 'Open as top folder', onClick: () => setRoot(it.path) },
+      { label: 'Open with default app', onClick: () => window.argon.fs.open(it.path) },
+      { label: 'Show in Explorer', onClick: () => window.argon.reveal(it.path) },
+      { label: 'Copy path', onClick: () => { navigator.clipboard.writeText(it.path).then(() => toast('Path copied')).catch(() => {}); } },
+      'sep',
+      { label: 'Rename…', onClick: () => rename(it.path) },
+      { label: 'Delete', note: 'Recycle Bin', onClick: () => trash(it.path, it.dir) },
+    ]);
+
     const renderDir = async (dir, depth, into) => {
       const items = await window.argon.fs.list(dir);
       for (const it of items) {
-        const row = h('div', { class: 'frow' + (node.data.open === it.path ? ' sel' : ''), style: { paddingLeft: (8 + depth * 14) + 'px' }, title: it.path },
-          (it.dir ? (expanded.has(it.path) ? '▾ ' : '▸ ') : '  ') + it.name);
+        const row = h('div', { class: 'frow' + (sel === it.path ? ' sel' : ''), style: { paddingLeft: (8 + depth * 14) + 'px' }, title: it.path, draggable: 'true', 'data-path': it.path, 'data-dir': it.dir ? '1' : '0' },
+          h('span', { class: 'fm-ico' }, it.dir ? (expanded.has(it.path) ? '▾' : '▸') : '·'), it.name);
         into.append(row);
+        row.addEventListener('contextmenu', (e) => { e.preventDefault(); e.stopPropagation(); select(row); rowMenu(it, e.clientX, e.clientY); });
+        row.addEventListener('dragstart', (e) => { e.stopPropagation(); e.dataTransfer.setData('text/argon-path', it.path); e.dataTransfer.effectAllowed = 'move'; });
         if (it.dir) {
+          row.addEventListener('dragover', (e) => { if ([...e.dataTransfer.types].includes('text/argon-path')) { e.preventDefault(); row.classList.add('drop'); } });
+          row.addEventListener('dragleave', () => row.classList.remove('drop'));
+          row.addEventListener('drop', (e) => { e.preventDefault(); e.stopPropagation(); row.classList.remove('drop'); const p = e.dataTransfer.getData('text/argon-path'); if (p) move(p, it.path); });
           const kids = h('div');
           into.append(kids);
           if (expanded.has(it.path)) await renderDir(it.path, depth + 1, kids);
           row.onclick = async () => {
-            if (expanded.has(it.path)) { expanded.delete(it.path); kids.innerHTML = ''; row.textContent = '▸ ' + it.name; }
-            else { expanded.add(it.path); row.textContent = '▾ ' + it.name; await renderDir(it.path, depth + 1, kids); }
+            select(row);
+            if (expanded.has(it.path)) { expanded.delete(it.path); kids.innerHTML = ''; row.firstChild.textContent = '▸'; }
+            else { expanded.add(it.path); row.firstChild.textContent = '▾'; await renderDir(it.path, depth + 1, kids); }
             node.data.expanded = [...expanded]; save();
           };
-        } else row.onclick = () => { tree.querySelectorAll('.sel').forEach(s => s.classList.remove('sel')); row.classList.add('sel'); openFile(it.path); };
+          row.ondblclick = () => setRoot(it.path);
+        } else {
+          row.onclick = () => { select(row); openFile(it.path); };
+          row.ondblclick = () => window.argon.fs.open(it.path);
+        }
       }
     };
-    const openFile = async (p) => {
-      node.data.open = p; save();
+    const select = (row) => { tree.querySelectorAll('.sel').forEach((s) => s.classList.remove('sel')); row.classList.add('sel'); };
+    // dropping on empty space in the tree moves to the top folder
+    tree.addEventListener('dragover', (e) => { if ([...e.dataTransfer.types].includes('text/argon-path')) e.preventDefault(); });
+    tree.addEventListener('drop', (e) => { const p = e.dataTransfer.getData('text/argon-path'); if (p) { e.preventDefault(); move(p, root()); } });
+
+    const showNothing = () => { pathEl.textContent = 'Select a file'; pre.hidden = false; ta.hidden = true; pre.textContent = 'Select a file to preview it.'; editBtn.hidden = saveBtn.hidden = openBtn.hidden = true; };
+    const openFile = async (p, edit) => {
+      if (dirty && current && !(await confirmBox('Discard changes?', `${nameOf(current)} has unsaved edits.`, 'Discard'))) return;
+      dirty = false; sel = p; node.data.open = p; save();
+      pathEl.textContent = nameOf(p); pathEl.title = p; openBtn.hidden = false;
       const r = await window.argon.fs.read(p);
-      if (!r.ok) { pre.textContent = r.error; return; }
+      if (!r.ok) { current = null; pre.hidden = false; ta.hidden = true; pre.textContent = r.error; editBtn.hidden = saveBtn.hidden = true; return; }
+      current = p; ta.value = r.text; editBtn.hidden = false;
       pre.innerHTML = highlight(r.text, p);
+      if (edit) toggleEdit(true); else { pre.hidden = false; ta.hidden = true; saveBtn.hidden = true; editBtn.textContent = 'Edit'; }
     };
-    const refresh = async () => { tree.innerHTML = ''; if (!root()) { tree.append(h('div', { class: 'frow' }, 'No folder')); return; } await renderDir(root(), 0, tree); };
+    const toggleEdit = (on = ta.hidden) => {
+      ta.hidden = !on; pre.hidden = on; saveBtn.hidden = !on; saveBtn.disabled = !dirty; editBtn.textContent = on ? 'Done' : 'Edit';
+      if (on) ta.focus(); else pre.innerHTML = highlight(ta.value, current || '');
+    };
+    const saveFile = async () => {
+      if (!current) return;
+      if (!(await window.argon.fs.write(current, ta.value))) { toast("Couldn't save.", 'err'); return; }
+      dirty = false; saveBtn.disabled = true; toast(`Saved ${nameOf(current)}`);
+    };
+    const refresh = async () => {
+      paintCrumbs(); tree.innerHTML = '';
+      if (!root()) { tree.append(h('div', { class: 'frow' }, 'No folder')); return; }
+      await renderDir(root(), 0, tree);
+    };
     refresh();
     if (node.data.open) openFile(node.data.open);
     btns.append(h('button', { class: 'tile-btn', title: 'Refresh', onclick: refresh }, '⟳'));
+    // keep up with changes agents make: refresh every few seconds while visible
+    const iv = setInterval(() => { if (!document.contains(body)) { clearInterval(iv); return; } if (body.offsetParent && !body.contains(document.activeElement)) refresh(); }, 6000);
   },
 
   git(node, w, { body, btns }) {
@@ -592,8 +725,8 @@ const RENDER = {
   },
 
   group(node, w, { el, head, extras, btns }) {
-    const paint = () => el.style.setProperty('--gc', node.data.color);
-    paint();
+    const paint = () => { el.style.setProperty('--gc', groupColor(node.data.color)); colors.querySelectorAll('button').forEach((b) => b.classList.toggle('on', b.dataset.c === (node.data.color === '#9a83d4' ? 'accent' : node.data.color || 'accent'))); };
+    const colors = h('span', { class: 'note-colors group-colors' });
     const count = h('span', { class: 'group-count', title: 'Tiles in this group' });
     const tag = h('span', { class: 'group-tag', title: 'Message every console here with this tag' });
     const upd = () => {
@@ -605,8 +738,9 @@ const RENDER = {
     };
     upd(); on('nodes', upd);
     extras.append(count, tag);
-    const colors = h('span', { class: 'note-colors' });
-    GROUP_COLORS.forEach(c => colors.append(h('i', { style: { background: c }, title: 'Color', onclick: (e) => { e.stopPropagation(); node.data.color = c; paint(); save(); } })));
+    // real buttons, so pressing one doesn't start dragging the group; the tags and wires of everyone inside repaint too
+    GROUP_COLORS.forEach(c => colors.append(h('button', { type: 'button', 'data-c': c, style: { background: groupColor(c) }, title: c === 'accent' ? 'Accent color' : 'Color', onclick: (e) => { e.stopPropagation(); node.data.color = c; paint(); save(); for (const m of groupMembers(node, w)) emit('consoleMeta', m.id); emit('nodes'); } })));
+    paint();
     btns.append(colors, h('button', { class: 'tile-btn', title: 'More', onclick: (e) => { e.stopPropagation(); groupMenu(node, w, e.clientX, e.clientY); } }, '⋯'));
     head.querySelector('.tile-btn.danger').title = 'Ungroup (keeps the tiles)';
     el.addEventListener('contextmenu', (e) => { if (e.target.closest('.tile-head')) { e.preventDefault(); groupMenu(node, w, e.clientX, e.clientY); } });

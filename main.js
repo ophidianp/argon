@@ -288,6 +288,11 @@ ipcMain.handle('fs:write', (_e, file, text) => {
   catch (_) { return false; }
 });
 ipcMain.handle('fs:exists', (_e, file) => fs.existsSync(file));
+ipcMain.handle('fs:mkdir', (_e, dir) => { try { fs.mkdirSync(dir, { recursive: true }); return { ok: true }; } catch (e) { return { ok: false, error: e.message }; } });
+ipcMain.handle('fs:rename', (_e, from, to) => { try { if (fs.existsSync(to)) return { ok: false, error: 'Something with that name is already there.' }; fs.mkdirSync(path.dirname(to), { recursive: true }); fs.renameSync(from, to); return { ok: true }; } catch (e) { return { ok: false, error: e.message }; } });
+ipcMain.handle('fs:trash', async (_e, p) => { try { await shell.trashItem(p); return { ok: true }; } catch (e) { return { ok: false, error: e.message }; } });
+ipcMain.handle('fs:remove', (_e, f) => { try { if (fs.statSync(f).isFile()) { fs.unlinkSync(f); return true; } } catch (_) {} return false; });
+ipcMain.handle('fs:open', async (_e, p) => !(await shell.openPath(p)));
 ipcMain.handle('fs:changed', (_e, dir, since, limit = 400) => {
   const SKIP = new Set(['node_modules', 'dist', 'build', 'target', '__pycache__']); const out = []; const stack = [[dir, 0]]; let seen = 0;
   while (stack.length && seen < 40000) {

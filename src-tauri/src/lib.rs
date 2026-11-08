@@ -305,7 +305,15 @@ fn state_dir_path() -> String {
 #[tauri::command]
 async fn pick_folder(app: AppHandle) -> Option<String> {
     use tauri_plugin_dialog::DialogExt;
-    app.dialog().file().blocking_pick_folder().and_then(|p| p.into_path().ok()).map(|p| p.to_string_lossy().into_owned())
+    // The non-blocking picker opens the dialog on the window's own thread (a blocking one from a
+    // background thread can fail silently on Windows), and we wait for the answer off the main thread.
+    let (tx, rx) = std::sync::mpsc::channel();
+    let parent = app.get_webview_window("main");
+    let mut d = app.dialog().file().set_title("Open a folder as a workspace");
+    if let Some(w) = parent.as_ref() { d = d.set_parent(w); }
+    d.pick_folder(move |p| { let _ = tx.send(p); });
+    let picked = tauri::async_runtime::spawn_blocking(move || rx.recv().ok().flatten()).await.ok().flatten();
+    picked.and_then(|p| p.into_path().ok()).map(|p| p.to_string_lossy().into_owned())
 }
 
 #[tauri::command]
@@ -488,6 +496,40 @@ fn fs_write(file: String, text: String) -> bool {
     let p = Path::new(&file);
     if let Some(d) = p.parent() { let _ = fs::create_dir_all(d); }
     fs::write(p, text).is_ok()
+}
+
+// ---- the mini file manager ----
+#[tauri::command]
+fn fs_mkdir(dir: String) -> Value {
+    match fs::create_dir_all(&dir) { Ok(_) => json!({ "ok": true }), Err(e) => json!({ "ok": false, "error": e.to_string() }) }
+}
+
+// Rename or move. Refuses to overwrite something that already exists.
+#[tauri::command]
+fn fs_rename(from: String, to: String) -> Value {
+    if Path::new(&to).exists() { return json!({ "ok": false, "error": "Something with that name is already there." }); }
+    if let Some(d) = Path::new(&to).parent() { let _ = fs::create_dir_all(d); }
+    match fs::rename(&from, &to) { Ok(_) => json!({ "ok": true }), Err(e) => json!({ "ok": false, "error": e.to_string() }) }
+}
+
+// Deleting goes to the Recycle Bin, so it can be undone from there.
+#[tauri::command]
+fn fs_trash(path: String) -> Value {
+    match trash::delete(&path) { Ok(_) => json!({ "ok": true }), Err(e) => json!({ "ok": false, "error": e.to_string() }) }
+}
+
+// Opens a file or folder with its default app.
+#[tauri::command]
+fn open_path(app: AppHandle, path: String) -> bool {
+    use tauri_plugin_opener::OpenerExt;
+    app.opener().open_path(path, None::<&str>).is_ok()
+}
+
+// Deletes one file (not folders): used to clear handled board requests.
+#[tauri::command]
+fn fs_remove(file: String) -> bool {
+    let p = Path::new(&file);
+    p.is_file() && fs::remove_file(p).is_ok()
 }
 
 #[tauri::command]
@@ -676,7 +718,7 @@ pub fn run() {
             pick_folder, shell_open, shell_reveal, app_home,
             agents_detect, agents_auth, git_info, git_action,
             fs_list, fs_read, fs_write, fs_exists,
-            claude_context, dictate_win, usage_tokens, set_backdrop, set_app_icon, fs_changed, dev_log,
+            claude_context, dictate_win, usage_tokens, set_backdrop, set_app_icon, fs_changed, fs_mkdir, fs_rename, fs_trash, fs_remove, open_path, dev_log,
         ])
         .setup(|app| {
             // The window is built here (not in tauri.conf.json) so we can tune the web engine.
