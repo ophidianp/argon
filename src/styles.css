@@ -1030,3 +1030,6 @@ body.idle *, body.idle *::before, body.idle *::after { animation-play-state: pau
 .tile.group > .wire-dot { top: 14px; }
 .tile.group:hover > .wire-dot, .tile.group.selected > .wire-dot { opacity: 1; transform: scale(1); }
 .tile.group.wire-hot { box-shadow: 0 0 0 2px var(--accent-light), 0 0 30px -6px var(--accent-light); }
+
+/* the group's socket must take the mouse even though the frame lets clicks through */
+.tile.group > .wire-dot { pointer-events: auto; }

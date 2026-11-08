@@ -270,7 +270,17 @@ function dragWire(w, node, e) {
       if (node.type === 'group' && agentsIn(node.id).some((a) => a.id === n.id)) continue; // nor a group into its own members
       return n;
     }
-    return null;
+    // A group's frame lets clicks through to the board, so the mouse can't "see" it: check its outline instead.
+    let best = null, area = Infinity;
+    for (const n of w.nodes) {
+      if (n.type !== 'group' || n.id === node.id || isPipe(n)) continue;
+      const el = tileEl(n.id); if (!el) continue;
+      const r = el.getBoundingClientRect();
+      if (m.clientX < r.left - 12 || m.clientX > r.right + 12 || m.clientY < r.top - 12 || m.clientY > r.bottom + 12) continue;
+      if (agentsIn(n.id).some((a) => a.id === node.id)) continue;
+      if (r.width * r.height < area) { area = r.width * r.height; best = n; }
+    }
+    return best;
   };
   const move = (m) => {
     const a = box(node.id); if (!a) return;
