@@ -6,6 +6,8 @@ import { Tips } from './components/Tips'
 import { ConfirmSheet } from './components/Panels'
 import { setThemeMode } from './theme'
 import { setLook } from './appearance'
+import { UpdateCard } from './components/UpdateCard'
+import { initUpdates } from './updates'
 
 export function App() {
   const ready = useStore((s) => s.ready)
@@ -24,6 +26,10 @@ export function App() {
   useEffect(() => {
     if (ready) setLook(look)
   }, [ready, look])
+  // The installed app looks for updates now and then (src/updates.ts); a checkout never does.
+  useEffect(() => {
+    if (ready) initUpdates()
+  }, [ready])
 
   if (!ready) return <div className="home" />
   return (
@@ -41,6 +47,7 @@ export function App() {
       )}
       {linkDown && <div className="link-down">Reconnecting to Argon…</div>}
       <ConfirmSheet />
+      <UpdateCard />
       <Tips />
     </>
   )

@@ -1,11 +1,12 @@
 // vibeboard as a macOS app: starts the local server, then shows the board in a real window. Web tiles
 // become real browsers here: pages that refuse to be framed (Google, GitHub…) load, because the window
 // strips the headers that forbid framing, for frames only.
-const { app, BrowserWindow, dialog, ipcMain, nativeImage, nativeTheme, session, shell } = require('electron')
-const { spawn } = require('node:child_process')
+const { app, BrowserWindow, dialog, ipcMain, nativeImage, nativeTheme, net, session, shell } = require('electron')
+const { spawn, spawnSync } = require('node:child_process')
 const fs = require('node:fs')
 const http = require('node:http')
 const path = require('node:path')
+const { setupUpdater } = require('./updater.cjs')
 
 const PORT = Number(process.env.PORT) || 4317
 const WIN = process.platform === 'win32'
@@ -201,11 +202,24 @@ app.on('before-quit', async (e) => {
   app.quit()
 })
 
+// Before an update installs: the server and every agent it runs stop, so no file in the app folder is in use.
+function stopServer() {
+  const s = server
+  if (!s) return
+  quitting = true
+  if (WIN && s.pid) spawnSync('taskkill', ['/pid', String(s.pid), '/T', '/F'], { windowsHide: true })
+  else s.kill('SIGTERM')
+}
+setupUpdater({ app, ipcMain, net, stop: stopServer, quitting: () => (quitting = true) })
+
 app.setName('Argon')
 if (WIN) app.setAppUserModelId('io.github.ophidianp.argon')
 
+// A separate board (ARGON_DATA, as in tests) is a separate app: its own profile, and it never hands off to the
+// Argon already open.
+if (process.env.ARGON_DATA) app.setPath('userData', path.join(process.env.ARGON_DATA, 'electron'))
 // Opening it a second time brings the window that is already there to the front.
-if (!app.requestSingleInstanceLock()) app.exit(0)
+else if (!app.requestSingleInstanceLock()) app.exit(0)
 app.on('second-instance', () => {
   const win = BrowserWindow.getAllWindows()[0]
   if (!win) return createWindow()

@@ -70,7 +70,7 @@ export type Modal = null | 'mission' | 'loops' | 'memory' | 'usage' | 'composer'
 // A second sign-in of a CLI (its own config folder on disk), so two accounts can run side by side.
 export type Profile = { id: string; name: string; agent: string }
 // `active`: the profile each CLI's new consoles start on (none: the CLI's own default sign-in).
-export type Settings = { theme?: ThemeMode; look?: Partial<Look>; simpleView?: boolean; yolo: boolean; fontSize: number; defaultAgent: string; speak?: boolean; notify?: boolean; profiles?: Profile[]; active?: Record<string, string> }
+export type Settings = { theme?: ThemeMode; look?: Partial<Look>; simpleView?: boolean; yolo: boolean; fontSize: number; defaultAgent: string; speak?: boolean; notify?: boolean; profiles?: Profile[]; active?: Record<string, string>; updates?: { mode: 'auto' | 'ask'; skip?: string; lastCheck?: number } }
 export type UsageView = 'usage' | 'tokens' | 'accounts'
 
 // Stable fallback so selectors never return a fresh [] (that re-renders forever).
@@ -300,7 +300,7 @@ function fitted(nodes: Node[], gid: string) {
 // lead's group (last in reading order) or sits beside the lead, with a dashed line back to it.
 // Any workspace, not just the open one: the lead may be working while you look elsewhere.
 // The browser's own confirm() freezes the page, terminals included, until it is answered.
-const askToConfirm = (title: string, detail: string, yes: string) =>
+export const askToConfirm = (title: string, detail: string, yes: string) =>
   new Promise<boolean>((resolve) =>
     useStore.setState({
       confirming: {

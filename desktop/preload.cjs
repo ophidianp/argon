@@ -12,4 +12,24 @@ contextBridge.exposeInMainWorld('vibeboardDesktop', {
     if (look && look.scale) webFrame.setZoomFactor(look.scale)
   },
   setAppIcon: (png) => ipcRenderer.send('app-icon', png),
+  // Only in the installed app (or a checkout pointed at a test feed): updates from GitHub, checked against Argon's key.
+  ...(ipcRenderer.sendSync('update:available')
+    ? {
+        update: {
+          version: () => ipcRenderer.invoke('update:version'),
+          check: () => ipcRenderer.invoke('update:check'),
+          download: (onProgress) => {
+            const listen = (_e, p) => {
+              try {
+                onProgress?.(p)
+              } catch {}
+            }
+            ipcRenderer.on('update:progress', listen)
+            return ipcRenderer.invoke('update:download').finally(() => ipcRenderer.off('update:progress', listen))
+          },
+          install: (restart) => ipcRenderer.invoke('update:install', !!restart),
+          forget: () => ipcRenderer.invoke('update:forget'),
+        },
+      }
+    : {}),
 })

@@ -1,4 +1,4 @@
-// Settings, as a sheet with tabs (General, Agents, Appearance, Data): grouped rows, segments whose pill
+// Settings, as a sheet with tabs (General, Agents, Appearance, Updates, Data): grouped rows, segments whose pill
 // glides to the picked option, switches and sliders.
 import { useEffect, useLayoutEffect, useRef, useState, type ReactNode } from 'react'
 import { X } from 'lucide-react'
@@ -7,8 +7,9 @@ import { AGENTS } from '../../shared/agents.js'
 import { ACCENTS, DARK_PALETTES, DEFAULT_LOOK, LIGHT_PALETTES, LOOKS, UI_FONTS, useLook, type Look } from '../appearance'
 import { useTheme } from '../theme'
 import { AgentIcon } from './icons'
+import { checkForUpdates, setUpdateMode, setUpdatePrefs, updater } from '../updates'
 
-type Tab = 'general' | 'agents' | 'look' | 'data'
+type Tab = 'general' | 'agents' | 'look' | 'updates' | 'data'
 const WIN = window.vibeboardDesktop?.platform === 'win32'
 
 function Seg<T extends string | number>({ value, options, onChange }: { value: T; options: [T, ReactNode][]; onChange: (v: T) => void }) {
@@ -123,6 +124,7 @@ export function SettingsSheet() {
                 ['general', 'General'],
                 ['agents', 'Agents'],
                 ['look', 'Appearance'],
+                ['updates', 'Updates'],
                 ['data', 'Data'],
               ] as [Tab, string][]
             ).map(([k, l]) => (
@@ -320,6 +322,7 @@ export function SettingsSheet() {
               </>
             )}
 
+            {tab === 'updates' && <UpdatesPane />}
             {tab === 'data' && (
               <>
                 <Group title="Where it lives">
@@ -347,5 +350,69 @@ export function SettingsSheet() {
         </div>
       </section>
     </div>
+  )
+}
+
+// Settings → Updates. Only the installed app updates itself; a checkout updates with git.
+function UpdatesPane() {
+  const prefs = useStore((s) => s.settings.updates)
+  const mode = prefs?.mode === 'auto' ? 'auto' : 'ask'
+  const [version, setVersion] = useState('…')
+  const [status, setStatus] = useState<string | null>(null)
+  const [checking, setChecking] = useState(false)
+  const up = updater()
+  useEffect(() => {
+    up?.version().then(setVersion, () => setVersion('unknown'))
+  }, [up])
+  if (!up)
+    return (
+      <Group title="Updates">
+        <Row title="Updates" desc="Updates work in the installed Argon app. This copy runs from source, so it updates with git." stack />
+      </Group>
+    )
+  const last = prefs?.lastCheck ? `Last checked ${new Date(prefs.lastCheck).toLocaleString()}` : 'Not checked yet'
+  return (
+    <>
+      <Group title="Updates">
+        <Row title="Version" desc="The Argon you are running.">
+          <span className="set-value">{version}</span>
+        </Row>
+        <Row title="When an update is out" desc="Automatic downloads it in the background and installs it when you close Argon. Ask first shows you what is new and lets you pick." stack>
+          <Seg
+            value={mode}
+            options={[
+              ['auto', 'Automatic'],
+              ['ask', 'Ask first'],
+            ]}
+            onChange={setUpdateMode}
+          />
+        </Row>
+        <Row title="Check for updates" desc={checking ? 'Checking…' : (status ?? last)}>
+          <button
+            className="btn"
+            disabled={checking}
+            onClick={async () => {
+              setChecking(true)
+              setStatus(await checkForUpdates(true))
+              setChecking(false)
+            }}
+          >
+            Check now
+          </button>
+        </Row>
+      </Group>
+      {prefs?.skip && (
+        <Group title="Skipped">
+          <Row title="Skipped version" desc={`You skipped ${prefs.skip}. It comes back if you clear this.`}>
+            <button className="btn" onClick={() => setUpdatePrefs({ skip: undefined })}>
+              Clear
+            </button>
+          </Row>
+        </Group>
+      )}
+      <Group title="Safety">
+        <Row title="Signed releases" desc="Argon installs an update only if it carries Argon's own signature. Installing closes Argon, so it asks first when agents are running." stack />
+      </Group>
+    </>
   )
 }
