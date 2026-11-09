@@ -20,6 +20,14 @@ function setupUpdater({ app, ipcMain, net, stop, quitting }) {
   if (!enabled) return
 
   const { autoUpdater } = require('electron-updater')
+  // We replace NsisUpdater's own verifySignature, because it skips every check when no publisherName is set.
+  // If a newer electron-updater renames it, our check would silently never run: turn updates off instead.
+  if (typeof Object.getPrototypeOf(autoUpdater).verifySignature !== 'function') {
+    console.error('[update] this electron-updater has no verifySignature to replace; updates are off')
+    ipcMain.removeAllListeners('update:available')
+    ipcMain.on('update:available', (e) => (e.returnValue = false))
+    return
+  }
   autoUpdater.autoDownload = false
   autoUpdater.autoInstallOnAppQuit = false
   autoUpdater.disableWebInstaller = true

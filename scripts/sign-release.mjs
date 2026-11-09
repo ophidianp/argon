@@ -10,8 +10,9 @@ import { spawnSync } from 'node:child_process'
 import fs from 'node:fs'
 import path from 'node:path'
 import { createRequire } from 'node:module'
+import { fileURLToPath } from 'node:url'
 
-const ROOT = path.join(path.dirname(new URL(import.meta.url).pathname.replace(/^\/(\w:)/, '$1')), '..')
+const ROOT = path.join(path.dirname(fileURLToPath(import.meta.url)), '..')
 const { version } = JSON.parse(fs.readFileSync(path.join(ROOT, 'package.json'), 'utf8'))
 const file = path.resolve(process.argv[2] || path.join(ROOT, 'release', `Argon-${version}-setup.exe`))
 

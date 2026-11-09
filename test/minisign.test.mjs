@@ -85,3 +85,15 @@ test('verifyFile checks a file in a worker thread', async () => {
   await assert.rejects(verifyFile(file, k.sign(crypto.randomBytes(10)), k.pub), /does not match/)
   fs.rmSync(dir, { recursive: true, force: true })
 })
+
+// desktop/updater.cjs replaces this method so our check runs; if electron-updater drops it, updates turn off.
+test('electron-updater still has the verifySignature the updater replaces', () => {
+  const { NsisUpdater } = createRequire(import.meta.url)('electron-updater')
+  assert.equal(typeof NsisUpdater.prototype.verifySignature, 'function')
+})
+
+test('the embedded public key is the one in ~/.tauri, when that file is here', (t) => {
+  const pubFile = path.join(os.homedir(), '.tauri', 'argon-updater.key.pub')
+  if (!fs.existsSync(pubFile)) return t.skip('no key file on this PC')
+  assert.equal(fs.readFileSync(pubFile, 'utf8').trim(), ARGON_PUBKEY)
+})
