@@ -348,6 +348,26 @@ ipcMain.handle('claude:context', async (_e, cwd, count = 4) => {
     .sort((a, b) => b[1] - a[1]).slice(0, Math.max(1, Math.min(12, count))).map(([f]) => lastUsage(f)).filter(Boolean);
 });
 
+// ---------- one Claude session's transcript, for the Simple view ----------
+ipcMain.handle('claude:transcript', async (_e, o = {}) => {
+  const bases = [o.profile, process.env.CLAUDE_CONFIG_DIR, path.join(os.homedir(), '.claude')].filter(Boolean);
+  let file = null;
+  if (o.file && String(o.file).endsWith('.jsonl') && fs.existsSync(o.file) && bases.some((b) => path.resolve(o.file).startsWith(path.join(b, 'projects')))) file = o.file;
+  if (!file && o.session && /^[0-9a-f-]{8,}$/i.test(o.session)) {
+    for (const b of bases) { const f = path.join(claudeProjectDir(b, o.cwd), o.session + '.jsonl'); if (fs.existsSync(f)) { file = f; break; } }
+    if (!file) for (const b of bases) { try { for (const d of fs.readdirSync(path.join(b, 'projects'))) { const f = path.join(b, 'projects', d, o.session + '.jsonl'); if (fs.existsSync(f)) { file = f; break; } } } catch (_) {} if (file) break; }
+  }
+  if (!file) return { ok: false };
+  try {
+    const st = fs.statSync(file), size = st.size;
+    if (o.known != null && o.known === size) return { ok: true, same: true, size, file };
+    const len = Math.min(size, Math.max(10000, Math.min(8000000, o.bytes || 1500000)));
+    const fd = fs.openSync(file, 'r'), buf = Buffer.alloc(len); fs.readSync(fd, buf, 0, len, size - len); fs.closeSync(fd);
+    let text = buf.toString('utf8'); if (len < size) text = text.slice(text.indexOf('\n') + 1);
+    return { ok: true, file, size, mtime: st.mtimeMs, text };
+  } catch (_) { return { ok: false }; }
+});
+
 // ---------- dictation: Windows voice typing (Win+H) types into whatever has focus ----------
 ipcMain.handle('dictate:win', async () => {
   if (process.platform !== 'win32') return false;

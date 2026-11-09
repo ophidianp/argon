@@ -67,6 +67,9 @@ const followers = (w, p, type) => w.nodes.filter((n) => n.type === type && sourc
 const repaintAll = (w) => { for (const n of w.nodes) if (n._paint) n._paint(); };
 const stop = (e) => e.stopPropagation();
 
+// Grow a textarea to fit all of its text (no inner scrollbar).
+function growBox(ta) { if (!ta.isConnected) return; ta.style.height = 'auto'; ta.style.height = ta.scrollHeight + 'px'; }
+
 // ---------- Prompter ----------
 function renderPrompter(node, w, { el, body, extras, btns }) {
   const state = h('span', { class: 'mgr-state' });
@@ -78,7 +81,13 @@ function renderPrompter(node, w, { el, body, extras, btns }) {
 
   const goal = h('textarea', { class: 'mgr-goal', rows: 2, placeholder: 'Prompt, e.g. Make a Minecraft mod that makes happy ghasts fly faster' });
   goal.value = node.data.goal || '';
-  goal.addEventListener('input', () => { node.data.goal = goal.value; save(); });
+  // The box grows to fit every line; the tile grows with it so nothing hides behind a scrollbar.
+  const fitGoal = () => {
+    growBox(goal);
+    const over = body.scrollHeight - body.clientHeight;
+    if (over > 0 && document.contains(el)) { node.h = Math.round(node.h + over); el.style.height = node.h + 'px'; }
+  };
+  goal.addEventListener('input', () => { node.data.goal = goal.value; fitGoal(); save(); });
   goal.addEventListener('pointerdown', stop);
   const team = h('div', { class: 'mgr-team' });
   const run = h('button', { class: 'btn primary mgr-run', onclick: (e) => { stop(e); toggle(node, w); } });
@@ -88,6 +97,7 @@ function renderPrompter(node, w, { el, body, extras, btns }) {
     if (!document.contains(el)) return;
     const r = node.data.run, active = !!(r && r.active), rows = chainOf(w, node);
     if (document.activeElement !== goal && goal.value !== (node.data.goal || '')) goal.value = node.data.goal || '';
+    requestAnimationFrame(() => growBox(goal)); // only the box here: growing the tile on every repaint would undo the user's resize
     el.classList.toggle('running', active);
     state.textContent = active ? `Running · ${Object.keys(r.done || {}).length}/${Object.keys(r.files || {}).length}` : node.data.result ? 'Done' : rows.length ? `${rows.length} on the team` : 'No team yet';
     run.textContent = active ? '■ Stop' : '▶ Run';
@@ -97,8 +107,10 @@ function renderPrompter(node, w, { el, body, extras, btns }) {
     if (!rows.length) team.append(h('p', { class: 'mgr-hint' }, 'Drag from the ● on the left edge onto the first agent or group. Wire agents to each other and they join the list here.'));
     for (const { node: t, via } of rows) {
       const ag = agentsFor(w, t);
-      const task = h('input', { class: 'mgr-task', type: 'text', placeholder: defaultTask(t, via), value: (node.data.tasks || {})[t.id] || '' });
-      task.addEventListener('input', () => { node.data.tasks = { ...(node.data.tasks || {}), [t.id]: task.value }; save(); });
+      const task = h('textarea', { class: 'mgr-task', rows: 1, placeholder: defaultTask(t, via) });
+      task.value = (node.data.tasks || {})[t.id] || '';
+      task.addEventListener('input', () => { node.data.tasks = { ...(node.data.tasks || {}), [t.id]: task.value }; growBox(task); save(); });
+      requestAnimationFrame(() => growBox(task));
       task.addEventListener('pointerdown', stop);
       const sub = h('span', {});
       const x = via ? h('span', { class: 'mgr-via', title: 'Joined through a wire. Remove the wire to take it off.' }, '↳')

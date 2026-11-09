@@ -30,6 +30,8 @@ export const THEMES = {
   codex:    { name: 'Codex',    bg: '#0b0b0c', bg2: '#111113', panel: '#18181b', panel2: '#202024', panel3: '#2a2a2f', line: '#26262b', line2: '#34343a', text: '#ececec', muted: '#a1a1aa', dim: '#71717a', term: '#0b0b0c' },
   gemini:   { name: 'Gemini',   bg: '#131314', bg2: '#1b1c1d', panel: '#1e1f20', panel2: '#282a2c', panel3: '#333537', line: '#2f3133', line2: '#3c4043', text: '#e3e3e3', muted: '#a8adb3', dim: '#80868b', term: '#131314' },
   copilot:  { name: 'Copilot',  bg: '#010409', bg2: '#0d1117', panel: '#161b22', panel2: '#1c2128', panel3: '#22272e', line: '#21262d', line2: '#30363d', text: '#e6edf3', muted: '#9198a1', dim: '#6e7681', term: '#0d1117' },
+  ember:    { name: 'Ember',    bg: '#0c0a09', bg2: '#110e0c', panel: '#181513', panel2: '#201c19', panel3: '#2a2521', line: '#2a2420', line2: '#3a332e', text: '#efe9e1', muted: '#a89e93', dim: '#776e65', term: '#100d0b' },
+  paper:    { name: 'Paper',    light: true, bg: '#f2ede4', bg2: '#f6f2ea', panel: '#fffdf8', panel2: '#f7f2e9', panel3: '#ece5d8', line: '#e2d9ca', line2: '#d2c6b3', text: '#221d18', muted: '#6a6157', dim: '#988e82', term: '#fffdf8' },
   daylight: { name: 'Daylight', light: true, bg: '#e7e4ef', bg2: '#efecf6', panel: '#ffffff', panel2: '#f4f1fa', panel3: '#e8e3f3', line: '#dcd5ea', line2: '#c8bfdc', text: '#1c1727', muted: '#5a526e', dim: '#8a829e', term: '#fbfaff' },
 };
 
@@ -62,6 +64,8 @@ export const TERM_SCHEMES = {
 
 // One-click looks that set several options at once.
 export const LOOKS = [
+  { name: 'Ember', set: { theme: 'ember', accent: '#ef6a4c', glass: 'liquid', bgColor: '', pattern: 'dots', termScheme: 'ember' } },
+  { name: 'Paper', set: { theme: 'paper', accent: '#e8603f', glass: 'liquid', bgColor: '', pattern: 'dots', termScheme: 'paper' } },
   { name: 'Liquid Lavender', set: { theme: 'midnight', accent: '#9a83d4', glass: 'liquid', bgColor: '', termScheme: 'auto' } },
   { name: 'Obsidian', set: { theme: 'abyss', accent: '#5cc2c2', glass: 'frosted', bgColor: '#000000', pattern: 'grid', termScheme: 'nocturne' } },
   { name: 'Daybreak', set: { theme: 'daylight', accent: '#7ea8ec', glass: 'liquid', bgColor: '', termScheme: 'paper' } },

@@ -189,6 +189,62 @@ export function attachLens(container, selector) {
   return lens;
 }
 
+// The same gliding lens everywhere else in the app: hover any button, menu item or row and a glass
+// pill springs to it, then glides between its neighbours. The lens lives in the hovered element's
+// parent, so it only travels between siblings (a menu's items, a tile's header buttons, a list's rows).
+// Bars that already have their own lens (the dock, the top bar, the zoom buttons) are left alone.
+const LENS_ITEMS = 'button, [role="button"], .menu-item, .cmd-item, .tab, .chip, .frow, .check-row, .kadd, .ap-item, .mm-item, .mx-node, .mx-link, .team-row, .preset-row, .po-link, .po-file, .po-dir-name, .sup-row, .fm-crumb, .ask-b, .pick-card, .onb-card';
+const LENS_SKIP = '#dock, #topbar .top-actions, #zoomctl, .win-ctl, .xterm, .wire-chip, .wire-dot, .switch, .swatch, .slider, .seg, .settings-nav, .ms-seg, .btn.primary, .sv-send, .sv-stop, .chip2, .opt.primary, [data-nolens]';
+const hosts = new WeakMap(); // parent element -> { lens, shown } | null (can't host)
+function lensHost(p) {
+  if (hosts.has(p)) { const v = hosts.get(p); if (v && v.lens.parentNode !== p) p.prepend(v.lens); return v; }
+  const cs = getComputedStyle(p);
+  let ok = cs.display !== 'contents' && cs.display !== 'inline' && !/^(UL|OL|TABLE|TBODY|TR|SELECT)$/.test(p.tagName);
+  if (ok && cs.position === 'static') {
+    // making it positioned would re-anchor any absolutely placed children: skip those parents
+    for (const c of p.children) { const q = getComputedStyle(c).position; if (q === 'absolute' || q === 'fixed') { ok = false; break; } }
+    if (ok) p.style.position = 'relative';
+  }
+  if (!ok) { hosts.set(p, null); return null; }
+  p.classList.add('lens-host');
+  const lens = document.createElement('div');
+  lens.className = 'lens auto';
+  p.prepend(lens);
+  const v = { lens, shown: false };
+  p.addEventListener('pointerleave', () => { v.shown = false; lens.classList.remove('on'); });
+  p.addEventListener('scroll', () => { v.shown = false; lens.classList.remove('on'); }, { passive: true });
+  hosts.set(p, v);
+  return v;
+}
+export function initAutoLens() {
+  let lastEl = null;
+  document.addEventListener('pointerover', (e) => {
+    const b = e.target.closest && e.target.closest(LENS_ITEMS);
+    if (b === lastEl) return;
+    if (lastEl) lastEl.classList.remove('lensed');
+    lastEl = null;
+    if (!b || b.disabled || b.closest(LENS_SKIP) || !b.parentElement || !b.offsetParent) return;
+    const pos = getComputedStyle(b).position;
+    if (pos === 'absolute' || pos === 'fixed' || b.offsetWidth < 8 || b.offsetHeight < 8) return;
+    const v = lensHost(b.parentElement);
+    if (!v || b.offsetParent !== b.parentElement) return;
+    const { lens } = v;
+    const r = getComputedStyle(b).borderRadius;
+    const place = () => {
+      lens.style.width = b.offsetWidth + 'px';
+      lens.style.height = b.offsetHeight + 'px';
+      lens.style.transform = `translate(${b.offsetLeft}px, ${b.offsetTop}px)`;
+      lens.style.borderRadius = r && r !== '0px' ? r : '';
+    };
+    if (!v.shown) { lens.classList.add('snap'); place(); void lens.offsetWidth; lens.classList.remove('snap'); }
+    else place();
+    v.shown = true;
+    lens.classList.add('on');
+    b.classList.add('lensed');
+    lastEl = b;
+  }, { passive: true });
+}
+
 export const SPRING = 'linear(0, 0.0066, 0.0263 2.1%, 0.1023 4.4%, 0.2319 7.3%, 0.4103 10.6%, 0.6029 14.4%, 0.7663 18.3%, 0.8897 22.6%, 0.9582 26.6%, 1.0047 31.3%, 1.0272 36.7%, 1.0311 41.2%, 1.0219 48.3%, 1.0052 61.3%, 0.9989 77.7%, 1)';
 
 // Grow a panel out of the element that opened it (shared-element morph).

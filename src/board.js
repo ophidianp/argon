@@ -175,24 +175,49 @@ export function renderInk() {
   }
 }
 
+// The nearest thing under the pointer that can still scroll in direction dy (stops at the tile).
+function scrollerAt(t, dy) {
+  const xt = t.closest && t.closest('.xterm');
+  if (xt) { const vp = xt.querySelector('.xterm-viewport'); if (vp && canScroll(vp, dy)) return vp; }
+  for (let el = t; el && el !== board(); el = el.parentElement) {
+    if (canScroll(el, dy)) return el;
+    if (el.classList && el.classList.contains('tile') && !el.classList.contains('group')) break;
+  }
+  return null;
+}
+function canScroll(el, dy) {
+  if (el.scrollHeight <= el.clientHeight + 1) return false;
+  const oy = getComputedStyle(el).overflowY;
+  if (oy !== 'auto' && oy !== 'scroll') return false;
+  return dy < 0 ? el.scrollTop > 0 : el.scrollTop + el.clientHeight < el.scrollHeight - 1;
+}
+
 export function initBoard() {
   const b = board();
   let pan = null, spaceDown = false;
 
+  // Plain wheel zooms the board (even over tiles). Ctrl+wheel scrolls: the tile content under
+  // the pointer if it can scroll, otherwise the board itself. Touchpad pinch still zooms, and
+  // touchpad two-finger swipes still pan the board / scroll tiles like before.
   b.addEventListener('wheel', (e) => {
-    const onEmpty = e.target === b || e.target.id === 'nodes' || e.target.id === 'world' || e.target.id === 'pen-capture';
-    if (e.ctrlKey || onEmpty) {
-      e.preventDefault();
-      // Touchpads send small deltas with ctrlKey for pinch; mouse wheels send ~100.
-      const isPinchOrWheel = e.ctrlKey || Math.abs(e.deltaY) >= 40 && !e.deltaX;
-      if (isPinchOrWheel) {
-        const pinch = e.ctrlKey && Math.abs(e.deltaY) < 40;
-        const f = Math.exp(-e.deltaY * (pinch ? 0.01 : 0.0018));
-        pinch ? zoomAt(e.clientX, e.clientY, f) : smoothZoom(e.clientX, e.clientY, f);
-      }
-      else { const v = ws().view; v.x -= e.deltaX; v.y -= e.deltaY; applyView(); save(); }
+    if (e.altKey) return; // Alt+wheel is the text tile's font size
+    const t = e.target;
+    const onEmpty = t === b || t.id === 'nodes' || t.id === 'world' || t.id === 'pen-capture';
+    const mouseLike = e.deltaMode !== 0 || (Math.abs(e.deltaY) >= 40 && !e.deltaX);
+    const pinch = e.ctrlKey && !mouseLike;
+    if (pinch) { e.preventDefault(); e.stopPropagation(); zoomAt(e.clientX, e.clientY, Math.exp(-e.deltaY * 0.01)); return; }
+    if (!e.ctrlKey) {
+      if (mouseLike) { e.preventDefault(); e.stopPropagation(); smoothZoom(e.clientX, e.clientY, Math.exp(-e.deltaY * 0.0018)); return; }
+      if (onEmpty) { e.preventDefault(); const v = ws().view; v.x -= e.deltaX; v.y -= e.deltaY; applyView(); save(); }
+      return; // touchpad swipe over a tile: let the tile scroll itself
     }
-  }, { passive: false });
+    // Ctrl+wheel: scroll
+    e.preventDefault(); e.stopPropagation();
+    const dy = e.deltaMode === 1 ? e.deltaY * 40 : e.deltaMode === 2 ? e.deltaY * 400 : e.deltaY;
+    const el = onEmpty ? null : scrollerAt(t, dy);
+    if (el) el.scrollBy({ top: dy });
+    else { const v = ws().view; if (e.shiftKey) v.x -= dy; else v.y -= dy; applyView(); save(); }
+  }, { passive: false, capture: true });
 
   b.addEventListener('pointerdown', (e) => {
     const onEmpty = e.target === b || e.target.id === 'nodes' || e.target.id === 'world' || e.target.classList.contains('ws-layer') || e.target.classList.contains('pipe-layer') || e.target.classList.contains('pipe-wires');

@@ -6,13 +6,15 @@ import { startTicking, statusOf, disposeConsole, refitAll } from './consoles.js'
 import { renderMission, spawnMenu, openCommandBar, openUsage, openMemory, openSettings, detectInstalled, openAgentsSetup } from './panels.js';
 import { askText, confirmBox } from './ui.js';
 import { applyAppearance, look, greet } from './appearance.js';
-import { glassify, initGlassFx, attachLens } from './glass.js';
+import { glassify, initGlassFx, attachLens, initAutoLens } from './glass.js';
 import { initManager } from './manager.js';
 import { initTeamwork, presetMenu } from './teamwork.js';
 import { initMissionMap, openMissionMap } from './missionmap.js';
 import { initFlowDots } from './flowdots.js';
 import { initBoardApi } from './boardapi.js';
 import { initTeamTalk } from './teamtalk.js';
+import { initSimple } from './simple.js';
+import { initChrome } from './chrome.js';
 import { initPace } from './pace.js';
 import { paintIcons } from './icons.js';
 import { openOnboarding } from './onboarding.js';
@@ -41,6 +43,7 @@ async function boot() {
   attachLens(document.getElementById('dock'), 'button');
   attachLens(document.querySelector('#topbar .top-actions'), 'button');
   attachLens(document.getElementById('zoomctl'), 'button');
+  initAutoLens();
 
   await detectInstalled();
   initBoard();
@@ -55,6 +58,8 @@ async function boot() {
   startTicking();
   paintIcons();
   initTeamwork();  // console wires, presets, question buttons, context gauge, dictation
+  initSimple();    // Claude consoles as a conversation, the status in words
+  initChrome();    // chips, ask bar, branch, running count, day/night, right rail, Teams
   initMissionMap();
   initPace();
   initFlowDots();
@@ -77,6 +82,7 @@ function switchWs(id) {
   renderTabs();
   renderMission();
   save();
+  emit('workspace', id);
 }
 on('switchWs', switchWs);
 on('view', applyView);

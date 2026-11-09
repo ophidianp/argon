@@ -25,6 +25,7 @@ contextBridge.exposeInMainWorld('argon', {
   },
   pickFolder: () => ipcRenderer.invoke('dialog:folder'),
   claudeContext: (cwd, count) => ipcRenderer.invoke('claude:context', cwd, count),
+  claudeTranscript: (o) => ipcRenderer.invoke('claude:transcript', o),
   setAppIcon: (png) => ipcRenderer.invoke('app:icon', Array.from(png)),
   dictateWin: () => ipcRenderer.invoke('dictate:win'),
   openExternal: (url) => ipcRenderer.invoke('shell:open', url),

@@ -35,6 +35,7 @@
     },
     pickFolder: () => invoke('pick_folder'),
     claudeContext: (cwd, count) => invoke('claude_context', { cwd, count }),
+    claudeTranscript: (o) => invoke('claude_transcript', { cwd: o.cwd, session: o.session || null, file: o.file || null, profile: o.profile || null, bytes: o.bytes || null, known: o.known == null ? null : o.known }),
     dictateWin: () => invoke('dictate_win'),
     openExternal: (url) => invoke('shell_open', { url }),
     reveal: (path) => invoke('shell_reveal', { path }),

@@ -70,6 +70,7 @@ function snapshot(w) {
     '{"do":"wire","from":"<console or group id>","to":"<console or group id>","mode":"done"}',
     '{"do":"say","from":"<your console name>","to":"<console name or id>","text":"a message or a task for that agent"}',
     '{"do":"delete","id":"<id>"}',
+    '{"do":"spawn","from":"<your console name>","helpers":[{"name":"helper-1","task":"what it should do"}]}',
     '```',
     'Types you can add: ' + ADDABLE.join(', ') + '. Positions are board pixels: x grows to the right, y grows down.',
     'Put new tiles next to related ones and do not cover other tiles. Agent consoles cannot be added or deleted this way.',
@@ -158,6 +159,29 @@ function apply(w, a) {
     const wire = window.__argonTeam.addWire(w, f.id, t.id, ['done', 'reply', 'if', 'review', 'context'].includes(a.mode) ? a.mode : 'done');
     if (wire && a.pattern) wire.pattern = String(a.pattern);
     return { ok: !!wire, did: `wired ${f.title} → ${t.title}` };
+  }
+  if (what === 'spawn') {
+    // a lead brings helpers onto the board: each starts in the project folder with its task, grouped with the lead
+    const lead = a.from && findIn(w, a.from);
+    const list = (Array.isArray(a.helpers) ? a.helpers : [a]).slice(0, 4);
+    if (!list.length || !list[0].task) throw new Error('give each helper a "task"');
+    const live = w.nodes.filter((n) => n.type === 'console' && n.data.helperOf).length;
+    if (live + list.length > 8) throw new Error('8 helpers at most on one board: close some first');
+    let g = lead && lead.data.groupId && w.nodes.find((n) => n.id === lead.data.groupId);
+    const made = [];
+    list.forEach((hp, i) => {
+      const ag = agentByKey(hp.agent || (lead && lead.data.agent) || 'claude', S.data.customAgents);
+      const x = lead ? lead.x + (lead.w + 40) * ((i % 2) + 1) : 0, y = lead ? lead.y + Math.floor(i / 2) * 440 : 0;
+      const task = String(hp.task) + (lead ? `\n\nYou are a helper for ${lead.title}. When you finish, message ${lead.title} with what you did: write a .json file into the board inbox containing {"do":"say","from":"<your name>","to":"${lead.title}","text":"what you did"}. The board's BOARD.md explains the inbox.` : '');
+      const n = addNode('console', { agent: ag.key, helperOf: lead ? lead.id : 'agent', roleNote: one(hp.role || 'Helper', 60), initialPrompt: task }, { ws: w, quiet: true, x: Math.round(x), y: Math.round(y), w: 560, h: 400, title: hp.name ? one(hp.name, 40) : undefined });
+      made.push(n);
+    });
+    if (lead) {
+      if (!g) { g = addNode('group', { color: 'accent' }, { ws: w, quiet: true, x: lead.x - 26, y: lead.y - 76, w: 600, h: 400, title: `${lead.title}'s team` }); lead.data.groupId = g.id; g.data.v2 = true; }
+      for (const n of made) n.data.groupId = g.id;
+      fitGroup(g, w); retagAll(w);
+    }
+    return { ok: true, did: `brought in ${made.map((n) => n.title).join(', ')}` };
   }
   if (what === 'say') {
     const t = findIn(w, a.to);

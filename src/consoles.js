@@ -87,10 +87,25 @@ export function mountConsole(node, body, w) {
 
 async function startPty(node, w, r, { fresh = false } = {}) {
   const agent = agentByKey(node.data.agent, S.data.customAgents);
-  const resume = !fresh && node.data.started && S.data.settings.resumeOnLaunch && !!agent.resume;
-  const command = buildCommand(agent, { resume, autoApprove: S.data.settings.autoApprove, extra: node.data.args || '' });
-  const env = {};
+  let resume = !fresh && node.data.started && S.data.settings.resumeOnLaunch && !!agent.resume;
   const prof = S.data.profiles.find(p => p.id === node.data.profile);
+  let extra = node.data.args || '';
+  // Claude gets its own session id, so Argon reads exactly this console's transcript (the Simple view, the
+  // context gauge, hand-offs) and resumes exactly this conversation, not the newest one in the folder.
+  if (agent.key === 'claude' && !/--(session-id|resume|continue)\b/.test(extra)) {
+    let exists = false;
+    if (!fresh && node.data.session && window.argon.claudeTranscript) {
+      try { exists = !!(await window.argon.claudeTranscript({ cwd: node.data.cwd || w.cwd, session: node.data.session, profile: prof && prof.dir, bytes: 10000 })).ok; } catch (_) {}
+    }
+    const back = resume && exists;
+    // a session id that already has a conversation can only be resumed, never started again
+    if (!back && (fresh || !node.data.session || exists)) node.data.session = crypto.randomUUID();
+    extra = (back ? `--resume ${node.data.session}` : `--session-id ${node.data.session}`) + (extra ? ' ' + extra : '');
+    for (const f of (w.folders || [])) if (f && !/'/.test(f)) extra += ` --add-dir '${f}'`;
+    resume = false; r.session = node.data.session; save();
+  }
+  const command = buildCommand(agent, { resume, autoApprove: S.data.settings.autoApprove, extra });
+  const env = {};
   if (prof && agent.profileEnv) env[agent.profileEnv] = prof.dir;
   try { r.fit.fit(); } catch (_) {}
   const res = await window.argon.pty.spawn({
@@ -201,6 +216,11 @@ export function waitReady(r, timeout = 20000) {
 }
 
 // Type text into a console and press Enter.
+function leadHint(node, w) {
+  const s = window.argon.platform === 'win32' ? '\\' : '/', base = (window.argon.platform === 'win32' ? String(w.cwd).replace(/\//g, '\\') : w.cwd).replace(/[\\/]+$/, '');
+  const inbox = `${base}${s}.argon${s}board${s}inbox`;
+  return `[Argon] You are ${node.title}, the LEAD. When this job splits into parts that can run at the same time, bring in helpers on the board instead of doing everything yourself: write a file ending in .json into ${inbox} containing {"do":"spawn","from":"${node.title}","helpers":[{"name":"helper-1","task":"the part this helper does, with every detail it needs"}]} (up to 4 helpers per file). Each helper starts in this folder with its task, works in a group with you, and messages you when it is done. Then combine their work, check it, and report back.`;
+}
 export function sendTo(id, text, submit = true) {
   const r = rt(id);
   if (!r || !r.alive) return false;
@@ -211,6 +231,10 @@ export function sendTo(id, text, submit = true) {
       const s = window.argon.platform === 'win32' ? '\\' : '/', base = (window.argon.platform === 'win32' ? w.cwd.replace(/\//g, '\\') : w.cwd).replace(/[\\/]+$/, '');
       text = `[Argon] You share a live whiteboard with the user. To see it, or to add notes, checklists and tiles, move things, group or wire agents, read ${base}${s}.argon${s}board${s}BOARD.md and follow it.\n\n${text}`;
     }
+  }
+  if (submit && !r.leadHinted && !/^\s*\//.test(text)) {
+    const f = findNode(id);
+    if (f && f.node.data.lead) { r.leadHinted = true; text = `${leadHint(f.node, f.ws)}\n\n${text}`; }
   }
   const bp = r.term.modes && r.term.modes.bracketedPasteMode;
   const body = bp ? `\x1b[200~${text}\x1b[201~` : text.replace(/\r?\n/g, ' ');

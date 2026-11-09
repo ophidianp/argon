@@ -224,7 +224,7 @@ function byName(name) {
 }
 
 // Parse "@a @b #g message" -> {ids, text}
-function parseTargets(v) {
+export function parseTargets(v) {
   const ids = new Set();
   let rest = v.trimStart();
   for (;;) {

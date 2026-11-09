@@ -588,6 +588,51 @@ async fn claude_context(cwd: String, count: Option<f64>) -> Vec<Value> {
     files.into_iter().take(count).filter_map(|(p, _)| last_usage(&p)).collect()
 }
 
+// ---------- one Claude session's transcript, for the Simple view ----------
+// Finds <base>/projects/<slug>/<session>.jsonl (any base, any project folder if the slug differs) and returns
+// its last `bytes` bytes, starting at the first whole line. `size` lets the page skip reading an unchanged file.
+#[tauri::command]
+async fn claude_transcript(cwd: String, session: Option<String>, file: Option<String>, profile: Option<String>, bytes: Option<f64>, known: Option<f64>) -> Value {
+    let mut bases = vec![];
+    if let Some(p) = profile.filter(|p| !p.is_empty()) { bases.push(PathBuf::from(p)); }
+    bases.extend(claude_bases());
+    let mut found: Option<PathBuf> = None;
+    if let Some(f) = file.filter(|f| f.ends_with(".jsonl")) {
+        let fp = PathBuf::from(&f);
+        let no_up = !fp.components().any(|c| matches!(c, std::path::Component::ParentDir));
+        if no_up && fp.exists() && bases.iter().any(|b| fp.starts_with(b.join("projects"))) { found = Some(fp); }
+    }
+    if found.is_none() {
+        if let Some(id) = session.filter(|s| s.len() >= 8 && s.chars().all(|c| c.is_ascii_hexdigit() || c == '-')) {
+            let name = format!("{}.jsonl", id);
+            for b in &bases {
+                let p = b.join("projects").join(project_slug(&cwd)).join(&name);
+                if p.exists() { found = Some(p); break; }
+            }
+            if found.is_none() {
+                'outer: for b in &bases {
+                    if let Ok(rd) = fs::read_dir(b.join("projects")) {
+                        for e in rd.flatten() { let p = e.path().join(&name); if p.exists() { found = Some(p); break 'outer; } }
+                    }
+                }
+            }
+        }
+    }
+    let Some(path) = found else { return json!({ "ok": false }) };
+    let Ok(mut f) = fs::File::open(&path) else { return json!({ "ok": false }) };
+    let size = f.metadata().map(|m| m.len()).unwrap_or(0);
+    let mtime = mtime_ms(&path).unwrap_or(0.0);
+    if known.map(|k| k as u64 == size).unwrap_or(false) { return json!({ "ok": true, "same": true, "size": size, "file": path.to_string_lossy() }); }
+    let want = bytes.unwrap_or(1_500_000.0).clamp(10_000.0, 8_000_000.0) as u64;
+    let len = size.min(want);
+    if f.seek(SeekFrom::Start(size - len)).is_err() { return json!({ "ok": false }) }
+    let mut buf = Vec::with_capacity(len as usize);
+    if f.take(len).read_to_end(&mut buf).is_err() { return json!({ "ok": false }) }
+    let mut text = String::from_utf8_lossy(&buf).into_owned();
+    if len < size { if let Some(i) = text.find('\n') { text = text[i + 1..].to_string(); } }
+    json!({ "ok": true, "file": path.to_string_lossy(), "size": size, "mtime": mtime, "text": text })
+}
+
 // ---------- dictation: Windows voice typing (Win+H) types into whatever has focus ----------
 #[tauri::command]
 async fn dictate_win() -> bool {
@@ -718,7 +763,7 @@ pub fn run() {
             pick_folder, shell_open, shell_reveal, app_home,
             agents_detect, agents_auth, git_info, git_action,
             fs_list, fs_read, fs_write, fs_exists,
-            claude_context, dictate_win, usage_tokens, set_backdrop, set_app_icon, fs_changed, fs_mkdir, fs_rename, fs_trash, fs_remove, open_path, dev_log,
+            claude_context, dictate_win, usage_tokens, set_backdrop, set_app_icon, fs_changed, fs_mkdir, fs_rename, fs_trash, fs_remove, open_path, dev_log, claude_transcript,
         ])
         .setup(|app| {
             // The window is built here (not in tauri.conf.json) so we can tune the web engine.

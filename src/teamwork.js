@@ -9,6 +9,7 @@ import { isTyping } from './board.js';
 import { openCommandBar } from './panels.js';
 import { paced } from './pace.js';
 import { startTeamFile, teamIntro, hasQueued } from './teamtalk.js';
+import { contextPopover } from './context.js';
 
 const NS = 'http://www.w3.org/2000/svg';
 const isPipe = (n) => !!(n && n.data && n.data.space === 'pipe');
@@ -76,6 +77,10 @@ export function replyText(id, max = 2000) {
 
 function brief(w, wire, text) {
   const from = titleOf(wire.from), to = titleOf(wire.to);
+  const dn = nodeOf(wire.to), role = dn && dn.type === 'console' && dn.data.roleNote ? `Your role: ${to}, ${dn.data.roleNote.charAt(0).toLowerCase() + dn.data.roleNote.slice(1)}.\n\n` : '';
+  return role + briefText(w, wire, text, from, to);
+}
+function briefText(w, wire, text, from, to) {
   if (wire.mode === 'review') return `You are the reviewer (${to}). Review this work from ${from}. If it is good, reply with the single word APPROVED. Otherwise list the exact fixes needed.\n\n--- ${from} said ---\n${text}`;
   if (wire.mode === 'context') return `For context only (no action needed yet), here is what ${from} has been working on:\n\n${text}\n\nReply "ok".`;
   return `${from} finished and handed this to you (${to}):\n\n${text}\n\nContinue from here.`;
@@ -324,7 +329,7 @@ const BUILTIN = [
   { name: 'Research → Write', note: '2 agents', roles: ['Researcher', 'Writer'], wires: [[0, 1, 'done']] },
   { name: 'Manager + team of 3', note: 'Manager runs 3 builders', roles: ['Builder 1', 'Builder 2', 'Builder 3'], wires: [], manager: true },
 ];
-function defaultAgent() {
+export function defaultAgent() {
   for (const k of ['claude', 'codex', 'gemini', 'copilot']) { const a = agentByKey(k, S.data.customAgents); if (a && a.key === k && (!a.cmd || S.installed[a.cmd])) return k; }
   return 'shell';
 }
@@ -340,10 +345,10 @@ export function presetMenu(x, y) {
 export function spawnTeam(p, agentKey) {
   const w = ws(); if (w.mode === 'pipe') { toast('Switch to Board to start a team', 'warn'); return null; }
   const v = w.view, cx = (innerWidth / 2 - v.x) / v.z, cy = (innerHeight / 2 - v.y) / v.z;
-  const cw = 440, chh = 280, gap = 70, n = p.roles.length, total = n * cw + (n - 1) * gap;
+  const cw = 560, chh = 400, gap = 80, n = p.roles.length, total = n * cw + (n - 1) * gap;
   const nodes = p.roles.map((role, i) => {
     const agent = (p.agents && p.agents[i]) || agentKey || defaultAgent();
-    return addNode('console', { agent, role }, { x: Math.round(cx - total / 2 + i * (cw + gap)), y: Math.round(cy - chh / 2), w: cw, h: chh, title: role });
+    return addNode('console', { agent, role, roleNote: (p.notes && p.notes[i]) || '' }, { x: Math.round(cx - total / 2 + i * (cw + gap)), y: Math.round(cy - chh / 2), w: cw, h: chh, title: role });
   });
   select(nodes[0].id);
   const g = addGroup();
@@ -357,7 +362,9 @@ export function spawnTeam(p, agentKey) {
   for (const [a, b, mode, pattern] of p.wires) { const wr = addWire(w, nodes[a].id, nodes[b].id, mode); if (wr && pattern) wr.pattern = pattern; }
   if (p.manager && g) {
     const m = addNode('prompter', {}, { x: g.x - 520, y: g.y });
-    m.data.links = [g.id]; save(); emit('nodes');
+    m.data.links = [g.id];
+    const sec = addNode('secretary', {}, { x: g.x + g.w + 60, y: g.y });
+    sec.data.source = m.id; save(); emit('nodes');
   }
   save(); emit('nodes');
   toast(`Started ${p.name}. Give the first agent a task and the wires do the rest.`, 'ok');
@@ -368,7 +375,7 @@ function savePreset(g, w) {
   if (!members.length) { toast('Put some consoles in this group first'); return; }
   const idx = new Map(members.map((n, i) => [n.id, i]));
   const wires = wiresOf(w).filter((x) => idx.has(x.from) && idx.has(x.to)).map((x) => [idx.get(x.from), idx.get(x.to), x.mode, x.pattern || '']);
-  const p = { name: g.title, roles: members.map((n) => n.data.role || n.title), agents: members.map((n) => n.data.agent), wires };
+  const p = { name: g.title, roles: members.map((n) => n.data.role || n.title), notes: members.map((n) => n.data.roleNote || ''), agents: members.map((n) => n.data.agent), wires };
   const list = (S.data.settings.presets = S.data.settings.presets || []);
   const at = list.findIndex((x) => x.name === p.name);
   if (at >= 0) list[at] = p; else list.push(p);
@@ -453,6 +460,8 @@ async function pollContext() {
     let files = [];
     try { files = await window.argon.claudeContext(cwd, list.length + 3); } catch (_) {}
     const claimed = new Set();
+    // a console started with its own session id owns that transcript, no guessing
+    for (const c of list) { const s = c.node.data.session; const f = s && files.find((x) => String(x.file).replace(/\\/g, '/').endsWith('/' + s + '.jsonl')); if (f) c.r.ctxFile = f.file; }
     for (const c of list) if (c.r.ctxFile && files.some((f) => f.file === c.r.ctxFile)) claimed.add(c.r.ctxFile);
     // newest-active console gets the newest unclaimed transcript
     for (const c of list.filter((c) => !c.r.ctxFile || !claimed.has(c.r.ctxFile)).sort((a, b) => b.r.lastOut - a.r.lastOut)) {
@@ -477,7 +486,7 @@ function gaugeEl(node) {
     g = h('button', { class: 'ctx-gauge', title: 'Context used' });
     g.innerHTML = '<svg viewBox="0 0 20 20"><circle class="bg" cx="10" cy="10" r="8"/><circle class="fg" cx="10" cy="10" r="8" pathLength="100"/></svg><span></span>';
     g.addEventListener('pointerdown', (e) => e.stopPropagation());
-    g.onclick = (e) => { e.stopPropagation(); gaugeMenu(node, e.clientX, e.clientY); };
+    g.onclick = (e) => { e.stopPropagation(); contextPopover(node, e.clientX, e.clientY); };
     el.querySelector('.tile-head .agent-badge')?.before(g);
   }
   return g;
@@ -504,7 +513,7 @@ function gaugeMenu(node, x, y) {
 // 5) HOLD SPACE TO DICTATE
 // ====================================================================================
 let holdT = 0, holding = false, rec = null;
-function inputBox() { return document.querySelector('#cmdbar input'); }
+function inputBox() { return document.querySelector('#cmdbar input') || document.querySelector('#askbar textarea'); }
 export async function dictate() {
   if (!inputBox()) openCommandBar('');
   const input = inputBox(); if (!input) return;
@@ -600,6 +609,6 @@ export function initTeamwork() {
   paced(draw);
   initDictation();
   const pb = document.querySelector('#dock [data-add="presets"]');
-  if (pb) pb.onclick = (e) => { const r = pb.getBoundingClientRect(); presetMenu(r.right + 8, r.top); };
+  if (pb) pb.onclick = () => { if (window.__argonChrome) window.__argonChrome.openTeams(); else { const r = pb.getBoundingClientRect(); presetMenu(r.right + 8, r.top); } };
   window.__argonTeam = { addWire, spawnTeam, parseQuestion, replyText, dictate, contextOf, BUILTIN };
 }
