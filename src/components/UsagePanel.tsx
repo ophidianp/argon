@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { create } from 'zustand'
 import { ChartColumn, ChevronLeft, CircleUserRound, KeyRound, Pencil, Plus, RotateCw, SquareTerminal, X } from 'lucide-react'
-import { api, type AgentUsage, type Limits, type Usage } from '../api'
+import { api, type AgentUsage, type Limit, type Limits, type PlanLimits as AgentLimits, type Usage } from '../api'
 import { useStore, type Profile, type UsageView } from '../store'
 import { AGENTS, agentById } from '../../shared/agents.js'
 import { AgentGlyph, ClaudeMark } from './icons'
@@ -53,8 +53,89 @@ const ago = (t: number) => {
   return s < 30 ? 'just now' : s < 3600 ? `${Math.round(s / 60)} min ago` : `${Math.round(s / 3600)} h ago`
 }
 const sum = (d: [number, number, number] | undefined) => (d ? d[0] + d[1] + d[2] : 0)
+// "1:49 PM" today, "Nov 14, 4:59 PM" another day.
+export const resetClock = (ms: number) => {
+  const at = new Date(ms)
+  const clock = at.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })
+  return at.toDateString() === new Date().toDateString() ? clock : `${at.toLocaleDateString([], { month: 'short', day: 'numeric' })}, ${clock}`
+}
+const resetText = (l: { resets?: string | null; resetsAt?: number }) => (l.resetsAt ? resetClock(l.resetsAt) : l.resets ?? null)
 
-const USAGE_AGENTS = ['claude', 'codex', 'gemini', 'grok', 'opencode']
+const USAGE_AGENTS = ['claude', 'codex', 'copilot', 'gemini', 'grok', 'opencode']
+// Agents whose plan limits Argon can read besides Claude (server/limits.mjs).
+const PLAN_AGENTS = ['codex', 'copilot']
+
+// ---------- plan limits for Codex and Copilot ----------
+type PlanState = { data: Record<string, AgentLimits | undefined>; busy: Record<string, boolean> }
+const usePlans = create<PlanState>(() => ({ data: {}, busy: {} }))
+function loadPlan(agent: string, fresh = false) {
+  if (!PLAN_AGENTS.includes(agent) || usePlans.getState().busy[agent]) return
+  const profile = agent === 'copilot' ? undefined : useStore.getState().settings.active?.[agent]
+  usePlans.setState((s) => ({ busy: { ...s.busy, [agent]: true } }))
+  api
+    .planLimits(agent, profile, fresh)
+    .catch((e): AgentLimits => ({ ok: false, reason: 'error', detail: (e as Error).message, limits: [] }))
+    .then((r) => usePlans.setState((s) => ({ data: { ...s.data, [agent]: r } })))
+    .finally(() => usePlans.setState((s) => ({ busy: { ...s.busy, [agent]: false } })))
+}
+
+const WHY: Record<string, Record<string, string>> = {
+  codex: {
+    'no-sessions': "No Codex sessions on this PC yet. Codex reports its limits after each turn, so they show up here once you've used it.",
+    'no-limits': "Codex hasn't reported any limits in its recent sessions.",
+  },
+  copilot: {
+    'no-gh': "Copilot's limits come from the GitHub CLI (gh), which isn't installed. Install it and run “gh auth login” to see them here.",
+    'gh-signed-out': "The GitHub CLI isn't signed in. Run “gh auth login” in a terminal to see Copilot's limits.",
+    'no-copilot': 'This GitHub account has no Copilot plan.',
+  },
+}
+const NO_LIMITS: Record<string, string> = {
+  gemini: "Gemini doesn't share its plan limits with other apps, so Argon can't show them. Type /stats in a Gemini console to see this session's use.",
+}
+const noLimits = (id: string) => NO_LIMITS[id] ?? `${agentById(id)?.name ?? id} doesn't share its plan limits with other apps, so Argon can't show them.`
+
+function LimitBar({ l }: { l: { title: string; pct: number; resets?: string | null; resetsAt?: number; sub?: string } }) {
+  const when = resetText(l)
+  const unlimited = l.sub === 'Unlimited'
+  const extra = unlimited ? null : l.sub
+  return (
+    <div className={`usage-limit ${l.pct >= 95 ? 'crit' : l.pct >= 80 ? 'warn' : ''}`}>
+      <div className="row">
+        <span>{l.title}</span>
+        <span>{unlimited ? 'Unlimited' : `${Math.round(l.pct)}%`}</span>
+      </div>
+      {!unlimited && (
+        <div className="bar">
+          <i style={{ width: `${Math.min(100, l.pct)}%` }} />
+        </div>
+      )}
+      {(when || extra) && <div className="s">{[when && `Resets ${when}`, extra].filter(Boolean).join(' · ')}</div>}
+    </div>
+  )
+}
+
+function AgentPlan({ id }: { id: string }) {
+  const data = usePlans((s) => s.data[id])
+  const busy = usePlans((s) => !!s.busy[id])
+  useEffect(() => loadPlan(id), [id])
+  if (!PLAN_AGENTS.includes(id)) return <div className="usage-note">{noLimits(id)}</div>
+  if (!data) return <div className="usage-note">{busy ? 'Reading plan limits…' : '—'}</div>
+  if (!data.ok)
+    return (
+      <div className="usage-note warn">
+        {WHY[id]?.[data.reason ?? ''] ?? `${id === 'copilot' ? 'GitHub' : agentById(id)?.name} didn't share the plan limits this time${data.detail ? `: ${data.detail}` : '.'}`}
+      </div>
+    )
+  return (
+    <div className="usage-plan">
+      {data.plan && <div className="usage-plan-tag">{data.plan} plan</div>}
+      {data.limits.length ? data.limits.map((l) => <LimitBar key={l.title} l={l} />) : <div className="usage-note">No limits reported for this plan.</div>}
+      {id === 'codex' && data.asOf && <div className="usage-note">As of Codex's last turn, {ago(data.asOf)}. Type /status in a Codex console for the live numbers.</div>}
+    </div>
+  )
+}
+
 
 // ---------- panel ----------
 export function UsagePanel() {
@@ -124,10 +205,14 @@ function UsageView({ close }: { close: () => void }) {
   const installed = useStore((s) => s.installed)
   const agent = useStore((s) => s.usageAgent)
   const { limits, limitsError, limitsBusy, tokens, tokensBusy } = useUsage()
-  const tabs = USAGE_AGENTS.filter((a) => installed.includes(a) || (tokens?.[a as keyof Usage] as AgentUsage | undefined)?.sessions)
+  // The agents above first, then every other installed agent (they say they don't share limits).
+  const order = [...USAGE_AGENTS, ...AGENTS.map((a) => a.id).filter((a) => a !== 'shell' && !USAGE_AGENTS.includes(a))]
+  const tabs = order.filter((a) => installed.includes(a) || (tokens?.[a as keyof Usage] as AgentUsage | undefined)?.sessions)
   const shown = tabs.includes(agent) ? agent : tabs[0] ?? 'claude'
   const data = (tokens?.[shown as 'claude' | 'codex'] as AgentUsage | undefined) ?? null
   const busy = limitsBusy || tokensBusy
+  const planBusy = usePlans((s) => !!s.busy[shown])
+  const plan = usePlans((s) => s.data[shown])
   const color = agentById(shown)?.color ?? 'var(--accent)'
   return (
     <>
@@ -152,10 +237,11 @@ function UsageView({ close }: { close: () => void }) {
               title="Refresh"
               onClick={() => {
                 loadLimits(true)
+                loadPlan(shown, true)
                 loadTokens()
               }}
             >
-              <RotateCw size={14} className={busy ? 'spin' : ''} />
+              <RotateCw size={14} className={busy || planBusy ? 'spin' : ''} />
             </button>
           </>
         }
@@ -163,7 +249,7 @@ function UsageView({ close }: { close: () => void }) {
         <AgentTabs ids={tabs} value={shown} onPick={(usageAgent) => useStore.getState().set({ usageAgent })} />
       </Head>
       <div className="usage-body">
-        {shown === 'claude' && <PlanLimits limits={limits} error={limitsError} busy={limitsBusy} />}
+        {shown === 'claude' ? <PlanLimits limits={limits} error={limitsError} busy={limitsBusy} /> : <AgentPlan id={shown} />}
         {data && data.sessions > 0 ? (
           <>
             <Activity days={data.days} color={color} />
@@ -183,10 +269,22 @@ function UsageView({ close }: { close: () => void }) {
       <div className="usage-foot">
         <AgentGlyph id={shown} size={13} />
         <span className="mono">
-          <b>{shown}</b> <span className="faint">›</span> {shown === 'claude' ? '/usage' : 'local session logs'}
+          <b>{shown}</b> <span className="faint">›</span> {shown === 'claude' ? (limits?.source === 'sign-in' ? 'your sign-in' : '/usage') : shown === 'copilot' ? 'gh api' : 'local session logs'}
         </span>
         <span className="spacer" />
-        <span className="faint">{shown === 'claude' ? `your subscription · ${limitsBusy ? 'refreshing' : limits ? `updated ${ago(limits.at)}` : 'not read yet'}` : tokensBusy ? 'scanning' : 'scanned just now'}</span>
+        <span className="faint">
+          {shown === 'claude'
+            ? `${limits?.plan ? `${limits.plan} plan` : 'your subscription'} · ${limitsBusy ? 'refreshing' : limits ? `updated ${ago(limits.at)}` : 'not read yet'}`
+            : PLAN_AGENTS.includes(shown)
+              ? planBusy
+                ? 'refreshing'
+                : plan?.ok
+                  ? `updated ${ago(plan.asOf ?? Date.now())}`
+                  : 'plan limits'
+              : tokensBusy
+                ? 'scanning'
+                : 'scanned just now'}
+        </span>
       </div>
     </>
   )
@@ -210,20 +308,12 @@ function PlanLimits({ limits, error, busy }: { limits: Limits | null; error: str
         <Ring pct={first.pct} />
         <span>
           <div className="t">{first.title}</div>
-          {first.resets && <div className="s">Resets {first.resets}</div>}
+          {resetText(first) && <div className="s">Resets {resetText(first)}</div>}
+          {first.sub && <div className="s">{first.sub}</div>}
         </span>
       </div>
-      {rest.map((l) => (
-        <div className="usage-limit" key={l.title}>
-          <div className="row">
-            <span>{l.title}</span>
-            <span>{Math.round(l.pct)}%</span>
-          </div>
-          <div className="bar">
-            <i style={{ width: `${Math.min(100, l.pct)}%` }} />
-          </div>
-          {l.resets && <div className="s">Resets {l.resets}</div>}
-        </div>
+      {rest.map((l: Limit) => (
+        <LimitBar key={l.title} l={l} />
       ))}
     </>
   )

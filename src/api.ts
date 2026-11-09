@@ -59,7 +59,11 @@ export type GitInfo = {
 export type AgentUsage = { days: Record<string, [number, number, number]>; models: Record<string, number>; sessions: number; longestMs: number; first: string | null }
 export type Usage = { claude: AgentUsage; codex: AgentUsage; scannedAt: number }
 // What the CLI's own /usage screen shows: limits like "Current session 37% · Resets 1:49am".
-export type Limits = { at: number; limits: { title: string; pct: number; resets: string | null }[]; insights: { pct: number; text: string }[] }
+// From the sign-in (source 'sign-in', with resetsAt in ms) or the hidden /usage screen (source 'usage').
+export type Limit = { title: string; pct: number; resets: string | null; resetsAt?: number; sub?: string }
+export type Limits = { at: number; limits: Limit[]; insights: { pct: number; text: string }[]; plan?: string; source?: 'sign-in' | 'usage' }
+// Any agent's plan limits, normalised by the server (server/limits.mjs).
+export type PlanLimits = { ok: boolean; reason?: string; detail?: string; plan?: string; limits: { title: string; pct: number; resetsAt?: number; sub?: string }[]; asOf?: number }
 
 // A repo scan in progress or waiting for review. step: 0 launch, 1 read the repo, 2 write facts, 3 wrap up.
 export type Fact = { kind: string; title: string; text: string }
@@ -123,6 +127,8 @@ export const api = {
   gitBranches: (cwd: string) => call<{ branches: string[] }>('GET', `/api/git/branches?cwd=${encodeURIComponent(cwd)}`),
   usage: () => call<Usage>('GET', '/api/usage'),
   limits: (profile?: string, fresh?: boolean) => call<Limits>('GET', `/api/usage/limits?profile=${encodeURIComponent(profile ?? '')}${fresh ? '&fresh=1' : ''}`),
+  planLimits: (agent: string, profile?: string, fresh?: boolean) =>
+    call<PlanLimits>('GET', `/api/usage/plan?agent=${agent}&profile=${encodeURIComponent(profile ?? '')}${fresh ? '&fresh=1' : ''}`),
   claudeSession: (sid: string) => call<{ exists: boolean }>('GET', `/api/claude-session/${sid}`),
   reveal: (cwd: string) => call('POST', '/api/reveal', { cwd }),
   scan: (cwd: string, agent: string) => call<Scan>('POST', '/api/scan', { cwd, agent }),

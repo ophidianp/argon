@@ -3,7 +3,7 @@ import { Briefcase, ChevronDown, ChevronLeft, Folder, FolderOpen, Info, Plus, Se
 import { consoles, project, useStore } from '../store'
 import { ClaudeMark } from './icons'
 import { ThemeToggle } from './Panels'
-import { fmtTokens, loadLimits, loadTokens, useUsage } from './UsagePanel'
+import { fmtTokens, loadLimits, loadTokens, resetClock, useUsage } from './UsagePanel'
 
 const todayKey = () => {
   const d = new Date()
@@ -18,7 +18,10 @@ export function TopBar() {
   const s = useStore.getState()
   const [projMenu, setProjMenu] = useState(false)
   const [renaming, setRenaming] = useState<string | null>(null)
-  const resets = useUsage((u) => u.limits?.limits[0]?.resets?.replace(/\s*\(.*\)$/, ''))
+  const resets = useUsage((u) => {
+    const l = u.limits?.limits[0]
+    return l ? (l.resetsAt ? resetClock(l.resetsAt) : l.resets?.replace(/\s*\(.*\)$/, '')) : undefined
+  })
   const today = useUsage((u) => {
     const d = u.tokens?.claude.days[todayKey()]
     return u.tokens ? (d ? d[0] + d[1] + d[2] : 0) : null

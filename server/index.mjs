@@ -19,6 +19,7 @@ import { isRefusal, parseAsk } from '../shared/prompts.js'
 import { describeTool } from '../shared/plain.js'
 import { createHelpers } from './helpers.mjs'
 import { createUsage } from './usage.mjs'
+import { createLimits } from './limits.mjs'
 import { createScans } from './scan.mjs'
 import { createDocs } from './docs.mjs'
 import { createDiagrams } from './diagrams.mjs'
@@ -827,6 +828,18 @@ const usage = createUsage({
   codexDirs: () => [path.join(process.env.CODEX_HOME || path.join(os.homedir(), '.codex'), 'sessions'), ...profileDirs('sessions')],
   profileEnv: (profile) => (profile && PROFILE.test(profile) ? { CLAUDE_CONFIG_DIR: path.join(PROFILES_DIR, profile) } : {}),
 })
+const planLimits = createLimits({ profilesDir: PROFILES_DIR, profileOk: (p) => PROFILE.test(p) })
+
+// The top-bar pill and the Claude tab: the sign-in's own numbers first, the hidden /usage screen when
+// the sign-in can't be read (an older login kept only in the credential store, for example).
+async function claudeLimits(profile, fresh) {
+  const plan = await planLimits.plan('claude', profile, fresh)
+  if (plan.ok && plan.limits.length)
+    return { at: plan.asOf ?? Date.now(), source: 'sign-in', plan: plan.plan, limits: plan.limits.map((l) => ({ title: l.title, pct: l.pct, resets: null, resetsAt: l.resetsAt, sub: l.sub })), insights: [] }
+  // Signed in with an API key, or offline: the probe would not do better.
+  if (['api-key', 'offline'].includes(plan.reason)) throw new Error(plan.reason === 'api-key' ? 'an API key has no plan limits' : "couldn't reach Anthropic")
+  return { ...(await usage.limits(profile, fresh)), source: 'usage', plan: plan.plan }
+}
 
 const MIME = { '.html': 'text/html', '.js': 'text/javascript', '.css': 'text/css', '.svg': 'image/svg+xml', '.woff2': 'font/woff2', '.png': 'image/png', '.json': 'application/json' }
 
@@ -1154,10 +1167,16 @@ const server = http.createServer(async (req, res) => {
     }
     if (route === 'usage' && id === 'limits') {
       try {
-        return json(res, 200, await usage.limits(url.searchParams.get('profile') || '', url.searchParams.get('fresh') === '1'))
+        return json(res, 200, await claudeLimits(url.searchParams.get('profile') || '', url.searchParams.get('fresh') === '1'))
       } catch (e) {
         return json(res, 502, { error: e.message })
       }
+    }
+    if (route === 'usage' && id === 'plan') {
+      const agent = url.searchParams.get('agent') || ''
+      const profile = url.searchParams.get('profile') || ''
+      if (profile && !PROFILE.test(profile)) return json(res, 400, { error: 'bad profile name' })
+      return json(res, 200, await planLimits.plan(agent, profile, url.searchParams.get('fresh') === '1'))
     }
     if (route === 'usage') return json(res, 200, await usage.tokens())
     if (route === 'visible' && req.method === 'POST') {
