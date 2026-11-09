@@ -34,7 +34,7 @@ const until = async (fn, ms = 8000) => {
 }
 const openShell = (id, cwd = HOME) =>
   new Promise((resolve, reject) => {
-    const ws = new WebSocket(`ws://127.0.0.1:${PORT}/ws/pty?id=${id}&agent=shell&cwd=${encodeURIComponent(cwd)}&cols=80&rows=24`, { origin: 'http://localhost:5173' })
+    const ws = new WebSocket(`ws://127.0.0.1:${PORT}/ws/pty?id=${id}&agent=shell&cwd=${encodeURIComponent(cwd)}&cols=80&rows=24`, { origin: BASE })
     ws.on('open', () => resolve(ws))
     ws.on('error', reject)
   })
@@ -85,7 +85,7 @@ test('malformed URLs and hostile WebSocket messages do not take the server down'
   ws.send('[1]')
   ws.send(JSON.stringify({ t: 'r', cols: -5, rows: 'x' }))
   // Re-attach to the live session with nonsense dimensions.
-  const again = new WebSocket(`ws://127.0.0.1:${PORT}/ws/pty?id=t-hostile&agent=shell&cols=-5&rows=0`, { origin: 'http://localhost:5173' })
+  const again = new WebSocket(`ws://127.0.0.1:${PORT}/ws/pty?id=t-hostile&agent=shell&cols=-5&rows=0`, { origin: BASE })
   await new Promise((r) => again.on('open', r))
   await sleep(300)
   assert.ok((await sessions()).some((s) => s.id === 't-hostile'), 'server died or lost the console')
@@ -95,7 +95,7 @@ test('malformed URLs and hostile WebSocket messages do not take the server down'
 })
 
 test('a console for a folder that is gone is refused, not opened in $HOME', { timeout: 5000 }, async () => {
-  const ws = new WebSocket(`ws://127.0.0.1:${PORT}/ws/pty?id=t-gone&agent=shell&cwd=${encodeURIComponent(path.join(HOME, 'no-such-dir'))}`, { origin: 'http://localhost:5173' })
+  const ws = new WebSocket(`ws://127.0.0.1:${PORT}/ws/pty?id=t-gone&agent=shell&cwd=${encodeURIComponent(path.join(HOME, 'no-such-dir'))}`, { origin: BASE })
   let text = ''
   ws.on('message', (d) => (text += d))
   await new Promise((r) => ws.on('close', r))
@@ -104,7 +104,7 @@ test('a console for a folder that is gone is refused, not opened in $HOME', { ti
 })
 
 test('an account profile name cannot point outside the profiles folder', async () => {
-  const ws = new WebSocket(`ws://127.0.0.1:${PORT}/ws/pty?id=t-prof&agent=shell&cwd=${encodeURIComponent(HOME)}&profile=..%2F..%2Fetc`, { origin: 'http://localhost:5173' })
+  const ws = new WebSocket(`ws://127.0.0.1:${PORT}/ws/pty?id=t-prof&agent=shell&cwd=${encodeURIComponent(HOME)}&profile=..%2F..%2Fetc`, { origin: BASE })
   let said = ''
   ws.on('message', (m) => (said += m))
   await new Promise((r) => ws.on('close', r))
@@ -235,7 +235,7 @@ test('a lead creates a helper on the board, gives it work and gets its answer ba
   const unseen = await call('create_helper', { name: 'Echo', task: 'x', agent: 'shell' })
   assert.ok(unseen.isError && /window is closed/.test(unseen.content[0].text), 'with no window open nobody would see the helper')
 
-  const events = new WebSocket(`ws://127.0.0.1:${PORT}/ws/events`, { origin: 'http://localhost:5173' })
+  const events = new WebSocket(`ws://127.0.0.1:${PORT}/ws/events`, { origin: BASE })
   const seen = []
   events.on('message', (m) => seen.push(JSON.parse(String(m))))
   await new Promise((r) => events.on('open', r))

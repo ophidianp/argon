@@ -128,7 +128,7 @@ export const api = {
   usage: () => call<Usage>('GET', '/api/usage'),
   limits: (profile?: string, fresh?: boolean) => call<Limits>('GET', `/api/usage/limits?profile=${encodeURIComponent(profile ?? '')}${fresh ? '&fresh=1' : ''}`),
   planLimits: (agent: string, profile?: string, fresh?: boolean) =>
-    call<PlanLimits>('GET', `/api/usage/plan?agent=${agent}&profile=${encodeURIComponent(profile ?? '')}${fresh ? '&fresh=1' : ''}`),
+    call<PlanLimits>('GET', `/api/usage/plan?agent=${encodeURIComponent(agent)}&profile=${encodeURIComponent(profile ?? '')}${fresh ? '&fresh=1' : ''}`),
   claudeSession: (sid: string) => call<{ exists: boolean }>('GET', `/api/claude-session/${sid}`),
   reveal: (cwd: string) => call('POST', '/api/reveal', { cwd }),
   scan: (cwd: string, agent: string) => call<Scan>('POST', '/api/scan', { cwd, agent }),
