@@ -213,7 +213,11 @@ function stopServer() {
 setupUpdater({ app, ipcMain, net, stop: stopServer, quitting: () => (quitting = true) })
 
 app.setName('Argon')
-if (WIN) app.setAppUserModelId('io.github.ophidianp.argon')
+// Windows groups taskbar buttons, and names and pins them, by this id. Only the installed app uses the id its
+// installer's shortcuts carry (build.appId); a checkout or a separate board (tests) has its own, so it never takes
+// over the real Argon's taskbar button or pin.
+const APP_ID = 'io.github.ophidianp.argon'
+if (WIN) app.setAppUserModelId(process.env.ARGON_DATA ? `${APP_ID}.test` : app.isPackaged ? APP_ID : `${APP_ID}.dev`)
 
 // A separate board (ARGON_DATA, as in tests) is a separate app: its own profile, and it never hands off to the
 // Argon already open.
