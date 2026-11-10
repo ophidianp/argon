@@ -425,7 +425,7 @@ section { position: relative; }
 .platform .btn { align-self: flex-start; margin-top: 8px; }
 .terminal-block { margin: 0; padding: 18px 20px; border-radius: 16px; background: var(--term); color: #ece4d8; font: 14px/1.8 var(--mono); overflow-x: auto; border: 1px solid var(--line-strong); }
 .terminal-block .c { color: #8a8175; }
-.terminal-block .p { color: #b9a6ec; user-select: none; }
+.terminal-block .p { color: var(--accent-2); user-select: none; }
 .copy-row { position: relative; }
 .download-main { display: grid; gap: 14px; justify-items: start; }
 .download-main .btn { font-size: 17px; padding: 16px 26px; }
