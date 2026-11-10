@@ -200,7 +200,7 @@ test('a hand-off carries one console\'s work to another as a prompt', async () =
   const b = await openShell('t-to')
   await sleep(800)
   a.send(JSON.stringify({ t: 'i', d: 'echo WORK_$((20+3))_DONE\r' }))
-  assert.ok(await until(async () => (await tail('t-from')).includes('WORK_23_DONE')))
+  assert.ok(await until(async () => (await tail('t-from')).includes('WORK_23_DONE'), 20000)) // PowerShell starts slowly while other test files run
   const handoff = (body) => api('POST', '/api/handoff', { from: 't-from', to: 't-to', fromName: 'Maya', toName: 'Otto', ...body })
   assert.equal((await handoff({})).status, 200)
   // The brief arrives as one bracketed paste; the shell echoes it back.
