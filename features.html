@@ -3,15 +3,15 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="theme-color" content="#0b0911">
+    <meta name="theme-color" content="#0a0908">
     <meta name="description" content="Everything Argon does: the board, agent consoles, mission map, command bar, loops, handoffs, tiles and personalization.">
     <title>Features · Argon</title>
     <link rel="icon" type="image/svg+xml" href="assets/argon-icon.svg">
     <script>try{var d=document.documentElement,s=localStorage.getItem("argon-theme"),t=s==="light"||s==="dark"?s:(d.dataset.theme==="light"?"light":"dark");d.dataset.theme=t;var v=JSON.parse(localStorage.getItem("argon-accent-vars")||"null");if(v&&v[t])for(var k in v[t])d.style.setProperty(k,v[t][k])}catch(e){}</script>
     <link rel="stylesheet" href="assets/liquid-glass.css?v=1">
-    <link rel="stylesheet" href="assets/site.css?v=4">
+    <link rel="stylesheet" href="assets/site.css?v=5">
     <script src="assets/liquid-glass.js?v=1" defer></script>
-    <script src="assets/site.js?v=3" defer></script>
+    <script src="assets/site.js?v=4" defer></script>
   </head>
   <body>
     <div class="backdrop" aria-hidden="true"><div class="aurora aurora-a"></div><div class="aurora aurora-b"></div></div>
@@ -55,9 +55,10 @@
           <article class="feature-block" id="board">
             <div class="feature-block-head"><span class="idx">01</span><div><p class="eyebrow">The board</p><h2 class="split">Room for <span class="dim">everything.</span></h2></div></div>
             <div class="feature-items" data-stagger>
-              <div class="feature-item"><strong>Infinite canvas</strong><span>Pan by dragging empty space, zoom smoothly with the wheel, fit everything with <kbd>F</kbd>.</span></div>
+              <div class="feature-item"><strong>Infinite canvas</strong><span>Zoom with the wheel, scroll the board with <kbd>Ctrl</kbd> + wheel, drag with the middle button to pan, and fit everything with <kbd>Ctrl 0</kbd>.</span></div>
               <div class="feature-item"><strong>Workspaces as tabs</strong><span>Each project folder gets its own board. Switch with <kbd>Ctrl 1–9</kbd>; agents keep running in the background.</span></div>
               <div class="feature-item"><strong>Ink and images</strong><span>Draw over the board to sketch ideas, and drop or paste screenshots straight onto it.</span></div>
+              <div class="feature-item"><strong>The Add selector</strong><span>Hover the Add button in the toolbar for a floating glass selector: a shell console, a picture, or a folder to connect to the project.</span></div>
               <div class="feature-item"><strong>Fly to anything</strong><span>Click an agent in the mission map or double-click a tile header to glide to it at full size.</span></div>
             </div>
           </article>
@@ -68,6 +69,7 @@
               <div class="feature-item"><strong>12 agents built in</strong><span>Claude Code, Codex, Gemini CLI, Copilot CLI, OpenCode, Qwen Code, Amp, Aider, Cursor CLI, Goose, Crush and a plain terminal, plus any custom command.</span></div>
               <div class="feature-item"><strong>Working, resting, needs you</strong><span>Every tile shows its state. Approval prompts turn it amber and float it to the top of the mission map.</span></div>
               <div class="feature-item"><strong>Agents setup</strong><span>See which agents are installed and signed in, and install missing ones in one click.</span></div>
+              <div class="feature-item"><strong>Pictures in consoles</strong><span>Paste, drop or pick a screenshot into a console. Claude Code and Codex get it as an attached image, and the console shows it, in the terminal or in the conversation.</span></div>
               <div class="feature-item"><strong>Account profiles</strong><span>Run Claude Code or Codex under a second account. Each profile keeps its own sign-in, so you can spread work across plans.</span></div>
             </div>
             <p class="feature-note"><strong>Safe by default.</strong> Auto-approve flags are off unless you turn them on in Settings, with a clear warning first.</p>
@@ -81,6 +83,7 @@
               <div class="feature-item"><strong>Loops</strong><span>Re-send a prompt whenever an agent goes idle or on a schedule, and stop automatically when a goal phrase appears.</span></div>
               <div class="feature-item"><strong>Handoffs</strong><span>One agent writes a brief into <code>.argon/handoffs/</code>, the next one is told to read it and carry on.</span></div>
               <div class="feature-item"><strong>Groups</strong><span>Tag consoles with a team name to order them together and see them grouped in the mission map.</span></div>
+              <div class="feature-item"><strong>Orchestrator</strong><span>Give orders to several agents at once. Its text box grows as you write, and you can start typing anywhere on it.</span></div>
               <div class="feature-item"><strong>Project memory</strong><span>Global and per-repo notes that you push into consoles when you want agents to know them.</span></div>
             </div>
           </article>
@@ -98,8 +101,8 @@
           <article class="feature-block" id="personal">
             <div class="feature-block-head"><span class="idx">05</span><div><p class="eyebrow">Make it yours</p><h2 class="split">Your colours. <span class="dim">Your feel.</span></h2></div></div>
             <div class="feature-items" data-stagger>
-              <div class="feature-item"><strong>Accent colour</strong><span>Eight presets, from the default lavender to rose, mint and sky, or pick any colour you like.</span></div>
-              <div class="feature-item"><strong>Three themes</strong><span>Midnight, Abyss (true black) and Dusk (softer and lighter).</span></div>
+              <div class="feature-item"><strong>Accent colour</strong><span>Presets from the default Ember to lavender, rose, mint and sky, or any colour you like. The taskbar icon takes it on too.</span></div>
+              <div class="feature-item"><strong>Looks and glass</strong><span>Ember by default, plus Midnight, Abyss, Dusk, Slate and looks styled after each agent; Paper and Daylight by day. Liquid glass everywhere, and Windows Mica or Acrylic behind the window.</span></div>
               <div class="feature-item"><strong>Board background</strong><span>Dots, grid lines, a slowly drifting aurora, or plain.</span></div>
               <div class="feature-item"><strong>Terminal and motion</strong><span>Choose the terminal font and cursor, corner style, and switch animations off for a stiller feel. Argon also greets you by name.</span></div>
             </div>
@@ -110,7 +113,8 @@
             <div class="feature-items" data-stagger>
               <div class="feature-item"><strong>Resume after restart</strong><span>Consoles relaunch in place and continue their last session where the agent supports it.</span></div>
               <div class="feature-item"><strong>Autosave with backups</strong><span>Every board is saved as you work, with rolling backups in your data folder.</span></div>
-              <div class="feature-item"><strong>Token usage</strong><span>Charts of Claude Code and Codex usage over two weeks, read from logs on your PC.</span></div>
+              <div class="feature-item"><strong>Plan limits and usage</strong><span>How much of your Claude, Codex and Copilot plan is left and when it resets, plus token charts read from logs on your PC.</span></div>
+              <div class="feature-item"><strong>Automatic updates</strong><span>Settings → Updates: ask first, or download quietly and install when you close Argon. Every update is signed, and Argon checks the signature before it installs anything.</span></div>
               <div class="feature-item"><strong>No Argon servers</strong><span>No account, no telemetry. Sign-in checks only look for whether each agent has saved a login file.</span></div>
             </div>
           </article>
@@ -125,7 +129,7 @@
           </div>
           <div>
             <p>Grab Argon for Windows and open your first folder.</p>
-            <a class="btn btn-primary" href="download.html">Get Argon <span class="arrow" aria-hidden="true">→</span></a>
+            <a class="btn btn-primary" href="https://github.com/ophidianp/argon/releases/latest/download/Argon-Setup.exe">Download for Windows <span class="arrow" aria-hidden="true">↓</span></a>
           </div>
         </div>
       </section>

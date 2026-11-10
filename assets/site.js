@@ -33,7 +33,7 @@ function accentVars(hex) {
     light: { "--accent": hsl(h, s * 0.85, Math.min(l, 50) - 4), "--accent-2": hsl(h, s, l), "--accent-ink": "#ffffff", "--accent-soft": rgba(0.1), "--glow": rgba(0.25) },
   };
 }
-let accentHex = store.get("argon-accent") || "#9a83d4";
+let accentHex = store.get("argon-accent") || "#f0553a"; // Ember, the app's default
 function applyAccent() {
   const vars = accentVars(accentHex)[root.dataset.theme === "light" ? "light" : "dark"];
   for (const [k, v] of Object.entries(vars)) root.style.setProperty(k, v);
@@ -53,7 +53,7 @@ function setTheme(theme, persist = false) {
   const isDark = theme !== "light";
   root.dataset.theme = isDark ? "dark" : "light";
   themeToggle?.setAttribute("aria-label", `Switch to ${isDark ? "light" : "dark"} mode`);
-  if (themeMeta) themeMeta.content = isDark ? "#0b0911" : "#f8f6fc";
+  if (themeMeta) themeMeta.content = isDark ? "#0a0908" : "#f5f1ea";
   if (persist) store.set("argon-theme", root.dataset.theme);
   applyAccent();
   window.dispatchEvent(new Event("argon:theme"));
@@ -206,15 +206,6 @@ document.querySelectorAll(".lab").forEach((lab) => {
   });
 });
 
-/* ---------- Copy buttons ---------- */
-document.querySelectorAll("[data-copy]").forEach((btn) => {
-  btn.addEventListener("click", async () => {
-    const text = document.getElementById(btn.dataset.copy)?.innerText.replace(/^\s*>\s?/gm, "").replace(/^#.*$/gm, "").trim();
-    try { await navigator.clipboard.writeText(text); btn.textContent = "Copied"; } catch (e) { btn.textContent = "Select & copy"; }
-    setTimeout(() => { btn.textContent = "Copy"; }, 1600);
-  });
-});
-
 /* =================================================================
    Mini Argon: tiles, statuses and typed output used by the demos
    ================================================================= */
@@ -225,7 +216,7 @@ function esc(s) { return String(s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<
 function makeTile(parent, { name, agent, x, y, w, h }) {
   const t = el("div", "mtile");
   Object.assign(t.style, { left: x, top: y, width: w, height: h });
-  const color = AGENT_COLORS[agent] || "#9a83d4";
+  const color = AGENT_COLORS[agent] || "#f0553a";
   t.innerHTML = `<div class="mtile-head"><span class="dot resting"></span><span>${esc(name)}</span><span class="badge" style="color:${color}">${esc(agent)}</span></div><div class="mtile-body"></div>`;
   parent.append(t);
   const body = t.querySelector(".mtile-body");

@@ -3,24 +3,24 @@
 /* ---------- Tokens ---------- */
 :root {
   color-scheme: dark;
-  --bg: #0b0911;
-  --bg-2: #0f0c17;
-  --surface: #15111f;
-  --surface-2: #1c1729;
-  --line: rgba(190, 170, 235, 0.11);
-  --line-strong: rgba(190, 170, 235, 0.22);
-  --ink: #efeaf9;
-  --muted: #a99fc0;
-  --faint: #7f7698;
-  --accent: #9a83d4;
-  --accent-2: #c3b2f0;
-  --accent-ink: #120c22;
-  --accent-soft: rgba(154, 131, 212, 0.13);
-  --glow: rgba(154, 131, 212, 0.40);
+  --bg: #0a0908;
+  --bg-2: #0f0e0c;
+  --surface: #151311;
+  --surface-2: #1d1a17;
+  --line: rgba(241, 233, 221, 0.1);
+  --line-strong: rgba(241, 233, 221, 0.2);
+  --ink: #f1e9dd;
+  --muted: #a39a8c;
+  --faint: #81786c;
+  --accent: #f0553a;
+  --accent-2: #f69686;
+  --accent-ink: #1a0905;
+  --accent-soft: rgba(240, 85, 58, 0.13);
+  --glow: rgba(240, 85, 58, 0.40);
   --warn: #f0b45a;
   --bad: #ef7d8a;
   --good: #7fd1a0;
-  --term: #0f0c18;
+  --term: #0f0e0c;
   --shadow: 0 30px 80px -30px rgba(0, 0, 0, 0.75);
   --mono: "DM Mono", ui-monospace, Consolas, monospace;
   --sans: "DM Sans", "Segoe UI", system-ui, sans-serif;
@@ -35,25 +35,25 @@
 
 :root[data-theme="light"] {
   color-scheme: light;
-  --bg: #f8f6fc;
-  --bg-2: #f1edf8;
-  --surface: #ffffff;
-  --surface-2: #f4f1fa;
-  --line: rgba(40, 20, 80, 0.09);
-  --line-strong: rgba(40, 20, 80, 0.17);
-  --ink: #191428;
-  --muted: #5f5775;
-  --faint: #756d8c;
-  --accent: #6f55c0;
-  --accent-2: #9a7fe0;
+  --bg: #f5f1ea;
+  --bg-2: #efe9df;
+  --surface: #fffdf9;
+  --surface-2: #f3eee6;
+  --line: rgba(60, 40, 20, 0.1);
+  --line-strong: rgba(60, 40, 20, 0.18);
+  --ink: #211d18;
+  --muted: #675e52;
+  --faint: #7a7064;
+  --accent: #c23a1e;
+  --accent-2: #e8573a;
   --accent-ink: #ffffff;
-  --accent-soft: rgba(111, 85, 192, 0.1);
-  --glow: rgba(111, 85, 192, 0.25);
+  --accent-soft: rgba(194, 58, 30, 0.1);
+  --glow: rgba(194, 58, 30, 0.25);
   --warn: #c27a12;
   --bad: #d4455c;
   --good: #1d9a63;
-  --term: #15111f;
-  --shadow: 0 30px 70px -35px rgba(40, 20, 80, 0.35);
+  --term: #1a1714;
+  --shadow: 0 30px 70px -35px rgba(60, 40, 20, 0.35);
 }
 
 /* ---------- Base ---------- */
@@ -407,6 +407,14 @@ section { position: relative; }
 .terminal-block .c { color: #7f7698; }
 .terminal-block .p { color: #b9a6ec; user-select: none; }
 .copy-row { position: relative; }
+.download-main { display: grid; gap: 14px; justify-items: start; }
+.download-main .btn { font-size: 17px; padding: 16px 26px; }
+.download-meta { margin: 0; color: var(--muted); font-size: 14px; }
+.smartscreen { margin: 6px 0 0; padding: 14px 16px; border-radius: 14px; border: 1px solid var(--line); background: var(--accent-soft); font-size: 14px; color: var(--muted); }
+.smartscreen strong { color: var(--ink); }
+.source-link { margin: 18px 0 0; font-size: 13px; color: var(--faint); }
+.source-link a { color: var(--muted); text-decoration: underline; text-underline-offset: 3px; text-decoration-color: var(--line-strong); }
+.source-link a:hover { color: var(--accent); }
 .copy-btn { position: absolute; top: 10px; right: 10px; padding: 6px 12px; border-radius: 999px; border: 1px solid rgba(255,255,255,.18); background: rgba(255,255,255,.06); color: #e6e0f5; font: 500 12px var(--mono); cursor: pointer; transition: background-color .4s var(--ease); }
 .copy-btn:hover { background: rgba(255,255,255,.12); }
 .requirements-note { margin-top: 28px; padding: 18px 22px; border-radius: 16px; border: 1px dashed var(--line-strong); color: var(--muted); font-size: 15px; }
@@ -446,7 +454,7 @@ section { position: relative; }
   --g-tint-strong: rgba(255, 255, 255, 0.6);
   --g-hi: rgba(255, 255, 255, 0.9);
   --g-edge: rgba(255, 255, 255, 0.75);
-  --g-edge-dark: rgba(40, 20, 80, 0.12);
+  --g-edge-dark: rgba(60, 40, 20, 0.12);
   --bubble: rgba(255, 255, 255, 0.75);
   --bubble-shadow: inset 0 1px 0 #fff, 0 0 0 0.5px rgba(40, 20, 80, 0.14), 0 6px 16px -6px rgba(40, 20, 80, 0.22);
 }
