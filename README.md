@@ -3,6 +3,10 @@
 The website for Argon, a Windows command deck for running coding agents side by side.
 Static HTML, CSS and JS, deployed with GitHub Pages (same setup as the Chlorine site).
 
+[![Watch the Argon launch video (30 s)](assets/video/argon-launch.jpg)](https://ophidianp.github.io/argon/#watch)
+
+The launch video is [`assets/video/argon-launch.mp4`](assets/video/argon-launch.mp4); it plays on the home page under **Watch it work**.
+
 ## Pages
 - **Home** — `index.html` (live board animation + four interactive demos)
 - **Features** — `features.html`
