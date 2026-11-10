@@ -8,7 +8,7 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, reduceMotion ? Math.min(m
 
 /* ---------- Accent (personalization, shared with the "Make it yours" demo) ---------- */
 const ACCENTS = [
-  ["Lavender", "#9a83d4"], ["Orchid", "#c07ad0"], ["Rose", "#e0889f"], ["Coral", "#e8957a"],
+  ["Ember", "#f0553a"], ["Lavender", "#9a83d4"], ["Orchid", "#c07ad0"], ["Rose", "#e0889f"], ["Coral", "#e8957a"],
   ["Amber", "#e2b15a"], ["Mint", "#6fcfa3"], ["Teal", "#5cc2c2"], ["Sky", "#7ea8ec"],
 ];
 function hexToHsl(hex) {
@@ -209,22 +209,31 @@ document.querySelectorAll(".lab").forEach((lab) => {
 /* =================================================================
    Mini Argon: tiles, statuses and typed output used by the demos
    ================================================================= */
-const AGENT_COLORS = { "Claude Code": "#d9a07a", Codex: "#8fd1c0", "Gemini CLI": "#7fa8f0", Terminal: "#8f86a8" };
+// Each agent's glyph, as the console header shows it in Argon.
+const AGENT_GLYPHS = { "Claude Code": ["g-claude", "✻"], Codex: ["g-codex", "&gt;_"], "Gemini CLI": ["g-gemini", "✦"], Terminal: ["g-term", "&gt;"] };
+const STATUS_LABEL = { resting: "Ready", working: "Working", needs: "Needs you", done: "Done" };
 function el(tag, cls, html) { const e = document.createElement(tag); if (cls) e.className = cls; if (html != null) e.innerHTML = html; return e; }
 function esc(s) { return String(s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c])); }
 
-function makeTile(parent, { name, agent, x, y, w, h }) {
-  const t = el("div", "mtile");
-  Object.assign(t.style, { left: x, top: y, width: w, height: h });
-  const color = AGENT_COLORS[agent] || "#f0553a";
-  t.innerHTML = `<div class="mtile-head"><span class="dot resting"></span><span>${esc(name)}</span><span class="badge" style="color:${color}">${esc(agent)}</span></div><div class="mtile-body"></div>`;
+function makeTile(parent, { name, agent, x, y, w, h, cls, seg }) {
+  const t = el("div", "mtile" + (cls ? " " + cls : ""));
+  if (x) Object.assign(t.style, { left: x, top: y, width: w, height: h });
+  const [g, glyph] = AGENT_GLYPHS[agent] || AGENT_GLYPHS.Terminal;
+  t.innerHTML = `<div class="mtile-head"><span class="mglyph ${g}" title="${esc(agent)}">${glyph}</span><span class="mname">${esc(name)}</span>${seg ? '<span class="mseg"><i class="on">Simple</i><i>Terminal</i></span>' : ""}<span class="mstat resting"><b></b><span>Ready</span></span></div><div class="mtile-body"></div>`;
   parent.append(t);
   const body = t.querySelector(".mtile-body");
-  const dot = t.querySelector(".dot");
+  const stat = t.querySelector(".mstat");
   const api = {
     el: t, name,
     status: "resting",
-    set(st) { api.status = st; dot.className = "dot " + st; t.classList.toggle("needs", st === "needs"); api.onStatus && api.onStatus(st); },
+    set(st) {
+      api.status = st;
+      stat.className = "mstat " + st;
+      stat.lastChild.textContent = STATUS_LABEL[st] || st;
+      t.classList.toggle("needs", st === "needs");
+      t.classList.toggle("working", st === "working");
+      api.onStatus && api.onStatus(st);
+    },
     line(text, cls = "") {
       const l = el("div", cls, esc(text));
       body.append(l);
@@ -250,29 +259,47 @@ function onVisible(node, fn) {
 const hero = document.querySelector("[data-hero-board]");
 if (hero) {
   const board = hero.querySelector(".mock-board");
+  // As the board looks today: a tool rail, a team with "When done" wires, the chips and the ask bar.
+  board.innerHTML = `<div class="m-rail" aria-hidden="true"><i class="on"></i><i></i><i></i><i></i><i></i></div>
+    <div class="m-team"><div class="m-team-head">Onboarding <span data-team-state>3 · idle</span></div>
+      <svg class="m-wires" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true"><path data-wire="0" d="M46 33.5 L54 33.5"/><path data-wire="1" d="M75.5 54 C75.5 59, 24.5 57, 24.5 62"/></svg>
+      <span class="m-link" data-link="0" style="left:50%;top:33.5%">→ <span class="lbl">When done</span></span>
+      <span class="m-link" data-link="1" style="left:50%;top:58%">→ <span class="lbl">When done</span></span>
+    </div>
+    <div class="m-bottom"><div class="m-chips"><span>New agent</span><span>Presets</span><span>Pause all</span><span>Context</span></div>
+      <div class="m-ask"><img src="assets/argon-icon.svg" alt=""><span>Ask your agents · @ to pick one · hold space to talk</span><i></i><i class="go"></i></div></div>`;
+  const team = board.querySelector(".m-team");
   const tiles = [
-    makeTile(board, { name: "claude-1", agent: "Claude Code", x: "4%", y: "6%", w: "47%", h: "52%" }),
-    makeTile(board, { name: "codex-1", agent: "Codex", x: "4%", y: "62%", w: "34%", h: "33%" }),
-    makeTile(board, { name: "gemini-1", agent: "Gemini CLI", x: "40%", y: "62%", w: "33%", h: "33%" }),
+    makeTile(team, { name: "Maya", agent: "Claude Code", cls: "m-a", seg: true }),
+    makeTile(team, { name: "Otto", agent: "Codex", cls: "m-b", seg: true }),
+    makeTile(team, { name: "Iris", agent: "Gemini CLI", cls: "m-c", seg: true }),
   ];
-  const note = el("div", "mnote", "<b>Today</b>Ship the onboarding flow");
-  Object.assign(note.style, { left: "54%", top: "8%", width: "19%" });
-  board.append(note);
-  const map = el("div", "mmap", "<h4>Mission map</h4>");
-  board.append(map);
+  const map = el("div", "mmap m-map", "<h4>Mission map</h4>");
+  team.append(map);
+  const teamState = board.querySelector("[data-team-state]");
+  const wires = [0, 1].map((i) => [board.querySelector(`[data-wire="${i}"]`), board.querySelector(`[data-link="${i}"]`)]);
+  const handing = async (i) => {
+    const [path, pill] = wires[i];
+    path.classList.add("busy"); pill.classList.add("busy");
+    pill.innerHTML = '<span class="lbl">Handing off…</span>';
+    await sleep(1300);
+    path.classList.remove("busy"); pill.classList.remove("busy");
+    pill.innerHTML = '→ <span class="lbl">When done</span>';
+  };
   const rows = tiles.map((t) => {
-    const r = el("div", "mmap-row", `<span class="dot resting"></span><div>${t.name}<small>Resting</small></div>`);
+    const r = el("div", "mmap-row", `<span class="dot resting"></span><div>${t.name}<small>Ready</small></div>`);
     map.append(r);
     return r;
   });
   const fpsW = document.querySelector("[data-hero-working]");
   const fpsN = document.querySelector("[data-hero-needs]");
-  const LABEL = { working: "Working", resting: "Resting", needs: "Needs you" };
   const refresh = () => {
     tiles.forEach((t, i) => {
       rows[i].className = "mmap-row" + (t.status === "needs" ? " needs" : "");
-      rows[i].innerHTML = `<span class="dot ${t.status}"></span><div>${t.name}<small>${LABEL[t.status]}</small></div>`;
+      rows[i].innerHTML = `<span class="dot ${t.status}"></span><div>${t.name}<small>${STATUS_LABEL[t.status]}</small></div>`;
     });
+    const busy = tiles.filter((t) => t.status === "working" || t.status === "needs").length;
+    if (teamState) teamState.textContent = busy ? `3 · ${busy} running` : "3 · idle";
     if (fpsW) fpsW.textContent = `${tiles.filter((t) => t.status === "working").length} of 3`;
     if (fpsN) fpsN.textContent = String(tiles.filter((t) => t.status === "needs").length);
   };
@@ -282,50 +309,47 @@ if (hero) {
   onVisible(hero, (v) => { visible = v; if (v && !running) loop(); });
   const waitVisible = async () => { while (!visible || document.hidden) await sleep(400); };
 
-  const scripts = [
-    async (t) => {
-      t.set("working");
-      await t.type("> build the onboarding flow", "p");
-      await t.type("Reading src/onboarding/…", "dim", 10);
-      await t.type("Plan: 3 screens, progress bar, skip", "", 10);
-      await t.type("Editing Welcome.tsx  +42 −3", "ok", 10);
-      await t.type("Allow edit to src/App.tsx? (y/n)", "warn", 12);
-      t.set("needs");
-      await sleep(2600);
-      await t.type("y", "p", 40);
-      t.set("working");
-      await t.type("Editing App.tsx  +8 −1", "ok", 10);
-      await t.type("✓ Onboarding flow ready", "ok", 12);
-      t.set("resting");
-    },
-    async (t) => {
-      await sleep(900);
-      t.set("working");
-      await t.type("> write tests for auth", "p");
-      await t.type("Running npm test…", "dim", 10);
-      await t.type("✗ 2 failing", "warn", 10);
-      await t.type("Fixing token refresh…", "", 10);
-      await t.type("✓ 24 passing", "ok", 10);
-      t.set("resting");
-    },
-    async (t) => {
-      await sleep(1700);
-      t.set("working");
-      await t.type("> review the open PR", "p");
-      await t.type("Reading 6 changed files…", "dim", 10);
-      await t.type("2 suggestions, 0 blockers", "", 10);
-      await t.type("✓ Review posted", "ok", 10);
-      t.set("resting");
-    },
-  ];
+  // The story: Maya builds (and asks once), hands to Otto, who tests and hands to Iris, who reviews.
+  const [maya, otto, iris] = tiles;
+  async function story() {
+    maya.set("working");
+    await maya.type("> build the onboarding flow", "p");
+    await maya.type("Reading src/onboarding/…", "dim", 10);
+    await maya.type("Plan: 3 screens, progress bar, skip", "", 10);
+    await maya.type("Editing Welcome.tsx  +42 −3", "ok", 10);
+    await maya.type("Allow edit to src/App.tsx? (y/n)", "warn", 12);
+    maya.set("needs");
+    await sleep(2400);
+    await maya.type("y", "p", 40);
+    maya.set("working");
+    await maya.type("Editing App.tsx  +8 −1", "ok", 10);
+    await maya.type("✓ Onboarding flow built", "ok", 12);
+    maya.set("done");
+    await handing(0);
+    otto.set("working");
+    await otto.type("> write tests for onboarding", "p");
+    await otto.type("Running npm test…", "dim", 10);
+    await otto.type("✗ 2 failing  Progress.test.tsx", "bad", 10);
+    await otto.type("Fixing Progress.tsx", "", 10);
+    await otto.type("✓ 14 passing", "ok", 10);
+    otto.set("done");
+    await handing(1);
+    iris.set("working");
+    await iris.type("> review the onboarding diff", "p");
+    await iris.type("Reading 3 files…", "dim", 10);
+    await iris.type("Suggest: aria-label on Skip", "", 10);
+    await iris.type("✓ Review ready", "ok", 10);
+    iris.set("done");
+  }
   async function loop() {
     running = true;
     for (;;) {
       await waitVisible();
-      await Promise.all(tiles.map((t, i) => scripts[i](t)));
-      await sleep(3200);
+      await story();
+      await sleep(3600);
       await waitVisible();
-      tiles.forEach((t) => t.clear());
+      tiles.forEach((t) => { t.clear(); t.set("resting"); });
+      await sleep(600);
     }
   }
 }
@@ -477,7 +501,7 @@ function demoHandoff(host) {
 function demoTheme(host) {
   host.innerHTML = `<div class="demo">
     <div class="demo-head"><div><div class="demo-title">Make it yours</div><p class="demo-sub">Pick an accent: this whole website changes with it, just like Argon does. Your pick is remembered.</p></div></div>
-    <div class="demo-stage" style="display:grid;place-items:center"><div class="mock" style="width:86%"><div class="mock-top"><img class="logo" src="assets/argon-icon.svg" alt=""><b>argon</b><span class="mock-tab on"><i></i>my-app</span><span class="mock-cmd">Tell your agents…</span></div><div class="mock-board" style="height:200px"></div></div></div>
+    <div class="demo-stage" style="display:grid;place-items:center"><div class="mock" style="width:86%"><div class="mock-top app"><span class="mt-pill">‹ Home</span><span class="mt-pill">my-app</span><span class="mt-pill ws">Workspace 1 <em>1</em></span><span class="mt-right"><span class="mt-pill"><i class="mt-dot"></i>1 <span class="mt-faint">running</span></span></span></div><div class="mock-board" style="height:200px"></div></div></div>
     <div class="demo-foot">
       <div class="swatches" role="group" aria-label="Accent color"></div>
       <div class="seg" role="group" aria-label="Mode"><button type="button" data-mode="dark">Dark</button><button type="button" data-mode="light">Light</button></div>

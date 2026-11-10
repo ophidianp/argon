@@ -8,10 +8,10 @@
     <title>Argon</title>
     <link rel="icon" type="image/svg+xml" href="assets/argon-icon.svg">
     <script>try{var d=document.documentElement,s=localStorage.getItem("argon-theme"),t=s==="light"||s==="dark"?s:(d.dataset.theme==="light"?"light":"dark");d.dataset.theme=t;var v=JSON.parse(localStorage.getItem("argon-accent-vars")||"null");if(v&&v[t])for(var k in v[t])d.style.setProperty(k,v[t][k])}catch(e){}</script>
-    <link rel="stylesheet" href="assets/liquid-glass.css?v=1">
-    <link rel="stylesheet" href="assets/site.css?v=6">
+    <link rel="stylesheet" href="assets/liquid-glass.css?v=2">
+    <link rel="stylesheet" href="assets/site.css?v=7">
     <script src="assets/liquid-glass.js?v=1" defer></script>
-    <script src="assets/site.js?v=5" defer></script>
+    <script src="assets/site.js?v=6" defer></script>
   </head>
   <body>
     <div class="backdrop" aria-hidden="true"><div class="aurora aurora-a"></div><div class="aurora aurora-b"></div></div>
@@ -48,8 +48,8 @@
           <p class="hero-note" data-reveal style="--d: 600ms">Argon 1.0.4 · Windows 10 and 11, 64-bit · Free · <a class="text-link" href="download.html">Install notes</a></p>
         </div>
         <div class="hero-stage" data-reveal style="--d: 200ms">
-          <div class="mock" data-hero-board aria-label="An animated preview of the Argon board with three agents working" role="img">
-            <div class="mock-top"><img class="logo" src="assets/argon-icon.svg" alt=""><b>argon</b><span class="mock-tab on"><i></i>my-app</span><span class="mock-tab">api</span><span class="mock-cmd">›_ Tell your agents…  Ctrl K</span></div>
+          <div class="mock mock-app" data-hero-board aria-label="An animated preview of the Argon board: three agents in a team, each handing its work to the next" role="img">
+            <div class="mock-top app"><span class="mt-pill mt-home">‹ Home</span><span class="mt-pill"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>my-app</span><span class="mt-pill ws">Workspace 1 <em>3</em></span><span class="mt-right"><span class="mt-pill mt-running"><i class="mt-dot"></i>3 <span class="mt-faint">running</span></span><span class="mt-pill mt-limits"><span style="color:#e8643c">✻</span> <span class="mt-faint">resets</span> 5:00 PM</span></span></div>
             <div class="mock-board"></div>
           </div>
           <div class="hero-readout r1">Agents working<strong data-hero-working>0 of 3</strong></div>

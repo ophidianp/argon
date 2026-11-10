@@ -206,27 +206,47 @@ section { position: relative; }
 .mock-tab i { width: 6px; height: 6px; border-radius: 50%; background: var(--accent); }
 .mock-cmd { margin-left: auto; font: 11px var(--mono); color: var(--faint); border: 1px solid var(--line-strong); border-radius: 8px; padding: 3px 10px; white-space: nowrap; }
 .mock-board { position: relative; height: 380px; background-image: radial-gradient(circle, var(--line-strong) 1px, transparent 1.2px); background-size: 20px 20px; }
-.mtile { position: absolute; display: flex; flex-direction: column; border-radius: 11px; border: 1px solid var(--line-strong); background: var(--term); box-shadow: 0 14px 30px -14px rgba(0,0,0,.7); overflow: hidden; transition: border-color .5s var(--ease), box-shadow .5s var(--ease), transform .8s var(--ease); }
+.mtile { position: absolute; display: flex; flex-direction: column; border-radius: 11px; border: 1px solid var(--line-strong); background: var(--surface); box-shadow: 0 14px 30px -14px rgba(0,0,0,.7); overflow: hidden; transition: border-color .5s var(--ease), box-shadow .5s var(--ease), transform .8s var(--ease); }
 .mtile.needs { border-color: color-mix(in srgb, var(--warn) 70%, transparent); box-shadow: 0 0 0 3px color-mix(in srgb, var(--warn) 18%, transparent), 0 14px 30px -14px rgba(0,0,0,.7); }
-.mtile-head { display: flex; align-items: center; gap: 7px; height: 26px; padding: 0 9px; border-bottom: 1px solid rgba(255,255,255,.06); font: 600 11px var(--sans); color: #ebe6f6; }
-.mtile-head .badge { margin-left: auto; font: 500 9.5px var(--sans); padding: 1px 6px; border-radius: 99px; border: 1px solid currentColor; opacity: .85; }
-.mtile-body { flex: 1; padding: 7px 9px; font: 10.5px/1.5 var(--mono); color: #d8d0ec; overflow: hidden; white-space: pre-wrap; word-break: break-word; display: flex; flex-direction: column; justify-content: flex-end; }
-.mtile-body .p { color: #b9a6ec; }
-.mtile-body .ok { color: #7fd1a0; }
-.mtile-body .warn { color: #f0b45a; }
-.mtile-body .dim { color: #7f7698; }
-.dot { width: 8px; height: 8px; border-radius: 50%; background: #6b6382; flex: none; transition: background-color .4s, box-shadow .4s; }
-.dot.working { background: #b9a6ec; animation: pulse 1.3s var(--ease-soft) infinite; box-shadow: 0 0 0 0 var(--glow); }
-.dot.needs { background: #f0b45a; box-shadow: 0 0 10px rgba(240,180,90,.6); }
-.dot.resting { background: #6b6382; }
-.mnote { position: absolute; border-radius: 11px; background: #d9cdf7; color: #1d1828; padding: 10px 12px; font: 12px/1.45 var(--sans); box-shadow: 0 14px 30px -14px rgba(0,0,0,.6); }
-.mnote b { display: block; font: 700 11px var(--display); color: rgba(29,24,40,.65); margin-bottom: 4px; }
+/* A console, as Argon draws it today: agent glyph, name, (Simple | Terminal), and a status chip */
+.mtile-head { display: flex; align-items: center; gap: 6px; height: 26px; padding: 0 7px 0 8px; border-bottom: 1px solid var(--line); font: 600 11px var(--sans); color: var(--ink); white-space: nowrap; }
+.mtile-head .mname { overflow: hidden; text-overflow: ellipsis; min-width: 0; }
+.mglyph { flex: none; width: 13px; height: 13px; display: inline-grid; place-items: center; font: 700 11px/1 var(--sans); }
+.mglyph.g-claude { color: #e8643c; font-size: 13px; }
+.mglyph.g-gemini { color: #4b8bf5; }
+.mglyph.g-codex { font: 700 7px/1 var(--mono); color: var(--bg); background: var(--ink); border-radius: 4px; letter-spacing: -0.04em; }
+.mglyph.g-term { font: 700 7px/1 var(--mono); color: var(--muted); border: 1px solid var(--line-strong); border-radius: 4px; }
+.mseg { display: inline-flex; margin-left: auto; padding: 2px; border-radius: 99px; background: color-mix(in srgb, var(--ink) 7%, transparent); font: 500 8.5px var(--sans); color: var(--muted); }
+.mseg i { font-style: normal; padding: 1px 6px; border-radius: 99px; }
+.mseg i.on { background: color-mix(in srgb, var(--ink) 12%, transparent); color: var(--ink); }
+.mstat { display: inline-flex; align-items: center; gap: 4px; margin-left: auto; flex: none; font: 500 9px var(--sans); padding: 2px 7px 2px 6px; border-radius: 99px; color: var(--muted); background: color-mix(in srgb, var(--ink) 6%, transparent); transition: color .4s, background-color .4s; }
+.mseg + .mstat { margin-left: 4px; }
+.mstat b { width: 5px; height: 5px; border-radius: 50%; background: currentColor; }
+.mstat.working { color: var(--accent); background: color-mix(in srgb, var(--accent) 14%, transparent); }
+.mstat.working b { animation: pulse 1.3s var(--ease-soft) infinite; }
+.mstat.needs { color: var(--warn); background: color-mix(in srgb, var(--warn) 16%, transparent); }
+.mstat.done { color: var(--good); background: color-mix(in srgb, var(--good) 14%, transparent); }
+.mtile.working { border-color: color-mix(in srgb, var(--accent) 55%, transparent); }
+.mtile-body { flex: 1; padding: 7px 9px; font: 10.5px/1.5 var(--mono); color: var(--ink); overflow: hidden; white-space: pre-wrap; word-break: break-word; display: flex; flex-direction: column; justify-content: flex-end; }
+.mtile-body .p { color: var(--accent); }
+.mtile-body .ok { color: var(--good); }
+.mtile-body .warn { color: var(--warn); }
+.mtile-body .bad { color: var(--bad); }
+.mtile-body .dim { color: var(--faint); }
+.dot { width: 8px; height: 8px; border-radius: 50%; background: var(--faint); flex: none; transition: background-color .4s, box-shadow .4s; }
+.dot.working { background: var(--accent); animation: pulse 1.3s var(--ease-soft) infinite; box-shadow: 0 0 0 0 var(--glow); }
+.dot.needs { background: var(--warn); box-shadow: 0 0 10px color-mix(in srgb, var(--warn) 60%, transparent); }
+.dot.done { background: var(--good); }
+.dot.resting { background: var(--faint); }
+/* A note on the board: warm, in the accent */
+.mnote { position: absolute; border-radius: 11px; background: color-mix(in srgb, var(--accent) 14%, var(--surface)); border: 1px solid color-mix(in srgb, var(--accent) 30%, transparent); color: var(--ink); padding: 10px 12px; font: 12px/1.45 var(--sans); box-shadow: 0 14px 30px -14px rgba(0,0,0,.6); }
+.mnote b { display: block; font: 700 11px var(--display); color: var(--accent); margin-bottom: 4px; }
 .mmap { position: absolute; right: 0; top: 0; bottom: 0; width: 150px; border-left: 1px solid var(--line); background: color-mix(in srgb, var(--bg) 88%, transparent); padding: 10px; display: flex; flex-direction: column; gap: 6px; }
 .mmap h4 { margin: 0 0 4px; font: 700 11px var(--display); color: var(--ink); }
 .mmap-row { display: flex; align-items: center; gap: 7px; padding: 5px 6px; border-radius: 7px; font: 500 10.5px var(--sans); color: var(--ink); transition: background-color .4s; }
 .mmap-row small { display: block; color: var(--faint); font-size: 9.5px; }
-.mmap-row.needs { background: rgba(240,180,90,.08); }
-.cursor-blink::after { content: "▍"; color: #b9a6ec; animation: blink 1s steps(2) infinite; }
+.mmap-row.needs { background: color-mix(in srgb, var(--warn) 10%, transparent); }
+.cursor-blink::after { content: "▍"; color: var(--accent); animation: blink 1s steps(2) infinite; }
 @keyframes blink { 50% { opacity: 0; } }
 
 /* Marquee */
@@ -403,8 +423,8 @@ section { position: relative; }
 .platform h3 { font-size: 26px; }
 .platform p { color: var(--muted); font-size: 15px; margin: 0; }
 .platform .btn { align-self: flex-start; margin-top: 8px; }
-.terminal-block { margin: 0; padding: 18px 20px; border-radius: 16px; background: var(--term); color: #e6e0f5; font: 14px/1.8 var(--mono); overflow-x: auto; border: 1px solid var(--line-strong); }
-.terminal-block .c { color: #7f7698; }
+.terminal-block { margin: 0; padding: 18px 20px; border-radius: 16px; background: var(--term); color: #ece4d8; font: 14px/1.8 var(--mono); overflow-x: auto; border: 1px solid var(--line-strong); }
+.terminal-block .c { color: #8a8175; }
 .terminal-block .p { color: #b9a6ec; user-select: none; }
 .copy-row { position: relative; }
 .download-main { display: grid; gap: 14px; justify-items: start; }
@@ -439,8 +459,8 @@ section { position: relative; }
 /* ---------- Responsive ---------- */
 /* ---------- Liquid glass (matches the app) ---------- */
 :root {
-  --g-tint: rgba(26, 21, 40, 0.14);
-  --g-tint-strong: rgba(26, 21, 40, 0.5);
+  --g-tint: rgba(28, 24, 20, 0.14);
+  --g-tint-strong: rgba(28, 24, 20, 0.5);
   --g-hi: rgba(255, 255, 255, 0.34);
   --g-edge: rgba(255, 255, 255, 0.12);
   --g-edge-dark: rgba(0, 0, 0, 0.4);
@@ -456,7 +476,7 @@ section { position: relative; }
   --g-edge: rgba(255, 255, 255, 0.75);
   --g-edge-dark: rgba(60, 40, 20, 0.12);
   --bubble: rgba(255, 255, 255, 0.75);
-  --bubble-shadow: inset 0 1px 0 #fff, 0 0 0 0.5px rgba(40, 20, 80, 0.14), 0 6px 16px -6px rgba(40, 20, 80, 0.22);
+  --bubble-shadow: inset 0 1px 0 #fff, 0 0 0 0.5px rgba(60, 40, 20, 0.14), 0 6px 16px -6px rgba(60, 40, 20, 0.22);
 }
 
 /* Solid background only: no gradient glows. */
@@ -481,7 +501,7 @@ body { background: var(--bg); }
 }
 :root[data-theme="light"] :is(.site-header, .theme-toggle, .menu-toggle, .btn-ghost, .card, .demo, .release-panel, .platform, .fact, .hero-readout, .mock, .chipbtn, .seg, .field-inline, .lab-tab[aria-selected="true"], .work-item .tag, .marquee i, .copy-btn, .faq-list summary .plus) {
   background: linear-gradient(180deg, rgba(255,255,255,.7), rgba(255,255,255,.2) 60%), var(--g-tint);
-  box-shadow: inset 0 1px 0.5px var(--g-hi), inset 0 0 0 1px var(--g-edge), 0 0 0 0.5px var(--g-edge-dark), 0 18px 44px -20px rgba(40,20,80,.3);
+  box-shadow: inset 0 1px 0.5px var(--g-hi), inset 0 0 0 1px var(--g-edge), 0 0 0 0.5px var(--g-edge-dark), 0 18px 44px -20px rgba(60,40,20,.3);
 }
 /* specular rim, brightest top-left and bottom-right */
 .theme-toggle, .btn-ghost, .demo, .release-panel, .platform, .fact { position: relative; }
@@ -542,6 +562,70 @@ body { background: var(--bg); }
   box-shadow: inset 0 1px 0.5px var(--g-hi), inset 0 0 0 1px var(--g-edge), 0 10px 26px -12px rgba(0,0,0,.55); }
 .mtile { border: 0; box-shadow: inset 0 0 0 1px rgba(255,255,255,.09), inset 0 1px 0 rgba(255,255,255,.1), 0 14px 30px -14px rgba(0,0,0,.7); }
 .demo-stage, .mock-board { background-color: var(--bg-2); }
+
+
+/* Mini Argon as it looks today: glass pills on top, a thin tool rail, a team frame with "When done" wires,
+   the chips and the ask bar at the bottom. Every colour comes from the site's tokens, so it follows the look. */
+.mock-top.app { gap: 6px; padding: 0 6px; }
+.mt-pill { display: inline-flex; align-items: center; gap: 5px; height: 24px; padding: 0 10px; border-radius: 999px; font: 600 10.5px var(--sans); color: var(--ink); background: var(--bubble); box-shadow: var(--bubble-shadow); white-space: nowrap; }
+.mt-pill svg { width: 11px; height: 11px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.mt-pill.ws { box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--accent) 70%, transparent); }
+.mt-pill.ws em { font-style: normal; font-weight: 500; color: var(--accent); }
+.mt-pill .mt-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--good); }
+.mt-pill .mt-faint { color: var(--muted); font-weight: 500; }
+.mt-right { margin-left: auto; display: inline-flex; gap: 6px; }
+.mock-app .mock-board { height: 430px; }
+.m-rail { position: absolute; left: 8px; top: 50%; transform: translateY(-58%); display: flex; flex-direction: column; gap: 7px; padding: 6px 4px; border-radius: 999px; background: var(--bubble); box-shadow: var(--bubble-shadow); z-index: 3; }
+.m-rail i { width: 14px; height: 14px; border-radius: 50%; border: 1.5px solid color-mix(in srgb, var(--ink) 35%, transparent); }
+.m-rail i.on { border: 0; background: var(--accent); box-shadow: 0 0 10px -2px var(--glow); }
+.m-team { position: absolute; left: 40px; right: 10px; top: 10px; bottom: 92px; border-radius: 14px; border: 1px solid color-mix(in srgb, var(--accent) 22%, var(--line)); background: color-mix(in srgb, var(--accent) 3%, transparent); }
+.m-team-head { position: absolute; left: 10px; top: 7px; font: 600 10px var(--sans); color: var(--ink); display: inline-flex; gap: 5px; align-items: center; }
+.m-team-head span { color: var(--muted); font-weight: 500; }
+.m-a { left: 3%; top: 13%; width: 43%; height: 41%; }
+.m-b { left: 54%; top: 13%; width: 43%; height: 41%; }
+.m-c { left: 3%; top: 62%; width: 43%; height: 34%; }
+.m-team .m-map { left: 54%; top: 62%; right: auto; bottom: auto; width: 43%; height: 34%; }
+.m-team .mtile { box-shadow: inset 0 0 0 1px var(--line-strong), inset 0 1px 0 rgba(255,255,255,.06), 0 10px 24px -14px rgba(0,0,0,.6); }
+.m-team .mtile.working { box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--accent) 55%, transparent), 0 10px 24px -14px rgba(0,0,0,.6); }
+.m-team .mtile.needs { box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--warn) 70%, transparent), 0 0 0 3px color-mix(in srgb, var(--warn) 16%, transparent); }
+.mtile-head .mname { flex: none; max-width: 40%; }
+.mtile.needs .mseg { display: none; }
+.m-wires { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; pointer-events: none; }
+.m-wires path { fill: none; stroke: color-mix(in srgb, var(--accent) 65%, transparent); stroke-width: 1.5; vector-effect: non-scaling-stroke; }
+.m-wires path.busy { stroke: var(--accent); stroke-dasharray: 5 4; animation: m-flow .7s linear infinite; }
+@keyframes m-flow { to { stroke-dashoffset: -9; } }
+.m-link { position: absolute; transform: translate(-50%, -50%); display: inline-flex; align-items: center; gap: 4px; padding: 2px 8px; border-radius: 99px; font: 600 8.5px var(--sans); color: var(--ink); background: var(--surface-2); box-shadow: inset 0 0 0 1px var(--line-strong), 0 4px 10px -4px rgba(0,0,0,.5); white-space: nowrap; z-index: 2; transition: color .3s, box-shadow .3s; }
+.m-link.busy { color: var(--accent); box-shadow: inset 0 0 0 1px var(--accent), 0 0 14px -4px var(--glow); }
+.m-team .mmap { position: absolute; padding: 8px; gap: 3px; border-radius: 11px; }
+.m-team .mmap h4 { font-size: 10px; margin: 0 0 2px; }
+.m-team .mmap-row { padding: 3px 5px; font-size: 9.5px; }
+.m-team .mmap-row small { font-size: 8.5px; }
+.m-bottom { position: absolute; left: 40px; right: 10px; bottom: 10px; display: flex; flex-direction: column; align-items: center; gap: 7px; }
+.m-chips { display: flex; gap: 5px; }
+.m-chips span { font: 600 9.5px var(--sans); color: var(--ink); padding: 3px 9px; border-radius: 99px; box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--accent) 45%, var(--line-strong)); background: var(--surface); }
+.m-ask { display: flex; align-items: center; gap: 8px; width: min(100%, 360px); height: 32px; padding: 0 5px 0 9px; border-radius: 14px; background: var(--bubble); box-shadow: var(--bubble-shadow); font: 500 10.5px var(--sans); color: var(--muted); }
+.m-ask img { width: 15px; height: 15px; flex: none; }
+.m-ask span { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.m-ask i { width: 20px; height: 20px; border-radius: 50%; flex: none; background: color-mix(in srgb, var(--ink) 8%, transparent); }
+.m-ask i.go { background: var(--accent); }
+@media (max-width: 980px) {
+  .mock-app .mock-board { height: 400px; }
+  .mock-top.app .mt-limits, .mock-app .mseg { display: none; }
+  .mock-app .mmap { display: flex; }
+}
+@media (max-width: 560px) {
+  .mock-app .mock-board { height: 360px; }
+  .mock-top.app .mt-home, .mock-top.app .mt-running .mt-faint { display: none; }
+  .m-rail { display: none; }
+  .m-team, .m-bottom { left: 8px; right: 8px; }
+  .m-team { bottom: 50px; }
+  .m-chips { display: none; }
+  .mock-app .mmap { display: none; }
+  .m-link .lbl { display: none; }
+  .m-c { width: 94%; }
+  .mock-app .mtile-head { gap: 4px; padding: 0 5px 0 6px; }
+  .mock-app .mtile-body { font-size: 9px; padding: 5px 7px; }
+}
 
 @media (max-width: 980px) {
   .hero, .section-head, .work, .compat, .faq, .cta, .platform-grid { grid-template-columns: 1fr; }
