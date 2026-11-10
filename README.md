@@ -7,7 +7,7 @@
 <p align="center"><b>Your coding agents, working together, on one board. For Windows.</b></p>
 
 <p align="center">
-  <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue.svg" alt="License: MIT"></a>
+  <a href="LICENSE"><img src="https://img.shields.io/badge/license-All%20rights%20reserved-lightgrey.svg" alt="License: All rights reserved"></a>
   <img src="https://img.shields.io/badge/Windows-10%20%7C%2011-0078D4?logo=windows&logoColor=white" alt="Windows 10 and 11">
   <img src="https://img.shields.io/badge/node-%3E%3D24-brightgreen" alt="Node.js 24 or later">
 </p>
@@ -115,4 +115,4 @@ board, `ARGON_SHELL` to use PowerShell 7 (`pwsh.exe`) instead of Windows PowerSh
 
 ## License
 
-MIT. See [LICENSE](LICENSE).
+© 2026 Pavan Nemani. All rights reserved. Argon is built on vibeboard, © 2026 Riccardo Niccolò Agosti, used under the MIT License. See [LICENSE](LICENSE).

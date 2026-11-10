@@ -1,3 +1,21 @@
+Copyright (c) 2026 Pavan Nemani. All rights reserved.
+
+Argon and its source code are the property of Pavan Nemani. No part of this
+software may be copied, modified, distributed, sublicensed or used to make
+derivative works, in whole or in part, without the prior written permission
+of the copyright holder, except as the third-party notice below allows for
+the parts it covers.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED. IN NO EVENT SHALL THE COPYRIGHT HOLDER BE LIABLE FOR ANY CLAIM,
+DAMAGES OR OTHER LIABILITY ARISING FROM THE SOFTWARE OR ITS USE.
+
+-------------------------------------------------------------------------------
+Third-party notice
+
+Argon is built on vibeboard, which is available under the MIT License below.
+That license continues to apply to the vibeboard code Argon contains.
+
 MIT License
 
 Copyright (c) 2026 Riccardo Niccolò Agosti

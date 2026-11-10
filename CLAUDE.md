@@ -32,5 +32,5 @@ terminals side by side, grouped into teams that hand work to one another along w
 
 ## Rules
 
-- Keep the LICENSE file as it is (MIT notice of the base this was built on).
+- LICENSE is all rights reserved (Pavan Nemani). Keep the vibeboard MIT notice in it: the MIT terms require it.
 - User-facing text says "this PC", Explorer, Ctrl — not Mac terms.

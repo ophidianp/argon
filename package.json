@@ -2,7 +2,7 @@
   "name": "argon",
   "private": true,
   "version": "1.0.0",
-  "license": "MIT",
+  "license": "SEE LICENSE IN LICENSE",
   "type": "module",
   "scripts": {
     "dev": "node scripts/dev.mjs",
@@ -56,7 +56,7 @@
   "build": {
     "appId": "io.github.ophidianp.argon",
     "productName": "Argon",
-    "copyright": "Copyright © 2026 ophidianp. Based on vibeboard, © 2026 Riccardo Niccolò Agosti (MIT).",
+    "copyright": "Copyright © 2026 Pavan Nemani. All rights reserved. Based on vibeboard, © 2026 Riccardo Niccolò Agosti (MIT).",
     "directories": {
       "output": "release",
       "buildResources": "build"
