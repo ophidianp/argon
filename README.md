@@ -24,7 +24,7 @@ Every download button links to
 `https://github.com/ophidianp/argon/releases/latest/download/Argon-Setup.exe`. Each release uploads a copy
 of its installer under that fixed name (next to `Argon-<version>-setup.exe`, its `.sig` and `latest.yml`),
 so the site never needs a version bump to download the newest one. The version shown on the download page and
-the home page (`1.0.3`) is text: update it with each release.
+the home page (`1.0.4`) is text: update it with each release.
 
 ## Preview locally
 ```
