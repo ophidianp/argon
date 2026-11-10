@@ -516,6 +516,34 @@ function demoTheme(host) {
 const DEMOS = { command: demoCommand, loop: demoLoop, handoff: demoHandoff, theme: demoTheme };
 document.querySelectorAll("[data-demo]").forEach((host) => DEMOS[host.dataset.demo]?.(host));
 
+/* ---------- Launch video: plays muted while on screen; the button turns sound on and off ---------- */
+document.querySelectorAll("[data-launch-video]").forEach((video) => {
+  const btn = video.parentElement.querySelector("[data-video-sound]");
+  const label = btn?.querySelector("[data-sound-label]");
+  const sync = () => {
+    if (!btn) return;
+    btn.setAttribute("aria-pressed", String(!video.muted));
+    label.textContent = video.muted ? "Sound off" : "Sound on";
+    btn.querySelector("[data-icon-off]").toggleAttribute("hidden", !video.muted);
+    btn.querySelector("[data-icon-on]").toggleAttribute("hidden", video.muted);
+  };
+  btn?.addEventListener("click", () => {
+    video.muted = !video.muted;
+    if (!video.muted && video.paused) video.play().catch(() => {});
+    sync();
+  });
+  // Click the picture to pause or play.
+  video.addEventListener("click", () => (video.paused ? video.play().catch(() => {}) : video.pause()));
+  // With reduced motion it waits for a click; otherwise it plays only while in view.
+  if (!reduceMotion && "IntersectionObserver" in window) {
+    new IntersectionObserver(([e]) => {
+      if (e.isIntersecting) video.play().catch(() => {});
+      else video.pause();
+    }, { threshold: 0.35 }).observe(video);
+  }
+  sync();
+});
+
 /* ---------- Liquid glass: refraction + chromatic aberration (Chromium), glare, gliding lens (assets/liquid-glass.js) ---------- */
 (() => {
   const LG = window.LiquidGlass;
@@ -526,7 +554,7 @@ document.querySelectorAll("[data-demo]").forEach((host) => DEMOS[host.dataset.de
     [".site-header, .mock-top, .mmap, .hero-readout", 70],
     [".demo, .release-panel", 55],
     [".card, .platform, .fact", 50],
-    [".btn-ghost, .seg, .chipbtn, .theme-toggle, .menu-toggle, .copy-btn, .field-inline", 44],
+    [".btn-ghost, .video-sound, .seg, .chipbtn, .theme-toggle, .menu-toggle, .copy-btn, .field-inline", 44],
   ];
   for (const [sel, s] of tiers) document.querySelectorAll(sel).forEach((el) => LG.glassify(el, s));
   document.querySelectorAll(".mock").forEach((el) => LG.glassify(el, 0));
