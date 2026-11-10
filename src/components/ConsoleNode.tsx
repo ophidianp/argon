@@ -2,7 +2,7 @@ import { memo, useEffect, useRef, useState } from 'react'
 import { Handle, NodeResizer, Position, type Node, type NodeProps } from '@xyflow/react'
 import { Terminal } from '@xterm/xterm'
 import { FitAddon } from '@xterm/addon-fit'
-import { Check, ChevronDown, Forward, RotateCcwClock, RotateCw, X } from 'lucide-react'
+import { Check, ChevronDown, Forward, ImagePlus, RotateCcwClock, RotateCw, X } from 'lucide-react'
 import { useShallow } from 'zustand/react/shallow'
 import { api, ptyUrl, type Subagent } from '../api'
 import { absolute, agentColor, consoles, launchCache, project, useStore, workspace, type ConsoleData } from '../store'
@@ -14,7 +14,8 @@ import { AgentGlyph, AgentIcon } from './icons'
 import { initials } from './UsagePanel'
 import { currentTheme, useTheme, type Theme } from '../theme'
 import { terminalColors, useLook } from '../appearance'
-import { Conversation, SimpleFooter, StatusStrip } from './SimpleView'
+import { Conversation, SimpleFooter, StatusStrip, Thumb } from './SimpleView'
+import { hasImages, IMAGE_TYPES, imagesIn, insertImages } from '../consoleImages'
 
 const DARK = {
   background: '#0f0e0c',
@@ -366,6 +367,18 @@ export function WirePick({ id }: { id: string }) {
   )
 }
 
+// Pictures put into the terminal, shown along its bottom edge: what the agent was given, at a glance.
+function ImageStrip({ id, images }: { id: string; images: NonNullable<ConsoleData['images']> }) {
+  const updateData = useStore((s) => s.updateData)
+  return (
+    <div className="img-strip nodrag nowheel">
+      {images.map((img) => (
+        <Thumb key={img.url} src={img.url} onRemove={() => updateData(id, { images: images.filter((x) => x !== img) })} />
+      ))}
+    </div>
+  )
+}
+
 function ConsoleNodeImpl({ id, data, selected, width, height }: NodeProps<Node<ConsoleData>>) {
   const live = useStore((s) => s.live[id])
   const { updateData, restartConsole, removeNode, resizeNode } = useStore.getState()
@@ -387,6 +400,8 @@ function ConsoleNodeImpl({ id, data, selected, width, height }: NodeProps<Node<C
   const simple = data.view === 'simple' && data.agent !== 'shell'
   // Only Claude's transcript can be read as a conversation; other agents keep their terminal in view.
   const chat = simple && data.agent === 'claude'
+  const imageRef = useRef<HTMLInputElement>(null)
+  const [dropping, setDropping] = useState(false)
 
   useEffect(() => setExited(false), [data.epoch])
 
@@ -487,6 +502,22 @@ function ConsoleNodeImpl({ id, data, selected, width, height }: NodeProps<Node<C
             </div>
           )}
           <StatusPill status={status} />
+          {!chat && live && (
+            <button className="icon-btn sm nodrag" title="Put a picture into this console (or paste or drop one on it)" onClick={() => imageRef.current?.click()}>
+              <ImagePlus size={15} />
+            </button>
+          )}
+          <input
+            ref={imageRef}
+            type="file"
+            accept={IMAGE_TYPES.join(',')}
+            multiple
+            hidden
+            onChange={(e) => {
+              insertImages(id, [...(e.target.files ?? [])])
+              e.target.value = ''
+            }}
+          />
           <button className="icon-btn sm nodrag" title="Pass this agent's work to another one" onClick={() => setHandMenu((v) => !v)}>
             <Forward size={15} />
           </button>
@@ -542,7 +573,33 @@ function ConsoleNodeImpl({ id, data, selected, width, height }: NodeProps<Node<C
 
         {simple && !chat && <StatusStrip id={id} status={status} />}
 
-        <div className="console-body nodrag nowheel nopan">
+        <div
+          className={`console-body nodrag nowheel nopan ${dropping ? 'dropping' : ''}`}
+          // A picture pasted or dropped on the terminal goes to the agent; the simple view's box takes its own.
+          onPasteCapture={(e) => {
+            if (chat || !live || (e.target as HTMLElement).closest('.simple-layer, .simple-footer')) return
+            const files = imagesIn(e.clipboardData)
+            if (!files.length) return
+            e.preventDefault()
+            e.stopPropagation()
+            insertImages(id, files)
+          }}
+          onDragOver={(e) => {
+            if (chat || !live || !hasImages(e.dataTransfer)) return
+            e.preventDefault()
+            e.dataTransfer.dropEffect = 'copy'
+            setDropping(true)
+          }}
+          onDragLeave={(e) => !e.currentTarget.contains(e.relatedTarget as globalThis.Node | null) && setDropping(false)}
+          onDrop={(e) => {
+            setDropping(false)
+            const files = imagesIn(e.dataTransfer)
+            if (chat || !live || !files.length) return
+            e.preventDefault()
+            e.stopPropagation()
+            insertImages(id, files)
+          }}
+        >
           <TerminalView
             id={id}
             epoch={data.epoch}
@@ -553,6 +610,7 @@ function ConsoleNodeImpl({ id, data, selected, width, height }: NodeProps<Node<C
           />
           {/* Laid over the terminal, never beside it: resizing a terminal makes the CLI redraw, and a
               question that opens and closes with each redraw would resize it again, forever. */}
+          {!chat && data.images && data.images.length > 0 && <ImageStrip id={id} images={data.images} />}
           {chat && (
             <div className="simple-layer">
               <StatusStrip id={id} status={status} />

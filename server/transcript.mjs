@@ -49,6 +49,9 @@ export function readConversation(jsonl, limit = 200) {
     if (!e || (e.type !== 'user' && e.type !== 'assistant')) continue
     if (e.isMeta || e.isSidechain || e.isCompactSummary || e.isVisibleInTranscriptOnly) continue
     const content = typeof e.message?.content === 'string' ? [{ type: 'text', text: e.message.content }] : e.message?.content || []
+    // Pictures the person sent: listed by key, fetched one by one (transcriptImage), never inlined here.
+    const images = e.type === 'user' && e.uuid ? content.flatMap((c, i) => (c.type === 'image' && c.source?.type === 'base64' ? [`${e.uuid}:${i}`] : [])) : []
+    const mark = items.length
     for (const c of content) {
       if (c.type === 'tool_use') {
         // Not "Ran" yet: it may still be waiting for the person's answer.
@@ -70,9 +73,35 @@ export function readConversation(jsonl, limit = 200) {
         const text = c.text.trim()
         if (e.type === 'assistant') items.push({ kind: 'agent', text })
         else if (text.startsWith('[Request interrupted')) items.push({ kind: 'note', text: 'Stopped here' })
-        else if (!NOT_TYPED.test(text)) items.push({ kind: 'user', text })
+        else if (!NOT_TYPED.test(text)) {
+          // "[Image #1]" and "[Image: source: …]" stand in for the pictures, which are shown themselves.
+          const said = text.replace(IMAGE_TOKEN, '').trim()
+          if (said || images.length) items.push({ kind: 'user', text: said })
+        }
       }
+    }
+    if (images.length) {
+      const mine = items.slice(mark).find((it) => it.kind === 'user')
+      if (mine) mine.images = images
+      else items.push({ kind: 'user', text: '', images })
     }
   }
   return items.slice(-limit)
+}
+const IMAGE_TOKEN = /\[Image(?: #\d+\]|: [^\]]*\]?)/g
+
+const MEDIA = /^image\/(png|jpeg|gif|webp)$/
+/** One picture from a transcript, by the key readConversation gave it: `<message uuid>:<block index>`. */
+export function transcriptImage(jsonl, key) {
+  const m = /^([\w-]{8,64}):(\d{1,3})$/.exec(key || '')
+  if (!m) return null
+  for (const raw of jsonl.split('\n')) {
+    if (!raw.includes(m[1])) continue
+    const e = parsed(raw)
+    if (e?.uuid !== m[1]) continue
+    const c = Array.isArray(e.message?.content) ? e.message.content[Number(m[2])] : null
+    if (c?.type !== 'image' || c.source?.type !== 'base64' || !MEDIA.test(c.source.media_type)) return null
+    return { type: c.source.media_type, data: Buffer.from(c.source.data, 'base64') }
+  }
+  return null
 }

@@ -1,4 +1,4 @@
-import { memo, useState } from 'react'
+import { memo, useRef, useState } from 'react'
 import { Handle, NodeResizer, Position, type Node, type NodeProps } from '@xyflow/react'
 import { ArrowUp, Check, ChevronUp, LayoutGrid, Mic, Plus, Plug, RotateCw, Square, X } from 'lucide-react'
 import { useShallow } from 'zustand/react/shallow'
@@ -8,6 +8,7 @@ import { agentById } from '../../shared/agents.js'
 import { AgentIcon } from './icons'
 import { useDictation } from './BottomBar'
 import { Ring } from './MissionMap'
+import { useAutoGrow, useTypeIntoBox } from '../consoleImages'
 
 // The pill an agent shows in the orchestrator: shorter words than the Mission Map uses.
 const PILL: Record<string, string> = { idle: 'idle', working: 'running', needs: 'needs you', done: 'done', stopped: 'stopped', paused: 'paused' }
@@ -35,6 +36,11 @@ function OrchestratorNodeImpl({ id, selected, positionAbsoluteX, positionAbsolut
   const [showHistory, setShowHistory] = useState(false)
   const [spawnMenu, setSpawnMenu] = useState(false)
   const { listening, start, stop } = useDictation(text, setText)
+  const root = useRef<HTMLDivElement>(null)
+  const box = useRef<HTMLTextAreaElement>(null)
+  // The box grows line by line as a command gets longer, and typing anywhere on the orchestrator lands in it.
+  useAutoGrow(box, text, 180)
+  useTypeIntoBox(root, box, (k) => setText((t) => t + k))
   const statusOf = (cid: string) => (live[cid] ? (live[cid].paused ? 'paused' : live[cid].status) : 'stopped')
   const done = (list: Node<ConsoleData>[]) => list.filter((n) => statusOf(n.id) === 'done').length
   const s = useStore.getState()
@@ -92,7 +98,7 @@ function OrchestratorNodeImpl({ id, selected, positionAbsoluteX, positionAbsolut
     <>
       <NodeResizer isVisible={selected} minWidth={320} minHeight={300} />
       <Handle type="source" position={Position.Right} className="cmd-handle" isConnectable={false} />
-      <div className={`orch ${connecting ? 'connecting' : ''}`}>
+      <div ref={root} className={`orch ${connecting ? 'connecting' : ''}`}>
         <div className="orch-head">
           <span className="orb sm" />
           <b>Orchestrator</b>
@@ -200,11 +206,19 @@ function OrchestratorNodeImpl({ id, selected, positionAbsoluteX, positionAbsolut
               ))}
             </div>
           )}
-          <input
+          <textarea
+            ref={box}
+            rows={1}
             value={text}
             placeholder={busy ? 'Planning…' : agents.length ? `Command ${agents.length} agent${agents.length === 1 ? '' : 's'} · @ to direct…` : 'Try "spawn two reviewers"…'}
             onChange={(e) => setText(e.target.value)}
-            onKeyDown={(e) => e.key === 'Enter' && submit()}
+            onKeyDown={(e) => {
+              // Enter sends; Shift+Enter starts a new line.
+              if (e.key === 'Enter' && !e.shiftKey && !e.nativeEvent.isComposing) {
+                e.preventDefault()
+                submit()
+              }
+            }}
           />
           {busy && <RotateCw size={14} color="var(--muted)" className="spin" />}
           <button className="round-btn sm" title="Recent commands" onClick={() => setShowHistory((v) => !v)}>

@@ -1,5 +1,6 @@
 // vibeboard local server: owns the PTYs (they outlive browser reloads),
 // receives Claude Code hook events for console status, persists board state.
+import crypto from 'node:crypto'
 import http from 'node:http'
 import net from 'node:net'
 import fs from 'node:fs'
@@ -11,7 +12,7 @@ import { WebSocketServer } from 'ws'
 import pty from 'node-pty'
 import { AGENTS, agentById } from '../shared/agents.js'
 import { createLoops } from './loops.mjs'
-import { readConversation, readTranscript } from './transcript.mjs'
+import { readConversation, readTranscript, transcriptImage } from './transcript.mjs'
 import { contextReport } from '../shared/context.js'
 import headless from '@xterm/headless'
 import { screenOf } from './usage.mjs'
@@ -426,10 +427,18 @@ const INPUT_LINES = 8
 const stillTyped = (s, text) =>
   new Promise((resolve) => s.screen.write('', () => resolve(screenOf(s.screen).split('\n').slice(-INPUT_LINES).join('\n').includes(text.trim().slice(0, 20)))))
 
-function sendPrompt(s, text) {
+// Pictures go in first, each pasted as its file's path: Claude Code and Codex turn a pasted image path into
+// an attached image ("[Image #1]"), and a shell simply gets the path.
+const pastePath = (file) => `\x1b[200~${/\s/.test(file) ? `"${file}"` : file}\x1b[201~ `
+
+function sendPrompt(s, text, images = []) {
   const busy = s.status === 'working' // a busy Claude queues the prompt: no hook until it gets to it
   s.queue = (s.queue || Promise.resolve()).then(async () => {
     const taken = s.submits || 0
+    for (const file of images) {
+      writeTo(s, pastePath(file))
+      await sleep(350)
+    }
     writeTo(s, text.includes('\n') ? `\x1b[200~${text}\x1b[201~` : text)
     await sleep(120)
     writeTo(s, '\r')
@@ -856,7 +865,32 @@ function serveStatic(url, res) {
 }
 
 // ---------- HTTP API ----------
-const ACTS = new Set(['input', 'choose', 'stop', 'signal'])
+const ACTS = new Set(['input', 'choose', 'stop', 'signal', 'image'])
+
+// Pictures put into a console: kept under the board's folder, one folder per console.
+const ATTACH_DIR = path.join(DATA_DIR, 'attachments')
+const ATTACH_ID = /^[\w-]{1,64}$/
+const ATTACH_FILE = /^[\w.-]{1,120}\.(png|jpe?g|gif|webp)$/i
+const IMAGE_EXT = { 'image/png': 'png', 'image/jpeg': 'jpg', 'image/gif': 'gif', 'image/webp': 'webp' }
+const IMAGE_MIME = { png: 'image/png', jpg: 'image/jpeg', jpeg: 'image/jpeg', gif: 'image/gif', webp: 'image/webp' }
+const MAX_IMAGE = 15 * 1024 * 1024
+// Only files we saved there can be pasted in as pictures.
+const attachmentPaths = (list) =>
+  (Array.isArray(list) ? list : []).slice(0, 10).map(String).filter((f) => {
+    const rel = path.relative(ATTACH_DIR, path.resolve(f))
+    return rel && !rel.startsWith('..') && !path.isAbsolute(rel) && fs.existsSync(f)
+  })
+function saveAttachment(id, { type, data }) {
+  const ext = IMAGE_EXT[type]
+  if (!ext) throw new Error('only PNG, JPEG, GIF and WebP pictures')
+  const bytes = Buffer.from(String(data || ''), 'base64')
+  if (!bytes.length || bytes.length > MAX_IMAGE) throw new Error('the picture is empty or larger than 15 MB')
+  const dir = path.join(ATTACH_DIR, id)
+  fs.mkdirSync(dir, { recursive: true })
+  const name = `${new Date().toISOString().replace(/[:.]/g, '-')}-${crypto.randomBytes(3).toString('hex')}.${ext}`
+  fs.writeFileSync(path.join(dir, name), bytes)
+  return { path: path.join(dir, name), url: `/api/attachment/${id}/${name}` }
+}
 // The app's own page runs only its own scripts: markdown and agent output stay text even if
 // something got past DOMPurify. Web tiles may show any page.
 const CSP = [
@@ -963,9 +997,37 @@ const server = http.createServer(async (req, res) => {
       broadcast({ type: 'handoff', from: from.id, to: to.id, state: 'sent' })
       return json(res, 200, { ok: true, sent: true })
     }
+    if (route === 'attachment' && id && action) {
+      if (!ATTACH_ID.test(id) || !ATTACH_FILE.test(action)) return json(res, 400, { error: 'bad name' })
+      const file = path.join(ATTACH_DIR, id, action)
+      if (!fs.existsSync(file)) return json(res, 404, { error: 'not found' })
+      res.writeHead(200, { 'content-type': IMAGE_MIME[action.split('.').pop().toLowerCase()], 'cache-control': 'private, max-age=31536000, immutable', 'x-content-type-options': 'nosniff' })
+      return fs.createReadStream(file).pipe(res)
+    }
     if (route === 'pty' && id) {
       const s = sessions.get(id)
       if (!s) return json(res, 404, { error: 'no such console' })
+      // A picture from Claude's transcript, as the simple view shows it in the conversation.
+      if (action === 'transcript-image') {
+        const file = transcriptFile(s)
+        const img = file && transcriptImage(transcriptTail(file, 8 * 1024 * 1024), url.searchParams.get('key'))
+        if (!img) return json(res, 404, { error: 'not found' })
+        res.writeHead(200, { 'content-type': img.type, 'cache-control': 'private, max-age=86400', 'x-content-type-options': 'nosniff' })
+        return res.end(img.data)
+      }
+      // A picture put into the console: saved, and with `insert` pasted in at once as its path.
+      if (action === 'image') {
+        if (req.method !== 'POST') return json(res, 405, { error: 'POST only' })
+        if (!ATTACH_ID.test(id)) return json(res, 400, { error: 'bad console id' })
+        try {
+          const body = JSON.parse(await readBody(req, MAX_IMAGE * 1.4 + 4096))
+          const saved = saveAttachment(id, body)
+          if (body.insert) writeTo(s, pastePath(saved.path))
+          return json(res, 200, saved)
+        } catch (e) {
+          return json(res, 400, { error: e.message })
+        }
+      }
       if (req.method === 'DELETE') {
         kill(s)
         return json(res, 200, { ok: true })
@@ -974,8 +1036,9 @@ const server = http.createServer(async (req, res) => {
       if (ACTS.has(action) && req.method !== 'POST') return json(res, 405, { error: 'POST only' })
       const body = JSON.parse((await readBody(req, 1024 * 1024)) || '{}')
       if (action === 'input') {
-        if (body.prompt) {
-          sendPrompt(s, String(body.prompt))
+        const images = attachmentPaths(body.images)
+        if (body.prompt || images.length) {
+          sendPrompt(s, String(body.prompt ?? ''), images)
           setStatus(s, 'working') // not idle: that would let an idle loop type over this prompt
         } else {
           writeTo(s, String(body.data ?? ''))

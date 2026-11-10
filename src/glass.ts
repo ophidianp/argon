@@ -1,8 +1,9 @@
 // Liquid glass: the backdrop bends at the rim of each glass surface like the thick edge of a lens, with a
 // slight colour split, and a soft glare follows the pointer. Surfaces are found by class as they appear.
 const SVGNS = 'http://www.w3.org/2000/svg'
-// Bars, pills, menus and dialogs. Everything else keeps the plain frosted look.
-const SURFACES = '.pill, .toolbar, .commandbar, .menu, .modal, .hint-chip, .ctx-panel, .ask-card, .selection-bar, .connect-banner, .toast, .project-card'
+// Every floating surface: bars, pills, menus, popovers, panels, cards, banners and dialogs (the same list is in
+// styles.css, "one glass for every surface"). Board content (consoles, notes, web pages) is not glass.
+const SURFACES = '.pill, .toolbar, .commandbar, .menu, .modal, .hint-chip, .ctx-panel, .ask-card, .selection-bar, .connect-banner, .toast, .project-card, .add-fly, .hover-tip, .resume-offer, .confirm-bar, .todo-menu, .inspector, .pl-menu, .pl-dialog, .ink-panel, .orch-menu, .orch-reply, .board-toast, .link-down, .drawing-banner, .set-sheet, .upd-card, .held-note, .img-strip'
 let defs: SVGDefsElement | null = null
 let strength = 0
 let prism = 0.25

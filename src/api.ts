@@ -35,7 +35,7 @@ async function call<T>(method: string, url: string, body?: unknown): Promise<T> 
 export type Subagent = { id: string; type: string; task: string; status: 'running' | 'done'; startedAt: number; endedAt?: number }
 // A question read off the agent's screen (shared/prompts.js).
 export type Ask = { id: string; question: string; options: { label: string; hint: string }[]; selected: number }
-export type ConversationItem = { kind: 'user' | 'agent' | 'step' | 'note'; text: string; failed?: boolean; pending?: boolean }
+export type ConversationItem = { kind: 'user' | 'agent' | 'step' | 'note'; text: string; failed?: boolean; pending?: boolean; images?: string[] }
 export type LiveSession = { id: string; agent: string; status: Status; statusAt?: number; cwd: string; paused: boolean; subagents?: Subagent[]; ask?: Ask | null; activity?: string | null; started?: boolean; tick?: number }
 export type Status = 'idle' | 'working' | 'needs' | 'done'
 // What fills a Claude session's memory (shared/context.js).
@@ -111,7 +111,9 @@ export const api = {
   sessions: () => call<LiveSession[]>('GET', '/api/sessions'),
   kill: (id: string) => call('DELETE', `/api/pty/${id}`),
   input: (id: string, data: string) => call('POST', `/api/pty/${id}/input`, { data }),
-  prompt: (id: string, prompt: string) => call('POST', `/api/pty/${id}/input`, { prompt }),
+  prompt: (id: string, prompt: string, images?: string[]) => call('POST', `/api/pty/${id}/input`, images?.length ? { prompt, images } : { prompt }),
+  consoleImage: (id: string, body: { type: string; data: string; insert: boolean }) => call<{ path: string; url: string }>('POST', `/api/pty/${id}/image`, body),
+  transcriptImageUrl: (id: string, key: string) => `/api/pty/${id}/transcript-image?key=${encodeURIComponent(key)}`,
   signal: (id: string, signal: 'SIGSTOP' | 'SIGCONT') => call('POST', `/api/pty/${id}/signal`, { signal }),
   tail: (id: string, chars = 8000) => call<{ text: string }>('POST', `/api/pty/${id}/tail`, { chars }),
   ls: (path?: string) =>

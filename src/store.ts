@@ -34,8 +34,11 @@ export type ConsoleData = {
   lead?: boolean // a Claude that can bring in helper consoles (server/helpers.mjs)
   profile?: string // account profile id: runs the CLI on that profile's own sign-in
   view?: 'simple' | 'terminal' // what the console shows; a console saved before this existed is a terminal
+  images?: ConsoleImage[] // pictures put into its terminal, shown along its bottom edge
   epoch: number
 }
+// A picture put into a console (src/consoleImages.ts): `path` is what the agent got, `url` shows it.
+export type ConsoleImage = { path: string; url: string }
 export type LinkKind = 'handoff' | 'review' | 'forward' | 'condition' | 'context'
 // A wire between two consoles (shared/links.js says what each kind sends). `reviewing`: the reviewer is on it.
 export type HandoffData = { auto: boolean; kind?: LinkKind; pattern?: string; rounds?: number; maxRounds?: number; reviewing?: boolean }

@@ -1,17 +1,44 @@
 import { memo, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
-import { ArrowUp, Check, Square, TerminalSquare, X } from 'lucide-react'
+import { ArrowUp, Check, ImagePlus, Square, TerminalSquare, X } from 'lucide-react'
 import { api, type Ask, type ConversationItem } from '../api'
 import { renderMarkdown } from '../markdown'
-import { useStore, type ConsoleData } from '../store'
+import { useStore, type ConsoleData, type ConsoleImage } from '../store'
 import { statusLine } from '../../shared/plain.js'
 import { isRefusal } from '../../shared/prompts.js'
+import { hasImages, IMAGE_TYPES, imagesIn, uploadImage, useAutoGrow, useTypeIntoBox } from '../consoleImages'
 import type { ConsoleStatus } from './ConsoleNode'
 
 const NOT_STARTED_MS = 8000
 const HELD_SETTLE_MS = 800
 const drafts = new Map<string, string>() // what is being typed survives a switch to the terminal and back
-const heldPrompts = new Map<string, { epoch: number; text: string }>() // sent while the agent could not take it yet, per run
+const draftImages = new Map<string, ConsoleImage[]>() // pictures attached to the draft, likewise
+type Held = { epoch: number; text: string; images: ConsoleImage[] }
+const heldPrompts = new Map<string, Held>() // sent while the agent could not take it yet, per run
+const pendingImages = new Map<string, string[]>() // pictures of the prompt on its way, shown until the transcript has it
 const EMPTY: ConversationItem[] = []
+const NO_IMAGES: ConsoleImage[] = []
+
+// A picture, small in the conversation; a click shows it full size.
+export function Thumb({ src, onRemove }: { src: string; onRemove?: () => void }) {
+  const [big, setBig] = useState(false)
+  return (
+    <>
+      <span className="img-thumb">
+        <img src={src} alt="" loading="lazy" draggable={false} onClick={() => setBig(true)} />
+        {onRemove && (
+          <button type="button" className="img-x" title="Take this picture out" onClick={onRemove}>
+            <X size={11} />
+          </button>
+        )}
+      </span>
+      {big && (
+        <div className="img-view nodrag nowheel" onClick={() => setBig(false)}>
+          <img src={src} alt="" />
+        </div>
+      )}
+    </>
+  )
+}
 
 // The sentence under the console's title: what it is doing, in plain words.
 export function StatusStrip({ id, status }: { id: string; status: ConsoleStatus }) {
@@ -113,11 +140,29 @@ export function Conversation({ id, name }: { id: string; name: string }) {
           </p>
         ) : (
           <div key={i} className="simple-msg user">
+            {r.images && r.images.length > 0 && (
+              <div className="msg-images">
+                {r.images.map((k) => (
+                  <Thumb key={k} src={api.transcriptImageUrl(id, k)} />
+                ))}
+              </div>
+            )}
             {r.text}
           </div>
         ),
       )}
-      {waiting && <div className="simple-msg user sending">{pending}</div>}
+      {waiting && (
+        <div className="simple-msg user sending">
+          {(pendingImages.get(id)?.length ?? 0) > 0 && (
+            <div className="msg-images">
+              {pendingImages.get(id)!.map((u) => (
+                <Thumb key={u} src={u} />
+              ))}
+            </div>
+          )}
+          {pending}
+        </div>
+      )}
     </div>
   )
 }
@@ -176,17 +221,43 @@ export function SimpleFooter({ id, data, status }: { id: string; data: ConsoleDa
     drafts.set(id, v)
     setTextState(v)
   }
-  const [late, setLate] = useState(false)
-  const heldNow = () => {
-    const h = heldPrompts.get(id)
-    return h?.epoch === data.epoch ? h.text : ''
+  const [images, setImagesState] = useState<ConsoleImage[]>(() => draftImages.get(id) ?? NO_IMAGES)
+  const setImages = (v: ConsoleImage[]) => {
+    draftImages.set(id, v)
+    setImagesState(v)
   }
-  const [held, setHeldState] = useState(heldNow)
-  const setHeld = (v: string) => {
-    heldPrompts.set(id, { epoch: data.epoch, text: v })
-    setHeldState(v)
+  const [adding, setAdding] = useState(0) // pictures still uploading
+  const [late, setLate] = useState(false)
+  const heldNow = (): Held => {
+    const h = heldPrompts.get(id)
+    return h?.epoch === data.epoch ? h : { epoch: data.epoch, text: '', images: NO_IMAGES }
+  }
+  const [heldState, setHeldState] = useState(heldNow)
+  const held = heldState.text
+  const setHeld = (text: string, imgs: ConsoleImage[] = NO_IMAGES) => {
+    const h = { epoch: data.epoch, text, images: imgs }
+    heldPrompts.set(id, h)
+    setHeldState(h)
   }
   const box = useRef<HTMLTextAreaElement>(null)
+  const form = useRef<HTMLFormElement>(null)
+  const root = useRef<HTMLElement | null>(null)
+  useEffect(() => {
+    root.current = form.current?.closest<HTMLElement>('.console') ?? null
+  }, [])
+  useAutoGrow(box, text)
+  useTypeIntoBox(root, box, (k) => setText((drafts.get(id) ?? '') + k))
+  const fileRef = useRef<HTMLInputElement>(null)
+  // Pictures wait in the box with the text, and go in front of it when it is sent.
+  const attach = async (files: File[]) => {
+    if (!files.length) return
+    setAdding((n) => n + files.length)
+    for (const f of files) {
+      const img = await uploadImage(id, f, false)
+      if (img) setImages([...(draftImages.get(id) ?? []), img])
+      setAdding((n) => n - 1)
+    }
+  }
   const claude = data.agent === 'claude'
   // Before its session starts, Enter would answer whatever the CLI is showing (it can mean "No, exit").
   // So what is written meanwhile waits for its turn: the box itself is never closed to the person.
@@ -200,45 +271,67 @@ export function SimpleFooter({ id, data, status }: { id: string; data: ConsoleDa
 
   const showPending = (prompt: string) => useStore.setState((s) => ({ pendingPrompt: { ...s.pendingPrompt, [id]: prompt } }))
   // Started again: what waited for the last run is dropped, and back in the box to send or not.
+  const showImages = (imgs: ConsoleImage[]) => (imgs.length ? pendingImages.set(id, imgs.map((i) => i.url)) : pendingImages.delete(id))
+  const isHeld = !!(held || heldState.images.length)
   useEffect(() => {
     const h = heldPrompts.get(id)
-    if (!h?.text || h.epoch === data.epoch) return
+    if (!h || (!h.text && !h.images.length) || h.epoch === data.epoch) return
     heldPrompts.delete(id)
     setText(h.text)
-    setHeldState('')
+    setImages(h.images)
+    setHeldState({ epoch: data.epoch, text: '', images: NO_IMAGES })
+    showImages(NO_IMAGES)
     showPending('')
   }, [data.epoch])
-  const deliver = (prompt: string) => {
-    showPending(prompt)
-    api.prompt(id, prompt).catch((e) => {
-      setText(prompt)
-      showPending('')
-      useStore.getState().notify(`Could not send it: ${(e as Error).message}`)
-    })
+  // An empty prompt with pictures still shows as a bubble on its way.
+  const deliver = (prompt: string, imgs: ConsoleImage[]) => {
+    showImages(imgs)
+    showPending(prompt || ' ')
+    api
+      .prompt(
+        id,
+        prompt,
+        imgs.map((i) => i.path),
+      )
+      .catch((e) => {
+        setText(prompt)
+        setImages(imgs)
+        showImages(NO_IMAGES)
+        showPending('')
+        useStore.getState().notify(`Could not send it: ${(e as Error).message}`)
+      })
   }
   // A moment after it becomes free: a CLI that has just started is often still drawing its first screen.
   useEffect(() => {
-    if (!held || locked) return
+    if (!isHeld || locked) return
     const t = setTimeout(() => {
+      const h = heldState
       setHeld('')
-      deliver(held)
+      deliver(h.text, h.images)
     }, HELD_SETTLE_MS)
     return () => clearTimeout(t)
-  }, [held, locked])
+  }, [heldState, locked])
 
   const send = () => {
     const prompt = text.trim()
-    if (!prompt) return
+    if ((!prompt && !images.length) || adding) return
     if (data.resumeOffer) useStore.getState().updateData(id, { resumeOffer: false }) // writing starts fresh, as the offer says
+    const imgs = images
     setText('')
+    setImages(NO_IMAGES)
     if (locked) {
-      setHeld(held ? `${held}\n${prompt}` : prompt)
-      showPending(held ? `${held}\n${prompt}` : prompt)
-    } else deliver(prompt)
+      const all = [...heldState.images, ...imgs]
+      const t = held && prompt ? `${held}\n${prompt}` : held || prompt
+      setHeld(t, all)
+      showImages(all)
+      showPending(t || ' ')
+    } else deliver(prompt, imgs)
   }
   const unhold = () => {
     setText(held)
+    setImages(heldState.images)
     setHeld('')
+    showImages(NO_IMAGES)
     showPending('')
   }
 
@@ -251,7 +344,7 @@ export function SimpleFooter({ id, data, status }: { id: string; data: ConsoleDa
       ) : (
         late && status !== 'stopped' && <TerminalNote id={id} text={`${data.name} has not started yet. It may need you to sign in.`} />
       )}
-      {held && (
+      {isHeld && (
         <div className="held-note">
           <span>Goes as soon as {data.name} is ready</span>
           <button type="button" onClick={unhold}>
@@ -259,11 +352,33 @@ export function SimpleFooter({ id, data, status }: { id: string; data: ConsoleDa
           </button>
         </div>
       )}
+      {(images.length > 0 || adding > 0) && (
+        <div className="compose-images nodrag">
+          {images.map((img) => (
+            <Thumb key={img.url} src={img.url} onRemove={() => setImages(images.filter((x) => x !== img))} />
+          ))}
+          {adding > 0 && <span className="img-thumb loading" />}
+        </div>
+      )}
       <form
+        ref={form}
         className="simple-compose nodrag"
         onSubmit={(e) => {
           e.preventDefault()
           send()
+        }}
+        onDragOver={(e) => {
+          if (hasImages(e.dataTransfer)) {
+            e.preventDefault()
+            e.dataTransfer.dropEffect = 'copy'
+          }
+        }}
+        onDrop={(e) => {
+          const files = imagesIn(e.dataTransfer)
+          if (!files.length) return
+          e.preventDefault()
+          e.stopPropagation()
+          attach(files)
         }}
       >
         <textarea
@@ -271,17 +386,32 @@ export function SimpleFooter({ id, data, status }: { id: string; data: ConsoleDa
           rows={1}
           value={text}
           placeholder={ask ? 'Write now, it goes after your answer' : status === 'paused' ? 'Write now, it goes when you resume it' : `Tell ${data.name} what to do…`}
-          onChange={(e) => {
-            setText(e.target.value)
-            e.target.style.height = 'auto'
-            e.target.style.height = `${Math.min(e.target.scrollHeight, 110)}px`
+          onChange={(e) => setText(e.target.value)}
+          onPaste={(e) => {
+            const files = imagesIn(e.clipboardData)
+            if (!files.length) return
+            e.preventDefault()
+            attach(files)
           }}
           onKeyDown={(e) => {
             if (e.key === 'Enter' && !e.shiftKey && !e.nativeEvent.isComposing) {
               e.preventDefault()
               send()
-              if (box.current) box.current.style.height = 'auto'
             }
+          }}
+        />
+        <button type="button" className="round-btn" title="Add a picture (or paste or drop one here)" onClick={() => fileRef.current?.click()}>
+          <ImagePlus size={15} />
+        </button>
+        <input
+          ref={fileRef}
+          type="file"
+          accept={IMAGE_TYPES.join(',')}
+          multiple
+          hidden
+          onChange={(e) => {
+            attach([...(e.target.files ?? [])])
+            e.target.value = ''
           }}
         />
         {status === 'working' && (
@@ -289,7 +419,7 @@ export function SimpleFooter({ id, data, status }: { id: string; data: ConsoleDa
             <Square size={13} fill="currentColor" />
           </button>
         )}
-        <button className="round-btn go" title="Send" disabled={!text.trim()}>
+        <button className="round-btn go" title="Send" disabled={(!text.trim() && !images.length) || adding > 0}>
           <ArrowUp size={15} />
         </button>
       </form>

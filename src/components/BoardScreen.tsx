@@ -1,4 +1,5 @@
 import { lazy, Suspense, useEffect, useRef, useState } from 'react'
+import { createPortal } from 'react-dom'
 import {
   Background,
   BackgroundVariant,
@@ -37,6 +38,8 @@ import {
   Pipette,
   ChevronRight,
   LayoutGrid,
+  SquarePlus,
+  FolderPlus,
 } from 'lucide-react'
 import { api } from '../api'
 import { addImage, addOrchestrator, insertCard, nid } from '../board'
@@ -264,8 +267,39 @@ function Board() {
     refit()
   }
 
+  // The wheel zooms the board (React Flow's zoomOnScroll); Ctrl+wheel moves it up and down instead, and
+  // Ctrl+Shift+wheel sideways. Terminals and panels (.nowheel) keep their own scrolling.
+  const boardRef = useRef<HTMLDivElement>(null)
+  useEffect(() => {
+    const el = boardRef.current
+    if (!el) return
+    let save: ReturnType<typeof setTimeout>
+    const onWheel = (e: WheelEvent) => {
+      if (!e.ctrlKey || (e.target as HTMLElement).closest('.nowheel')) return
+      // A touchpad pinch also arrives as Ctrl+wheel, but with fractional steps (a mouse notch is a whole
+      // number): leave it to React Flow's zoomOnPinch, so pinching still zooms.
+      if (e.deltaMode === 0 && (!Number.isInteger(e.deltaY) || !Number.isInteger(e.deltaX))) return
+      e.preventDefault()
+      e.stopPropagation()
+      const k = e.deltaMode === 1 ? 16 : e.deltaMode === 2 ? el.clientHeight : 1
+      const dx = (e.shiftKey ? e.deltaY || e.deltaX : e.deltaX) * k
+      const dy = (e.shiftKey ? 0 : e.deltaY) * k
+      const vp = flow.getViewport()
+      const next = { x: vp.x - dx, y: vp.y - dy, zoom: vp.zoom }
+      flow.setViewport(next)
+      clearTimeout(save)
+      save = setTimeout(() => setViewport(next), 250)
+    }
+    el.addEventListener('wheel', onWheel, { capture: true, passive: false })
+    return () => {
+      clearTimeout(save)
+      el.removeEventListener('wheel', onWheel, { capture: true })
+    }
+  }, [flow])
+
   return (
     <div
+      ref={boardRef}
       className={wiring ? 'wiring' : undefined}
       style={{ position: 'absolute', inset: 0 }}
       onDragOver={(e) => e.preventDefault()}
@@ -315,9 +349,9 @@ function Board() {
         }}
         minZoom={0.08}
         maxZoom={2.5}
-        panOnScroll
+        panOnScroll={false}
         zoomOnPinch
-        zoomOnScroll={false}
+        zoomOnScroll
         selectionOnDrag={tool === 'select'}
         selectionMode={SelectionMode.Partial}
         panOnDrag={[1, 2]}
@@ -449,16 +483,7 @@ function LeftToolbar() {
             {t.tool === 'shape' && menu === 'shape' && <ShapesMenu onClose={() => setMenu(null)} />}
           </span>
         ))}
-        <button
-          className="tool-btn"
-          title="Shell console: a plain terminal"
-          onClick={() => {
-            const s = useStore.getState()
-            s.addConsole('shell', s.viewCenter())
-          }}
-        >
-          <Monitor size={19} />
-        </button>
+        <AddPicker onImage={() => fileRef.current?.click()} />
         {TOOLS_2.map((t) => (
           <span key={t.tool} style={{ position: 'relative', display: 'grid' }}>
             <button className={`tool-btn ${tool === t.tool ? 'active' : ''}`} title={tool === t.tool && t.tool === 'ink' ? undefined : t.tip} onClick={() => pick(t.tool)}>
@@ -467,9 +492,6 @@ function LeftToolbar() {
             {t.tool === 'ink' && tool === 'ink' && <InkPanel />}
           </span>
         ))}
-        <button className="tool-btn" title="Image: pick a picture from this PC" onClick={() => fileRef.current?.click()}>
-          <Image size={19} />
-        </button>
         <div className="sep" />
         <button className="tool-btn" title="Fit the board (Ctrl+0)" onClick={() => flow.fitView({ padding: 0.12, duration: 400 })}>
           <Maximize2 size={18} />
@@ -487,6 +509,74 @@ function LeftToolbar() {
       />
       {menu === 'spawn' && tool === 'spawn' && <SpawnMenu onClose={() => setMenu(null)} />}
     </>
+  )
+}
+
+// "Add to the board": a shell console, a picture or a folder. Hovering shows the choices on a floating frosted
+// glass selector beside the toolbar; a click (or Enter) opens it too, for touch and the keyboard.
+const ADD_LINGER_MS = 220
+function AddPicker({ onImage }: { onImage: () => void }) {
+  const [open, setOpen] = useState(false)
+  const [at, setAt] = useState({ x: 0, y: 0 })
+  const btn = useRef<HTMLButtonElement>(null)
+  const timer = useRef<ReturnType<typeof setTimeout>>(undefined)
+  // Drawn on the page itself, not inside the toolbar: glass inside glass would only frost the toolbar.
+  const show = () => {
+    clearTimeout(timer.current)
+    const r = btn.current?.getBoundingClientRect()
+    if (r) setAt({ x: r.right + 22, y: r.top + r.height / 2 })
+    setOpen(true)
+  }
+  const hide = () => {
+    clearTimeout(timer.current)
+    timer.current = setTimeout(() => setOpen(false), ADD_LINGER_MS)
+  }
+  useEffect(() => () => clearTimeout(timer.current), [])
+  const pick = (run: () => void) => () => {
+    setOpen(false)
+    run()
+  }
+  const shell = () => {
+    const s = useStore.getState()
+    s.addConsole('shell', s.viewCenter())
+  }
+  // A folder joins the project: agents can reach it, and the Code studio lists it.
+  const folder = async () => {
+    const s = useStore.getState()
+    const desk = window.vibeboardDesktop
+    if (!desk) return s.set({ modal: 'memory' }) // the browser has no folder window: Context lists and connects folders
+    const path = await desk.pickFolder()
+    if (!path) return
+    s.connectFolder(path)
+    s.notify(`Connected ${path.split(/[\\/]/).filter(Boolean).pop()}: your agents can use it now`)
+  }
+  const items: [string, string, React.ReactNode, () => void][] = [
+    ['Shell console', 'A plain terminal in this folder', <Monitor key="m" size={17} />, shell],
+    ['Image', 'A picture from this PC', <Image key="i" size={17} />, onImage],
+    ['Folder', 'Connect another folder to this project', <FolderPlus key="f" size={17} />, folder],
+  ]
+  return (
+    <span className="add-picker" onMouseEnter={show} onMouseLeave={hide} onFocus={show} onBlur={(e) => !e.currentTarget.contains(e.relatedTarget as globalThis.Node | null) && hide()}>
+      <button ref={btn} className={`tool-btn ${open ? 'hot' : ''}`} aria-label="Add a shell console, an image or a folder" aria-haspopup="menu" aria-expanded={open} onClick={() => (open ? setOpen(false) : show())}>
+        <SquarePlus size={19} />
+      </button>
+      {open &&
+        createPortal(
+        <div className="add-fly" role="menu" aria-label="Add to the board" style={{ left: at.x, top: at.y }} onMouseEnter={show} onMouseLeave={hide}>
+          <div className="add-fly-title">Add to the board</div>
+          {items.map(([title, sub, icon, run]) => (
+            <button key={title} role="menuitem" className="add-fly-item" onClick={pick(run)}>
+              <span className="ic">{icon}</span>
+              <span className="tx">
+                <b>{title}</b>
+                <small>{sub}</small>
+              </span>
+            </button>
+          ))}
+        </div>,
+          document.body,
+        )}
+    </span>
   )
 }
 
