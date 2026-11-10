@@ -7,6 +7,7 @@ import { statusLine } from '../../shared/plain.js'
 import { isRefusal } from '../../shared/prompts.js'
 import { hasImages, IMAGE_TYPES, imagesIn, uploadImage, useAutoGrow, useTypeIntoBox } from '../consoleImages'
 import type { ConsoleStatus } from './ConsoleNode'
+import { matchCommands, type SlashCommand } from '../../shared/slash.js'
 
 const NOT_STARTED_MS = 8000
 const HELD_SETTLE_MS = 800
@@ -247,6 +248,10 @@ export function SimpleFooter({ id, data, status }: { id: string; data: ConsoleDa
   }, [])
   useAutoGrow(box, text)
   useTypeIntoBox(root, box, (k) => setText((drafts.get(id) ?? '') + k))
+  const slash = useSlashMenu(id, text, (t) => {
+    setText(t)
+    requestAnimationFrame(() => box.current?.setSelectionRange(t.length, t.length))
+  })
   const fileRef = useRef<HTMLInputElement>(null)
   // Pictures wait in the box with the text, and go in front of it when it is sent.
   const attach = async (files: File[]) => {
@@ -360,6 +365,7 @@ export function SimpleFooter({ id, data, status }: { id: string; data: ConsoleDa
           {adding > 0 && <span className="img-thumb loading" />}
         </div>
       )}
+      {slash.menu}
       <form
         ref={form}
         className="simple-compose nodrag"
@@ -387,6 +393,7 @@ export function SimpleFooter({ id, data, status }: { id: string; data: ConsoleDa
           value={text}
           placeholder={ask ? 'Write now, it goes after your answer' : status === 'paused' ? 'Write now, it goes when you resume it' : `Tell ${data.name} what to do…`}
           onChange={(e) => setText(e.target.value)}
+          {...slash.boxProps}
           onPaste={(e) => {
             const files = imagesIn(e.clipboardData)
             if (!files.length) return
@@ -394,6 +401,7 @@ export function SimpleFooter({ id, data, status }: { id: string; data: ConsoleDa
             attach(files)
           }}
           onKeyDown={(e) => {
+            if (slash.onKey(e)) return
             if (e.key === 'Enter' && !e.shiftKey && !e.nativeEvent.isComposing) {
               e.preventDefault()
               send()
@@ -425,4 +433,75 @@ export function SimpleFooter({ id, data, status }: { id: string; data: ConsoleDa
       </form>
     </div>
   )
+}
+
+// The slash-command menu over the box: shown while the box holds "/" and a command name with nothing after it yet.
+// Up and Down move, Enter or Tab put the command in the box, Esc closes it. The terminal view keeps its own menu.
+const commandLists = new Map<string, { at: number; list: SlashCommand[] }>() // per console, refreshed after 30 s
+function useSlashMenu(id: string, text: string, put: (text: string) => void) {
+  const [list, setList] = useState<SlashCommand[]>(() => commandLists.get(id)?.list ?? [])
+  const [sel, setSel] = useState(0)
+  const [closedFor, setClosedFor] = useState<string | null>(null) // Esc closes it until the text changes
+  const listRef = useRef<HTMLDivElement>(null)
+  const m = /^\/(\S*)$/.exec(text)
+  const query = m ? m[1] : null
+  useEffect(() => {
+    if (query === null) return
+    const hit = commandLists.get(id)
+    if (hit && Date.now() - hit.at < 30_000) return
+    commandLists.set(id, { at: Date.now(), list: hit?.list ?? [] })
+    api.commands(id).then(
+      (r) => {
+        commandLists.set(id, { at: Date.now(), list: r.commands })
+        setList(r.commands)
+      },
+      () => commandLists.delete(id),
+    )
+  }, [id, query !== null])
+  const matches = useMemo(() => (query === null ? [] : matchCommands(list, query)), [list, query])
+  const open = query !== null && closedFor !== text && matches.length > 0
+  useEffect(() => setSel(0), [query])
+  useEffect(() => {
+    if (closedFor !== null && closedFor !== text) setClosedFor(null)
+  }, [text])
+  useEffect(() => {
+    listRef.current?.querySelector('[aria-selected="true"]')?.scrollIntoView({ block: 'nearest' })
+  }, [sel, open])
+  const at = Math.min(sel, matches.length - 1)
+  const pick = (c: SlashCommand) => put(`/${c.name} `)
+  const onKey = (e: React.KeyboardEvent) => {
+    if (!open || e.nativeEvent.isComposing) return false
+    if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+      e.preventDefault()
+      const n = matches.length
+      setSel((at + (e.key === 'ArrowDown' ? 1 : n - 1)) % n)
+      return true
+    }
+    if ((e.key === 'Enter' && !e.shiftKey) || e.key === 'Tab') {
+      e.preventDefault()
+      pick(matches[at])
+      return true
+    }
+    if (e.key === 'Escape') {
+      e.preventDefault()
+      e.stopPropagation()
+      setClosedFor(text)
+      return true
+    }
+    return false
+  }
+  const listId = `slash-${id}`
+  const menu = open ? (
+    <div className="menu slash-menu nodrag nowheel" ref={listRef} role="listbox" id={listId} aria-label="Slash commands" onMouseDown={(e) => e.preventDefault()}>
+      {matches.map((c, i) => (
+        <div key={c.name} id={`${listId}-${i}`} role="option" aria-selected={i === at} className={`slash-item ${i === at ? 'on' : ''}`} onMouseEnter={() => setSel(i)} onClick={() => pick(c)}>
+          <span className="slash-name">/{c.name}</span>
+          {c.description && <span className="slash-desc">{c.description}</span>}
+          {c.source && c.source !== 'built-in' && <span className="slash-src">{c.source}</span>}
+        </div>
+      ))}
+    </div>
+  ) : null
+  const boxProps = { role: 'combobox', 'aria-autocomplete': 'list' as const, 'aria-expanded': open, 'aria-controls': open ? listId : undefined, 'aria-activedescendant': open ? `${listId}-${at}` : undefined }
+  return { menu, onKey, boxProps }
 }

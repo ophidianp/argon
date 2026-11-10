@@ -11,6 +11,7 @@ import { fileURLToPath } from 'node:url'
 import { WebSocketServer } from 'ws'
 import pty from 'node-pty'
 import { AGENTS, agentById } from '../shared/agents.js'
+import { slashCommands } from './slash.mjs'
 import { createLoops } from './loops.mjs'
 import { readConversation, readTranscript, transcriptImage } from './transcript.mjs'
 import { contextReport } from '../shared/context.js'
@@ -1014,6 +1015,11 @@ const server = http.createServer(async (req, res) => {
         if (!img) return json(res, 404, { error: 'not found' })
         res.writeHead(200, { 'content-type': img.type, 'cache-control': 'private, max-age=86400', 'x-content-type-options': 'nosniff' })
         return res.end(img.data)
+      }
+      // The slash commands this console's agent understands (names and descriptions only), for the simple view.
+      if (action === 'commands') {
+        const configDir = s.agent.configEnv ? (s.profile ? path.join(PROFILES_DIR, s.profile) : process.env[s.agent.configEnv] || path.join(os.homedir(), '.claude')) : null
+        return json(res, 200, { commands: slashCommands({ agentId: s.agent.id, cwd: s.cwd, configDir: s.agent.id === 'claude' ? configDir : null }) })
       }
       // A picture put into the console: saved, and with `insert` pasted in at once as its path.
       if (action === 'image') {

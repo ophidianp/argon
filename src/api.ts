@@ -1,4 +1,6 @@
 // Thin client for the local server (server/index.mjs).
+import type { SlashCommand } from '../shared/slash.js'
+
 const wsBase = () => `${location.protocol === 'https:' ? 'wss' : 'ws'}://${location.host}`
 
 const wait = (ms: number) => new Promise((r) => setTimeout(r, ms))
@@ -107,6 +109,7 @@ export const api = {
   conversation: (id: string) => call<{ items: ConversationItem[] }>('GET', `/api/pty/${id}/conversation`),
   context: (id: string) => call<{ report: ContextReport | null }>('GET', `/api/pty/${id}/context`),
   stop: (id: string) => call('POST', `/api/pty/${id}/stop`),
+  commands: (id: string) => call<{ commands: SlashCommand[] }>('GET', `/api/pty/${id}/commands`),
   choose: (id: string, askId: string, index: number) => call('POST', `/api/pty/${id}/choose`, { askId, index }),
   sessions: () => call<LiveSession[]>('GET', '/api/sessions'),
   kill: (id: string) => call('DELETE', `/api/pty/${id}`),

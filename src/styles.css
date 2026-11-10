@@ -6649,6 +6649,14 @@ body.desktop::before {
   gap: 10px;
   color: var(--text-2);
 }
+/* The slash-command menu over the simple view's box */
+.slash-menu { left: 8px; right: 8px; bottom: calc(100% + 6px); max-height: min(260px, 52vh); overflow-y: auto; overscroll-behavior: contain; z-index: 30; }
+.slash-item { display: grid; grid-template-columns: auto 1fr auto; align-items: baseline; gap: 10px; padding: 6px 9px; border-radius: 10px; cursor: pointer; font-size: 12.5px; }
+.slash-item.on { background: rgb(var(--ink) / 0.09); }
+.slash-item.on .slash-name { color: var(--accent); }
+.slash-name { font: 500 12.5px var(--mono); white-space: nowrap; }
+.slash-desc { color: var(--muted); min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.slash-src { font-size: 10.5px; color: var(--muted); padding: 1px 6px; border-radius: 99px; background: rgb(var(--ink) / 0.07); }
 .simple-compose {
   flex: none;
   display: flex;
