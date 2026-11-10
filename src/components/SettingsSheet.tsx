@@ -1,4 +1,4 @@
-// Settings, as a sheet with tabs (General, Agents, Appearance, Updates, Data): grouped rows, segments whose pill
+// Settings, as a sheet with tabs (General, Agents, Appearance, Updates, Data, About): grouped rows, segments whose pill
 // glides to the picked option, switches and sliders.
 import { useEffect, useLayoutEffect, useRef, useState, type ReactNode } from 'react'
 import { X } from 'lucide-react'
@@ -8,8 +8,9 @@ import { ACCENTS, DARK_PALETTES, DEFAULT_LOOK, LIGHT_PALETTES, LOOK_TINT, LOOKS,
 import { useTheme } from '../theme'
 import { AgentIcon } from './icons'
 import { checkForUpdates, setUpdateMode, setUpdatePrefs, updater } from '../updates'
+import { atomColors, drawAtom } from '../appicon'
 
-type Tab = 'general' | 'agents' | 'look' | 'updates' | 'data'
+type Tab = 'general' | 'agents' | 'look' | 'updates' | 'data' | 'about'
 const WIN = window.vibeboardDesktop?.platform === 'win32'
 
 function Seg<T extends string | number>({ value, options, onChange }: { value: T; options: [T, ReactNode][]; onChange: (v: T) => void }) {
@@ -126,6 +127,7 @@ export function SettingsSheet() {
                 ['look', 'Appearance'],
                 ['updates', 'Updates'],
                 ['data', 'Data'],
+                ['about', 'About'],
               ] as [Tab, string][]
             ).map(([k, l]) => (
               <button key={k} role="tab" aria-selected={tab === k} className={tab === k ? 'on' : ''} onClick={() => pick(k)}>
@@ -323,6 +325,7 @@ export function SettingsSheet() {
             )}
 
             {tab === 'updates' && <UpdatesPane />}
+            {tab === 'about' && <AboutPane />}
             {tab === 'data' && (
               <>
                 <Group title="Where it lives">
@@ -412,6 +415,40 @@ function UpdatesPane() {
       )}
       <Group title="Safety">
         <Row title="Signed releases" desc="Argon installs an update only if it carries Argon's own signature. Installing closes Argon, so it asks first when agents are running." stack />
+      </Group>
+    </>
+  )
+}
+
+// Settings → About: the atom in the current accent (the same drawing as the taskbar icon), the version, credits.
+function AboutPane() {
+  useLook() // redraw when the look changes
+  const atom = useRef<HTMLCanvasElement>(null)
+  useEffect(() => {
+    const k = atomColors()
+    if (atom.current && k) drawAtom(atom.current, k, 192)
+  })
+  const link = (href: string, text: string) => (
+    <a href={href} target="_blank" rel="noreferrer">
+      {text}
+    </a>
+  )
+  return (
+    <>
+      <div className="about-hero">
+        <canvas ref={atom} className="about-atom" aria-label="The Argon logo" role="img" />
+        <h3>Argon</h3>
+        <span className="about-version">Version {__APP_VERSION__}</span>
+        <p>A board where your coding agents run side by side in real terminals, and hand work to one another along wires.</p>
+      </div>
+      <Group title="Credits">
+        <Row title="Made by" desc="Pavan Nemani" />
+        <Row title="Built on vibeboard" desc={<>Argon is built on {link('https://github.com/ricca200xx/vibeboard', 'vibeboard')} by Riccardo Niccolò Agosti, used under the MIT License.</>} stack />
+        <Row title="Open-source parts" desc="Electron, React, React Flow, xterm.js, node-pty, zustand and Lucide icons, each under its own licence." stack />
+      </Group>
+      <Group title="Argon">
+        <Row title="Source code" desc={link('https://github.com/ophidianp/argon', 'github.com/ophidianp/argon')} />
+        <Row title="Copyright" desc="© 2026 Pavan Nemani. All rights reserved." />
       </Group>
     </>
   )

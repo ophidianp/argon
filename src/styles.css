@@ -7537,6 +7537,15 @@ body[data-glass='solid'] .lg {
 .set-keys div { display: flex; align-items: center; gap: 12px; padding: 5px 0; font-size: 13px; }
 .set-keys kbd { min-width: 100px; font: 500 11px var(--mono); padding: 3px 8px; border-radius: 99px; background: rgb(var(--ink) / 0.08); color: var(--muted); text-align: center; }
 
+/* Settings → About */
+.about-hero { display: flex; flex-direction: column; align-items: center; text-align: center; padding: 18px 12px 22px; }
+.about-atom { width: 96px; height: 96px; filter: drop-shadow(0 10px 24px rgb(0 0 0 / 0.28)); }
+.about-hero h3 { margin: 12px 0 2px; font-size: 22px; font-weight: 700; letter-spacing: -0.01em; }
+.about-version { font: 500 12px var(--mono); color: var(--muted); font-variant-numeric: tabular-nums; }
+.about-hero p { margin: 12px 0 0; max-width: 40ch; font-size: 13px; line-height: 1.5; color: var(--muted); }
+.srow .lbl span a { color: var(--accent); text-decoration: none; }
+.srow .lbl span a:hover { text-decoration: underline; }
+
 /* ---------- motion ---------- */
 body.no-anim *, body.no-anim *::before, body.no-anim *::after { transition: none !important; animation: none !important; }
 .status-pill { animation: pill-bump 0.5s var(--spring); }

@@ -3,6 +3,9 @@
 type Colors = { bg: string; light: boolean; accent: string; accentLight: string; accentDeep: string; nucleus: string; glow: string }
 let lastKey = '' // the icon Windows has now
 let timer = 0
+let current: Colors | null = null // the colours of the atom now, for Settings → About
+
+export const atomColors = () => current
 
 export function drawAtom(c: HTMLCanvasElement, k: Colors, S = 256) {
   const g = c.getContext('2d')!
@@ -52,6 +55,7 @@ export function drawAtom(c: HTMLCanvasElement, k: Colors, S = 256) {
 }
 
 export function syncAppIcon(k: Colors) {
+  current = k
   const set = window.vibeboardDesktop?.setAppIcon
   if (!set) return
   const key = JSON.stringify(k)
