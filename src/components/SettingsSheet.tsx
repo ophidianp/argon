@@ -4,7 +4,7 @@ import { useEffect, useLayoutEffect, useRef, useState, type ReactNode } from 're
 import { X } from 'lucide-react'
 import { askNotifyPermission, useStore } from '../store'
 import { AGENTS } from '../../shared/agents.js'
-import { ACCENTS, DARK_PALETTES, DEFAULT_LOOK, LIGHT_PALETTES, LOOKS, UI_FONTS, useLook, type Look } from '../appearance'
+import { ACCENTS, DARK_PALETTES, DEFAULT_LOOK, LIGHT_PALETTES, LOOK_TINT, LOOKS, UI_FONTS, useLook, type Look } from '../appearance'
 import { useTheme } from '../theme'
 import { AgentIcon } from './icons'
 import { checkForUpdates, setUpdateMode, setUpdatePrefs, updater } from '../updates'
@@ -221,7 +221,7 @@ export function SettingsSheet() {
                       {LOOKS.map((l) => {
                         const p = l.mode === 'light' ? LIGHT_PALETTES[l.set.light || look.light] : DARK_PALETTES[l.set.dark || look.dark]
                         return (
-                          <button key={l.name} className={`onb-card ${isLook(l) ? 'on' : ''}`} onClick={() => patchLook({ tint: DEFAULT_LOOK.tint, ...l.set }, l.mode)}>
+                          <button key={l.name} className={`onb-card ${isLook(l) ? 'on' : ''}`} onClick={() => patchLook({ tint: LOOK_TINT, ...l.set }, l.mode)}>
                             <div className="onb-swatch" style={{ background: `linear-gradient(135deg, ${p.bg}, ${p.panel2})` }}>
                               {[l.set.accent, p.text, p.muted].map((c, i) => (
                                 <i key={i} style={{ background: c }} />
@@ -317,7 +317,7 @@ export function SettingsSheet() {
                   </Row>
                 </Group>
                 <button className="mini spaced" onClick={() => patchLook({ ...DEFAULT_LOOK })}>
-                  Reset to Liquid Lavender
+                  Reset to Ember
                 </button>
               </>
             )}

@@ -22,11 +22,12 @@ export type Look = {
   anim: boolean // springs, glides and fly-to
 }
 
+// Ember: warm near-black and the ember accent, the same as the Ember entry in LOOKS. By day it pairs with Paper.
 export const DEFAULT_LOOK: Look = {
-  dark: 'midnight',
-  light: 'daylight',
-  accent: '#9a83d4',
-  tint: 55,
+  dark: 'ember',
+  light: 'paper',
+  accent: '#f0553a',
+  tint: 0,
   glass: 'liquid',
   blur: 22,
   opacity: 58,
@@ -73,6 +74,8 @@ export const LIGHT_PALETTES: Record<string, Palette> = {
   cloud: { name: 'Cloud', bg: '#e8eef8', panel: '#ffffff', panel2: '#f1f5fb', panel3: '#e2e9f4', line: '#d6dfec', line2: '#c1cde0', text: '#141b28', muted: '#55617a', dim: '#8792a8', term: '#fbfcff' },
 }
 
+// How much accent soaks in for a Look that doesn't say (Liquid Lavender and friends were made with this).
+export const LOOK_TINT = 55
 // One click sets several things at once.
 export const LOOKS: { name: string; mode?: 'light' | 'dark'; set: Partial<Look> }[] = [
   { name: 'Liquid Lavender', mode: 'dark', set: { dark: 'midnight', accent: '#9a83d4', glass: 'liquid' } },
@@ -182,7 +185,7 @@ function tinted(p: Palette, accent: string, amount: number, light: boolean): Pal
 export function terminalColors(t: 'light' | 'dark') {
   const L = look
   const light = t === 'light'
-  const p = tinted((light ? LIGHT_PALETTES[L.light] || LIGHT_PALETTES.daylight : DARK_PALETTES[L.dark] || DARK_PALETTES.midnight), L.accent, L.tint, light)
+  const p = tinted((light ? LIGHT_PALETTES[L.light] || LIGHT_PALETTES.paper : DARK_PALETTES[L.dark] || DARK_PALETTES.ember), L.accent, L.tint, light)
   const accent = light ? shade(L.accent, -12) : shade(L.accent, 8)
   return { background: p.term, foreground: p.text, cursor: accent, cursorAccent: p.term, selectionBackground: rgba(L.accent, light ? 0.25 : 0.32) }
 }
@@ -198,7 +201,7 @@ export function paintLook(t: 'light' | 'dark') {
   tone = t
   const L = look
   const light = t === 'light'
-  const base = light ? LIGHT_PALETTES[L.light] || LIGHT_PALETTES.daylight : DARK_PALETTES[L.dark] || DARK_PALETTES.midnight
+  const base = light ? LIGHT_PALETTES[L.light] || LIGHT_PALETTES.paper : DARK_PALETTES[L.dark] || DARK_PALETTES.ember
   const p = tinted(base, L.accent, L.tint, light)
   const g = GLASS[L.glass] || GLASS.liquid
   const root = document.documentElement

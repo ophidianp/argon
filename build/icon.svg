@@ -1,34 +1,12 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="1024" height="1024" fill="none" stroke-linecap="round">
   <defs>
-    <linearGradient id="ground" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0" stop-color="#2c2c2f" />
-      <stop offset="1" stop-color="#161617" />
-    </linearGradient>
-    <linearGradient id="card" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0" stop-color="#3a3a3e" />
-      <stop offset="1" stop-color="#242427" />
-    </linearGradient>
-    <filter id="lift" x="-20%" y="-20%" width="140%" height="150%">
-      <feDropShadow dx="0" dy="14" stdDeviation="16" flood-color="#000" flood-opacity="0.45" />
-    </filter>
-    <pattern id="dots" width="52" height="52" patternUnits="userSpaceOnUse">
-      <circle cx="26" cy="26" r="3.4" fill="#ffffff" opacity="0.1" />
-    </pattern>
+    <radialGradient id="glow" gradientUnits="userSpaceOnUse" cx="128" cy="128" r="107.52"><stop offset="0" stop-color="#f0553a" stop-opacity=".42"/><stop offset="1" stop-color="#f0553a" stop-opacity="0"/></radialGradient>
+    <clipPath id="tile"><rect x="10.24" y="10.24" width="235.52" height="235.52" rx="58.88"/></clipPath>
   </defs>
-  <rect x="100" y="100" width="824" height="824" rx="186" fill="url(#ground)" />
-  <rect x="100" y="100" width="824" height="824" rx="186" fill="url(#dots)" />
-  <rect x="101.5" y="101.5" width="821" height="821" rx="184.5" fill="none" stroke="#ffffff" stroke-opacity="0.12" stroke-width="3" />
-  <path d="M470 372 C 560 372, 464 650, 554 650" fill="none" stroke="#f0553a" stroke-width="20" stroke-linecap="round" />
-  <g filter="url(#lift)">
-    <rect x="178" y="256" width="292" height="232" rx="36" fill="url(#card)" stroke="#ffffff" stroke-opacity="0.14" stroke-width="3" />
-    <path d="M226 334 l44 36 l-44 36" fill="none" stroke="#f5f5f7" stroke-width="20" stroke-linecap="round" stroke-linejoin="round" />
-    <path d="M300 410 h96" stroke="#f5f5f7" stroke-width="20" stroke-linecap="round" />
-  </g>
-  <g filter="url(#lift)">
-    <rect x="554" y="534" width="292" height="232" rx="36" fill="url(#card)" stroke="#ffffff" stroke-opacity="0.14" stroke-width="3" />
-    <path d="M602 612 l44 36 l-44 36" fill="none" stroke="#f5f5f7" stroke-width="20" stroke-linecap="round" stroke-linejoin="round" />
-    <path d="M676 688 h96" stroke="#f5f5f7" stroke-width="20" stroke-linecap="round" />
-  </g>
-  <circle cx="470" cy="372" r="22" fill="#f0553a" />
-  <circle cx="554" cy="650" r="22" fill="#f0553a" />
+  <rect x="10.24" y="10.24" width="235.52" height="235.52" rx="58.88" fill="#0a0908"/>
+  <rect width="256" height="256" fill="url(#glow)" clip-path="url(#tile)"/>
+  <ellipse cx="128" cy="128" rx="90.88" ry="33.28" transform="rotate(60 128 128)" stroke="#db381c" stroke-width="14.85"/>
+  <ellipse cx="128" cy="128" rx="90.88" ry="33.28" transform="rotate(120 128 128)" stroke="#f0553a" stroke-width="14.85"/>
+  <ellipse cx="128" cy="128" rx="90.88" ry="33.28" transform="rotate(0 128 128)" stroke="#f69686" stroke-width="14.85"/>
+  <circle cx="128" cy="128" r="21.76" fill="#f9bfb5"/>
 </svg>

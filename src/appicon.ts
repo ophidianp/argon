@@ -1,7 +1,7 @@
 // The window and taskbar icon follow the accent: the Argon atom is drawn here in the current colours and
 // handed to Windows. Works for every accent, custom colours included.
 type Colors = { bg: string; light: boolean; accent: string; accentLight: string; accentDeep: string; nucleus: string; glow: string }
-let lastKey = ''
+let lastKey = '' // the icon Windows has now
 let timer = 0
 
 export function drawAtom(c: HTMLCanvasElement, k: Colors, S = 256) {
@@ -55,8 +55,9 @@ export function syncAppIcon(k: Colors) {
   const set = window.vibeboardDesktop?.setAppIcon
   if (!set) return
   const key = JSON.stringify(k)
-  if (key === lastKey) return
+  // Always drop a pending redraw first: changing the look and changing it straight back must end on the last one.
   clearTimeout(timer)
+  if (key === lastKey) return
   timer = window.setTimeout(() => {
     lastKey = key
     const c = document.createElement('canvas')
