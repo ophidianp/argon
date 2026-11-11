@@ -171,8 +171,10 @@ function attachLens(box: HTMLElement) {
   })
 }
 
+// Marked with an attribute, not a class: React rewrites className whenever a surface's classes change
+// ("commandbar" → "commandbar listening"), which would quietly drop the glass and never bring it back.
 function glassify(el: HTMLElement) {
-  el.classList.add('lg')
+  el.dataset.lg = ''
   if (el.classList.contains('toolbar')) attachLens(el)
   if (items.has(el)) return
   const it: Item = { id: 'lgf' + ++seq, w: 0, h: 0, s: 0, p: 0, ro: null!, timer: 0 }
@@ -210,7 +212,7 @@ export function startGlass() {
         m.removedNodes.forEach((n) => {
           if (!(n instanceof HTMLElement)) return
           if (items.has(n)) drop(n)
-          n.querySelectorAll?.<HTMLElement>('.lg').forEach(drop)
+          n.querySelectorAll?.<HTMLElement>('[data-lg]').forEach(drop)
         })
       }
     }).observe(document.body, { childList: true, subtree: true })
@@ -223,14 +225,14 @@ export function startGlass() {
   document.addEventListener(
     'pointermove',
     (e) => {
-      const el = (e.target as Element)?.closest?.<HTMLElement>('.lg') || null
-      if (last && last !== el) last.classList.remove('lg-hot')
+      const el = (e.target as Element)?.closest?.<HTMLElement>('[data-lg]') || null
+      if (last && last !== el) delete last.dataset.lgHot
       last = el
       if (!el) return
       const r = el.getBoundingClientRect()
       el.style.setProperty('--mx', (e.clientX - r.left).toFixed(0) + 'px')
       el.style.setProperty('--my', (e.clientY - r.top).toFixed(0) + 'px')
-      el.classList.add('lg-hot')
+      el.dataset.lgHot = ''
     },
     { passive: true },
   )
