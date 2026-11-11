@@ -5,6 +5,8 @@ import { AGENTS, agentById } from '../../shared/agents.js'
 import { AgentGlyph, AgentIcon, ArgonMark } from './icons'
 import { command, mentionTargets } from '../planner'
 import { TEAMS } from '../teams'
+import { useComposeImages } from '../consoleImages'
+import { ComposePictures, PictureButton } from './Pictures'
 
 const ROLES: [string, string][] = [
   ['Frontend', '#f5a33d'],
@@ -316,6 +318,7 @@ function CommandBar() {
   const fromVoice = useRef(false)
   const { listening, start, stop, recRef } = useDictation(text, setText)
   const targets = useMemo(() => mentionTargets(), [nodes])
+  const pics = useComposeImages('commandbar')
 
   const startVoice = () => {
     fromVoice.current = start()
@@ -355,13 +358,19 @@ function CommandBar() {
 
   const submit = async () => {
     const raw = text.trim()
-    if (!raw || busy) return
+    if (busy || pics.adding) return
+    if (!raw) {
+      if (pics.images.length) say('Add a few words, or @name who the picture is for')
+      return
+    }
+    const images = pics.images
     setHistory((h) => [raw, ...h.filter((x) => x !== raw)].slice(0, 20))
     setText('')
     setMention(null)
+    pics.clear()
     setBusy(true)
     try {
-      say(await command(raw))
+      say(await command(raw, undefined, images))
     } catch (e) {
       say(`Planner failed: ${(e as Error).message}`)
     } finally {
@@ -378,7 +387,8 @@ function CommandBar() {
   }
 
   return (
-    <div className={`commandbar ${listening ? 'listening' : ''}`}>
+    <div className={`commandbar ${listening ? 'listening' : ''}`} onDragOver={pics.handlers.onDragOver} onDrop={pics.handlers.onDrop}>
+      <ComposePictures className="above-bar" images={pics.images} adding={pics.adding} onRemove={pics.remove} />
       {candidates.length > 0 && (
         <div className="menu mentions">
           {candidates.map((c) => (
@@ -428,6 +438,7 @@ function CommandBar() {
           ref={inputRef}
           value={text}
           placeholder={busy ? 'Planning…' : 'Ask your agents · @ to pick one · hold space to talk'}
+          onPaste={pics.handlers.onPaste}
           onChange={(e) => {
             setText(e.target.value)
             const m = e.target.value.slice(0, e.target.selectionStart ?? undefined).match(/@([^@\n]*)$/)
@@ -444,6 +455,7 @@ function CommandBar() {
         />
       )}
       {busy && <RotateCw size={16} color="var(--muted)" style={{ animation: 'spin 1s linear infinite' }} />}
+      <PictureButton onFiles={pics.attach} size={16} />
       <button className="round-btn" title="Recent commands" onClick={() => setShowHistory((v) => !v)}>
         <ChevronUp size={17} />
       </button>

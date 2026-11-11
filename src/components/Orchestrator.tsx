@@ -8,7 +8,8 @@ import { agentById } from '../../shared/agents.js'
 import { AgentIcon } from './icons'
 import { useDictation } from './BottomBar'
 import { Ring } from './MissionMap'
-import { useAutoGrow, useTypeIntoBox } from '../consoleImages'
+import { useAutoGrow, useComposeImages, useTypeIntoBox } from '../consoleImages'
+import { ComposePictures, PictureButton } from './Pictures'
 
 // The pill an agent shows in the orchestrator: shorter words than the Mission Map uses.
 const PILL: Record<string, string> = { idle: 'idle', working: 'running', needs: 'needs you', done: 'done', stopped: 'stopped', paused: 'paused' }
@@ -41,6 +42,7 @@ function OrchestratorNodeImpl({ id, selected, positionAbsoluteX, positionAbsolut
   // The box grows line by line as a command gets longer, and typing anywhere on the orchestrator lands in it.
   useAutoGrow(box, text, 180)
   useTypeIntoBox(root, box, (k) => setText((t) => t + k))
+  const pics = useComposeImages(id)
   const statusOf = (cid: string) => (live[cid] ? (live[cid].paused ? 'paused' : live[cid].status) : 'stopped')
   const done = (list: Node<ConsoleData>[]) => list.filter((n) => statusOf(n.id) === 'done').length
   const s = useStore.getState()
@@ -65,13 +67,19 @@ function OrchestratorNodeImpl({ id, selected, positionAbsoluteX, positionAbsolut
   }
   const submit = async () => {
     const raw = text.trim()
-    if (!raw || busy) return
+    if (busy || pics.adding) return
+    if (!raw) {
+      if (pics.images.length) setReply('Add a few words, or @name who the picture is for')
+      return
+    }
+    const images = pics.images
     setHistory((h) => [raw, ...h.filter((x) => x !== raw)].slice(0, 20))
     setText('')
+    pics.clear()
     setBusy(true)
     try {
       const scope = { consoles: agents.map((n) => n.id), groups: teams.map((t) => t.group.id), onSpawn: wire }
-      const msg = await command(raw, scope)
+      const msg = await command(raw, scope, images)
       setReply(msg)
       setTimeout(() => setReply((r) => (r === msg ? null : r)), 6000)
     } catch (e) {
@@ -195,8 +203,9 @@ function OrchestratorNodeImpl({ id, selected, positionAbsoluteX, positionAbsolut
           )}
         </div>
 
-        <div className="orch-foot nodrag">
+        <div className="orch-foot nodrag" onDragOver={pics.handlers.onDragOver} onDrop={pics.handlers.onDrop}>
           {reply && <div className="orch-reply">{reply}</div>}
+          <ComposePictures className="in-foot" images={pics.images} adding={pics.adding} onRemove={pics.remove} />
           {showHistory && history.length > 0 && (
             <div className="orch-menu up">
               {history.map((h) => (
@@ -212,6 +221,7 @@ function OrchestratorNodeImpl({ id, selected, positionAbsoluteX, positionAbsolut
             value={text}
             placeholder={busy ? 'Planning…' : agents.length ? `Command ${agents.length} agent${agents.length === 1 ? '' : 's'} · @ to direct…` : 'Try "spawn two reviewers"…'}
             onChange={(e) => setText(e.target.value)}
+            onPaste={pics.handlers.onPaste}
             onKeyDown={(e) => {
               // Enter sends; Shift+Enter starts a new line.
               if (e.key === 'Enter' && !e.shiftKey && !e.nativeEvent.isComposing) {
@@ -221,10 +231,11 @@ function OrchestratorNodeImpl({ id, selected, positionAbsoluteX, positionAbsolut
             }}
           />
           {busy && <RotateCw size={14} color="var(--muted)" className="spin" />}
+          <PictureButton onFiles={pics.attach} className="round-btn sm" size={14} />
           <button className="round-btn sm" title="Recent commands" onClick={() => setShowHistory((v) => !v)}>
             <ChevronUp size={15} />
           </button>
-          <button className={`round-btn sm ${text.trim() ? 'go' : ''}`} title="Send" onClick={submit}>
+          <button className={`round-btn sm ${text.trim() ? 'go' : ''}`} title="Send" onClick={submit} disabled={pics.adding > 0}>
             <ArrowUp size={14} />
           </button>
           <button className={`round-btn sm ${listening ? 'hot' : ''}`} title="Dictate" onClick={() => (listening ? stop() : start())}>

@@ -998,6 +998,16 @@ const server = http.createServer(async (req, res) => {
       broadcast({ type: 'handoff', from: from.id, to: to.id, state: 'sent' })
       return json(res, 200, { ok: true, sent: true })
     }
+    // A picture for a message whose consoles are not known yet (the bottom bar, an orchestrator): saved under its
+    // owner, and sent along by path with whatever message it goes with.
+    if (route === 'attachment' && id && !action && req.method === 'POST') {
+      if (!ATTACH_ID.test(id)) return json(res, 400, { error: 'bad name' })
+      try {
+        return json(res, 200, saveAttachment(id, JSON.parse(await readBody(req, MAX_IMAGE * 1.4 + 4096))))
+      } catch (e) {
+        return json(res, 400, { error: e.message })
+      }
+    }
     if (route === 'attachment' && id && action) {
       if (!ATTACH_ID.test(id) || !ATTACH_FILE.test(action)) return json(res, 400, { error: 'bad name' })
       const file = path.join(ATTACH_DIR, id, action)
@@ -1171,6 +1181,7 @@ const server = http.createServer(async (req, res) => {
         'You are the planner of a visual board of coding-agent consoles. Turn the user command into board actions.',
         `Board: ${JSON.stringify(board)}`,
         `Command: ${JSON.stringify(String(command))}`,
+        ...(board?.pictures ? [`The user attached ${board.pictures} picture(s) to this command. They go with every "send" action, so send the command's request to the console(s) it is for.`] : []),
         'Reply with ONLY a JSON object: {"reply": "<one short sentence to say back, in the language of the command>", "actions": [...]}.',
         'Allowed actions:',
         '{"type":"send","to":["<console name, group label, or all>"],"text":"<prompt to type into those consoles>"}',

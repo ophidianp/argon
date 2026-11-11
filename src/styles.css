@@ -7822,6 +7822,11 @@ body.no-anim *, body.no-anim *::before, body.no-anim *::after { transition: none
   background: var(--panel);
   border-top: 1px solid var(--line);
 }
+/* Pictures waiting in the bottom bar or an orchestrator, as in a console's box */
+.orch-foot { flex-wrap: wrap; }
+.compose-images.in-foot { flex-basis: 100%; order: -1; padding: 2px 0 4px; background: none; border: 0; }
+.compose-images.above-bar { position: absolute; left: 12px; right: 12px; bottom: calc(100% + 52px); /* clear of the chips row */ padding: 8px; border: 0; border-radius: 16px; background: var(--popover); backdrop-filter: var(--blur); box-shadow: var(--rim), var(--shadow); z-index: 5; }
+.compose-images.above-bar:empty { display: none; }
 .img-strip {
   position: absolute;
   right: 10px;

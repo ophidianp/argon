@@ -1,7 +1,7 @@
 // The command bar planner: plain speech in, board actions out (via `claude -p` on the server).
 // The action set has no way to stop or delete a console: that stays a confirmed, manual act.
 import { api } from './api'
-import { consoles, useStore, workspace } from './store'
+import { consoles, useStore, workspace, type ConsoleImage } from './store'
 import { startDiagram } from './diagram'
 
 export type PlanAction =
@@ -49,7 +49,8 @@ export function mentionTargets(scope?: Scope) {
 }
 
 // One instruction from a composer: "@name text" goes straight to those consoles, anything else is planned.
-export async function command(raw: string, scope?: Scope): Promise<string> {
+// `images`: pictures attached in the composer. They go with whatever is sent to consoles.
+export async function command(raw: string, scope?: Scope, images: ConsoleImage[] = []): Promise<string> {
   // Longest names first so "@Maya 2" wins over "@Maya".
   const sorted = mentionTargets(scope).sort((a, b) => b.name.length - a.name.length)
   let rest = raw
@@ -62,12 +63,12 @@ export async function command(raw: string, scope?: Scope): Promise<string> {
       rest = rest.replace(re, '').trim()
     }
   }
-  if (!ids.size) return runPlanner(raw, scope)
-  const sent = useStore.getState().sendTo([...ids], rest)
+  if (!ids.size) return runPlanner(raw, scope, images)
+  const sent = useStore.getState().sendTo([...ids], rest, images)
   return sent ? `Sent to ${sent} console${sent > 1 ? 's' : ''}` : 'None of those consoles is running'
 }
 
-export async function runPlanner(command: string, scope?: Scope): Promise<string> {
+export async function runPlanner(command: string, scope?: Scope, images: ConsoleImage[] = []): Promise<string> {
   const s = useStore.getState()
   const ws = workspace(s)
   if (!ws) return 'Open a board first'
@@ -83,6 +84,7 @@ export async function runPlanner(command: string, scope?: Scope): Promise<string
     })),
     groups: inScope.map((g) => g.data.label),
     agents: s.installed,
+    ...(images.length ? { pictures: images.length } : {}),
   }
   const plan = await api.plan(command, board)
   // Planning takes seconds: acting on whatever board is open by then would hit the wrong consoles.
@@ -107,9 +109,10 @@ export async function runPlanner(command: string, scope?: Scope): Promise<string
       const live = useStore.getState().live[n.id]
       if (live && live.paused !== (signal === 'SIGSTOP')) api.signal(n.id, signal).catch(() => {})
     })
+  let pictured = 0
   for (const a of (plan.actions ?? []).filter(valid)) {
     const st = useStore.getState()
-    if (a.type === 'send') st.sendTo(byName(a.to), a.text)
+    if (a.type === 'send') pictured += st.sendTo(byName(a.to), a.text, images)
     else if (a.type === 'spawn') {
       const ids = st.spawnMany(Array(Math.max(1, Math.min(12, a.count || 1))).fill(a.agent), a.group)
       scope?.onSpawn?.(ids)
@@ -127,5 +130,6 @@ export async function runPlanner(command: string, scope?: Scope): Promise<string
       st.groupSelected(a.label)
     }
   }
-  return plan.reply || 'Done'
+  const reply = plan.reply || 'Done'
+  return images.length && !pictured ? `${reply} (the picture${images.length > 1 ? 's were' : ' was'} not sent: nothing went to a console)` : reply
 }

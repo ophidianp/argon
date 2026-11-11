@@ -171,7 +171,7 @@ type S = {
   moveToGroup: (id: string, gid: string | null) => void
   pauseAll: () => void
   resumeAll: () => void
-  sendTo: (ids: string[], text: string) => number
+  sendTo: (ids: string[], text: string, images?: ConsoleImage[]) => number
   frame: (ids: string[]) => void
   jumpTo: (id: string) => void
   connectConsoles: (source: string, target: string) => boolean
@@ -885,9 +885,17 @@ export const useStore = create<S>((set, get) => {
     },
 
     // Returns how many consoles were actually running, so callers report the real count.
-    sendTo: (ids, text) => {
+    // Pictures go along by path (each agent gets them as it gets a picture typed into its own box), and show on
+    // each console the way a picture put into it does.
+    sendTo: (ids, text, images = []) => {
       const live = ids.filter((id) => get().live[id])
-      live.forEach((id) => api.prompt(id, text).catch((e) => get().notify(`Send failed: ${e.message}`)))
+      const paths = images.map((i) => i.path)
+      live.forEach((id) => {
+        api.prompt(id, text, paths).catch((e) => get().notify(`Send failed: ${e.message}`))
+        if (!images.length) return
+        const d = workspace(get())?.nodes.find((n) => n.id === id)?.data as ConsoleData | undefined
+        get().updateData(id, { images: [...(d?.images ?? []), ...images].slice(-8) })
+      })
       return live.length
     },
 

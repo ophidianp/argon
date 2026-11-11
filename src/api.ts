@@ -116,6 +116,8 @@ export const api = {
   input: (id: string, data: string) => call('POST', `/api/pty/${id}/input`, { data }),
   prompt: (id: string, prompt: string, images?: string[]) => call('POST', `/api/pty/${id}/input`, images?.length ? { prompt, images } : { prompt }),
   consoleImage: (id: string, body: { type: string; data: string; insert: boolean }) => call<{ path: string; url: string }>('POST', `/api/pty/${id}/image`, body),
+  // A picture for a message from the bottom bar or an orchestrator, before it is known which consoles get it.
+  attachImage: (owner: string, body: { type: string; data: string }) => call<{ path: string; url: string }>('POST', `/api/attachment/${owner}`, body),
   transcriptImageUrl: (id: string, key: string) => `/api/pty/${id}/transcript-image?key=${encodeURIComponent(key)}`,
   signal: (id: string, signal: 'SIGSTOP' | 'SIGCONT') => call('POST', `/api/pty/${id}/signal`, { signal }),
   tail: (id: string, chars = 8000) => call<{ text: string }>('POST', `/api/pty/${id}/tail`, { chars }),
