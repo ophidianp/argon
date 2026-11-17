@@ -29,6 +29,9 @@ PATH_SLUG = re.compile(r"\bC--Users-[\w-]+")
 IP = re.compile(r"(?<![\d.])(?:127\.\d{1,3}\.\d{1,3}\.\d{1,3}|(?:192\.168|10\.\d{1,3}|172\.(?:1[6-9]|2\d|3[01]))\.\d{1,3}\.\d{1,3})(?![\d.])")
 EMAIL = re.compile(r"[\w.+-]+@[\w-]+\.[\w.-]+")
 ACCOUNT = re.compile(r"\bneman\w*", re.I)
+# The apps Argon was modelled on are blacked out (black bars on the page).
+REDACT_URL = re.compile(r"https?://[^\s)\]]*?(?:symvibe|vibeboard|ricca200xx|hypervibe)[^\s)\]]*", re.I)
+REDACT = re.compile(r"symvibe|vibeboard|ricca200xx|hypervibe", re.I)
 
 
 def clean(t):
@@ -42,6 +45,8 @@ def clean(t):
     t = IP.sub("[local address]", t)
     t = EMAIL.sub("[email]", t)
     t = ACCOUNT.sub("[user]", t)
+    t = REDACT_URL.sub("█" * 8, t)
+    t = REDACT.sub(lambda m: "█" * len(m.group()), t)
     return t.strip()
 
 

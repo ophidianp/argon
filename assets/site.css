@@ -754,3 +754,4 @@ body { background: var(--bg); }
 @media (max-width: 860px) { .chat-intro { grid-template-columns: 1fr; gap: 16px; } }
 @media (max-width: 560px) { .phone { border-radius: 22px; } .phone-bar { padding: 12px 14px; gap: 10px; } .chat { height: min(72svh, 560px); padding: 14px 12px 24px; overscroll-behavior-y: auto; } .bubble { max-width: 94%; font-size: 14.5px; padding: 9px 12px; } }
 @media (max-width: 400px) { .phone-bar small { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; } .phone-bar .jump { padding: 8px 10px; } }
+.bubble .redact { background: #000; color: transparent; border-radius: 3px; box-shadow: 0 0 0 1px rgba(255,255,255,.14); user-select: none; -webkit-user-select: none; }

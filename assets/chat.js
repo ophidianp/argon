@@ -10,7 +10,8 @@
     .replace(/\[([^\]\n]+)\]\((https?:\/\/[^)\s]+)\)/g, '<a href="$2" target="_blank" rel="noopener">$1</a>')
     .replace(/\[([^\]\n]+)\]\([^)\s]*\)/g, "$1");
   const render = (text) => text.split(/```[^\n]*\n?/).map((p, i) =>
-    i % 2 ? "<pre><code>" + esc(p.replace(/\n$/, "")) + "</code></pre>" : inline(p.replace(/^\n+|\n+$/g, ""))).join("");
+    i % 2 ? "<pre><code>" + esc(p.replace(/\n$/, "")) + "</code></pre>" : inline(p.replace(/^\n+|\n+$/g, ""))).join("")
+    .replace(/█+/g, (b) => '<span class="redact" role="img" aria-label="redacted">' + b + "</span>");
   const label = { opus: "Claude Opus 5.5", sonnet: "Claude Sonnet 5.5", fable: "Claude Fable 5.2" };
   const meta = document.getElementById("chat-meta");
   const jump = document.getElementById("chat-jump");
