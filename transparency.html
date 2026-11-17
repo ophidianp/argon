@@ -9,9 +9,10 @@
     <link rel="icon" type="image/svg+xml" href="assets/argon-icon.svg">
     <script>try{var d=document.documentElement,s=localStorage.getItem("argon-theme"),t=s==="light"||s==="dark"?s:(d.dataset.theme==="light"?"light":"dark");d.dataset.theme=t;var v=JSON.parse(localStorage.getItem("argon-accent-vars")||"null");if(v&&v[t])for(var k in v[t])d.style.setProperty(k,v[t][k])}catch(e){}</script>
     <link rel="stylesheet" href="assets/liquid-glass.css?v=2">
-    <link rel="stylesheet" href="assets/site.css?v=7">
+    <link rel="stylesheet" href="assets/site.css?v=8">
     <script src="assets/liquid-glass.js?v=1" defer></script>
     <script src="assets/site.js?v=6" defer></script>
+    <script src="assets/chat.js?v=1" defer></script>
   </head>
   <body>
     <div class="backdrop" aria-hidden="true"><div class="aurora aurora-a"></div><div class="aurora aurora-b"></div></div>
@@ -44,11 +45,33 @@
 
       <section class="wrap">
         <div class="facts" data-stagger>
-          <article class="fact"><p class="eyebrow">The code</p><h3>Built with AI</h3><p>Argon and this website were written with Claude, an AI model, directed and tested by Pavan. The design follows the same style as Chlorine and the other sites in this family.</p></article>
+          <article class="fact"><p class="eyebrow">The code</p><h3>Built with AI</h3><p>Argon and this website were written with Claude, an AI model, directed and tested by Pavan. The design follows the same style as Chlorine and the other sites in this family. The whole conversation is below.</p></article>
           <article class="fact"><p class="eyebrow">Your data</p><h3>Stays on your PC</h3><p>Argon has no servers, accounts or telemetry. Boards, notes, memory and settings are JSON files in your app data folder, with rolling backups.</p></article>
           <article class="fact"><p class="eyebrow">Your accounts</p><h3>Never touched</h3><p>Agents sign in by themselves. Argon only checks whether each agent has saved a login file, to show "signed in" in the setup panel. It never reads or sends what's inside.</p></article>
           <article class="fact"><p class="eyebrow">Usage stats</p><h3>Read locally</h3><p>The usage chart reads Claude Code and Codex session logs already on your PC and adds up token counts. Nothing leaves your machine.</p></article>
           <article class="fact"><p class="eyebrow">Safety</p><h3>Approvals stay on</h3><p>Agents ask before editing files or running commands. Auto-approve is off by default and comes with a warning if you turn it on.</p></article>
+        </div>
+      </section>
+
+      <section class="chat-section wrap" aria-labelledby="log-title">
+        <div class="chat-intro">
+          <div data-reveal>
+            <p class="eyebrow">The receipts</p>
+            <h2 id="log-title">The conversation itself.</h2>
+          </div>
+          <p data-reveal>From the first message of the Claude Code session Argon was made in to the request for this page. Only what was said in the chat is shown. Tool use is left out, and file paths, local addresses, emails and keys are masked. It reads like a messaging app, but you can't reply.</p>
+        </div>
+
+        <div class="phone">
+          <div class="phone-bar">
+            <img src="assets/argon-icon.svg" alt="" width="34" height="34">
+            <div><b>Claude Code · Argon</b><small id="chat-meta">Loading the conversation…</small></div>
+            <button class="jump" id="chat-jump" type="button">Jump to start</button>
+          </div>
+          <div class="chat" id="chat" role="log" aria-label="Full chat log" tabindex="0">
+            <p class="chat-empty">Loading…</p>
+          </div>
+          <div class="chat-foot" id="chat-foot">Read-only copy of the session. Scroll to read.</div>
         </div>
       </section>
 
