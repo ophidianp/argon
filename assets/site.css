@@ -213,6 +213,8 @@ footer .made span { color: var(--muted); }
 footer .fine { display: flex; flex-wrap: wrap; gap: 6px 18px; margin: 0; }
 footer .fine a { color: var(--faint); text-decoration: none; }
 footer .fine a:hover { color: var(--text); }
+footer .made a { color: var(--text); text-decoration: none; }
+footer .made a:hover { color: var(--accent); }
 
 @media (max-width: 900px) {
   .grid, .grid.four { grid-template-columns: repeat(2, minmax(0, 1fr)); }
