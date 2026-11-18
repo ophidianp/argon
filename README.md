@@ -8,14 +8,15 @@ Static HTML, CSS and JS, deployed with GitHub Pages (same setup as the Chlorine 
 The launch video is [`assets/video/argon-launch.mp4`](assets/video/argon-launch.mp4); it plays on the home page under **Watch it work**.
 
 ## Pages
-- **Home** — `index.html` (live board animation + four interactive demos)
+- **Home** — `index.html` (with the launch video)
 - **Features** — `features.html`
 - **Download** — `download.html` (the Windows installer, with a small link to the source)
 - **Transparency** — `transparency.html`
 - **404** — `404.html`
 
-Shared assets: `assets/site.css` (styles and motion), `assets/site.js` (theme, accent
-personalization, navigation, scroll reveals and the demos) and `assets/argon-icon.svg`.
+Shared assets: `assets/site.css` (one plain, minimal stylesheet; light and dark follow the
+visitor's system), `assets/liquid-glass.*` (glass effect, header only), `assets/chat.js`
+(the chat log on the Transparency page) and `assets/argon-icon.svg`.
 
 Live at https://ophidianp.github.io/argon/ (deployed from the `argon-website` branch).
 
