@@ -7,9 +7,10 @@
   color-scheme: dark;
   --accent: #ff6a3d;
   --accent-ink: #0b0b09;
-  --bg: #0c0c0a;
-  --surface: #131311;
-  --surface-2: #1a1a17;
+  /* the page, cards and code blocks carry a faint wash of the accent */
+  --bg: color-mix(in srgb, var(--accent) 5%, #0c0c0a);
+  --surface: color-mix(in srgb, var(--accent) 5%, #131311);
+  --surface-2: color-mix(in srgb, var(--accent) 6%, #1a1a17);
   --line: rgba(242, 239, 230, 0.08);
   --line-2: rgba(242, 239, 230, 0.15);
   --text: #f2efe6;
@@ -167,11 +168,14 @@ pre b { color: var(--accent); font-weight: 500; }
 /* FAQ */
 .faq { border-top: 1px solid var(--line-2); }
 .faq details { border-bottom: 1px solid var(--line-2); }
-.faq summary { display: flex; justify-content: space-between; gap: 16px; padding: 20px 0; font-size: 17px; font-weight: 500; list-style: none; cursor: pointer; }
+.faq summary { display: flex; justify-content: space-between; align-items: center; gap: 16px; padding: 20px 0; font-size: 17px; font-weight: 500; list-style: none; cursor: pointer; transition: color 0.2s; }
+.faq summary:hover { color: var(--accent); }
 .faq summary::-webkit-details-marker { display: none; }
-.faq summary::after { content: "+"; color: var(--accent); font: 400 22px/1 var(--mono); }
-.faq details[open] summary::after { content: "−"; }
-.faq details > :not(summary) { max-width: 680px; margin: 0 0 20px; color: var(--muted); }
+/* the + turns into an x while open; the answer slides open and closed (see the script at the end of each page) */
+.faq summary::after { content: "+"; flex: none; color: var(--accent); font: 400 22px/1 var(--mono); transition: transform 0.35s cubic-bezier(0.2, 0.7, 0.2, 1); }
+.faq details[open]:not(.closing) summary::after { transform: rotate(45deg); }
+.faq details > :not(summary) { max-width: 680px; margin: 0; padding-bottom: 20px; overflow: hidden; color: var(--muted); }
+@media (prefers-reduced-motion: reduce) { .faq summary::after { transition: none; } }
 
 /* note */
 .note { padding: 16px 18px; border: 1px solid var(--line); border-left: 2px solid var(--accent); border-radius: 10px; background: var(--surface); color: var(--muted); font-size: 15px; }
