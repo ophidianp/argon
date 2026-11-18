@@ -7,10 +7,9 @@
   color-scheme: dark;
   --accent: #ff6a3d;
   --accent-ink: #0b0b09;
-  /* the page, cards and code blocks carry a faint wash of the accent */
-  --bg: color-mix(in srgb, var(--accent) 2.5%, #0c0c0a);
-  --surface: color-mix(in srgb, var(--accent) 2.5%, #131311);
-  --surface-2: color-mix(in srgb, var(--accent) 3%, #1a1a17);
+  --bg: #111111; /* plain dark grey, no accent tint */
+  --surface: #181818;
+  --surface-2: #1f1f1f;
   --line: rgba(242, 239, 230, 0.08);
   --line-2: rgba(242, 239, 230, 0.15);
   --text: #f2efe6;
