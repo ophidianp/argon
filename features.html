@@ -4,10 +4,14 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="description" content="Everything Argon does: the board, agent consoles, mission map, command bar, loops, handoffs, tiles and personalization.">
+<meta name="theme-color" content="#0c0c0a">
 <title>Features · Argon</title>
 <link rel="icon" href="assets/argon-icon.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&amp;family=Geist+Mono:wght@400;500&amp;family=Instrument+Serif:ital@0;1&amp;display=swap">
 <link rel="stylesheet" href="assets/liquid-glass.css?v=2">
-<link rel="stylesheet" href="assets/site.css?v=13">
+<link rel="stylesheet" href="assets/site.css?v=12">
 <script src="assets/liquid-glass.js?v=2" data-auto defer></script>
 </head>
 <body>
@@ -18,77 +22,99 @@
     <a href="features.html" aria-current="page">Features</a>
     <a href="download.html">Download</a>
     <a href="transparency.html">Transparency</a>
+    <a class="cta-link" href="https://github.com/ophidianp/argon/releases/latest/download/Argon-Setup.exe">Download</a>
   </nav>
 </header>
 
 <main>
-<h1>Everything on one board.</h1>
+<section class="wrap hero">
+<span class="badge">Features</span>
+<h1>Everything on <em>one board.</em></h1>
 <p class="lead">A tour of what Argon does, from the board itself to the small touches that make running many agents feel calm.</p>
-<p class="muted">On this page: <a href="#board">The board</a> · <a href="#agents">Agents and status</a> · <a href="#orchestration">Orchestration</a> · <a href="#tiles">Tiles</a> · <a href="#personal">Make it yours</a> · <a href="#continuity">Continuity and privacy</a></p>
-
-<h2 id="board">1. The board: room for everything.</h2>
-<ul>
-  <li><strong>Infinite canvas.</strong> Zoom with the wheel, scroll the board with <kbd>Ctrl</kbd> + wheel, drag with the middle button to pan, and fit everything with <kbd>Ctrl 0</kbd>.</li>
-  <li><strong>Workspaces as tabs.</strong> Each project folder gets its own board. Switch with <kbd>Ctrl 1–9</kbd>; agents keep running in the background.</li>
-  <li><strong>Ink and images.</strong> Draw over the board to sketch ideas, and drop or paste screenshots straight onto it.</li>
-  <li><strong>The Add selector.</strong> Hover the Add button in the toolbar for a floating glass selector: a shell console, a picture, or a folder to connect to the project.</li>
-  <li><strong>Fly to anything.</strong> Click an agent in the mission map or double-click a tile header to glide to it at full size.</li>
-</ul>
-
-<h2 id="agents">2. Agents and status: real terminals, live status.</h2>
-<ul>
-  <li><strong>12 agents built in.</strong> Claude Code, Codex, Gemini CLI, Copilot CLI, OpenCode, Qwen Code, Amp, Aider, Cursor CLI, Goose, Crush and a plain terminal, plus any custom command.</li>
-  <li><strong>Working, resting, needs you.</strong> Every tile shows its state. Approval prompts turn it amber and float it to the top of the mission map.</li>
-  <li><strong>Agents setup.</strong> See which agents are installed and signed in, and install missing ones in one click.</li>
-  <li><strong>Pictures in consoles.</strong> Paste, drop or pick a screenshot into a console. Claude Code and Codex get it as an attached image, and the console shows it, in the terminal or in the conversation.</li>
-  <li><strong>Account profiles.</strong> Run Claude Code or Codex under a second account. Each profile keeps its own sign-in, so you can spread work across plans.</li>
-</ul>
-<p><strong>Safe by default.</strong> Auto-approve flags are off unless you turn them on in Settings, with a clear warning first.</p>
-
-<h2 id="orchestration">3. Orchestration: direct the team, not each tab.</h2>
-<ul>
-  <li><strong>Command bar.</strong> Press <kbd>Ctrl K</kbd> and type. Send to <code>@claude-1</code>, a team like <code>#frontend</code>, or <code>@all</code>, or run commands like <code>/spawn codex 3</code>.</li>
-  <li><strong>Composer.</strong> Line up to 12 agents with their first prompts and launch them together in a neat grid.</li>
-  <li><strong>Loops.</strong> Re-send a prompt whenever an agent goes idle or on a schedule, and stop automatically when a goal phrase appears.</li>
-  <li><strong>Handoffs.</strong> One agent writes a brief into <code>.argon/handoffs/</code>, the next one is told to read it and carry on.</li>
-  <li><strong>Groups.</strong> Tag consoles with a team name to order them together and see them grouped in the mission map.</li>
-  <li><strong>Orchestrator.</strong> Give orders to several agents at once. Its text box grows as you write, and you can start typing anywhere on it.</li>
-  <li><strong>Project memory.</strong> Global and per-repo notes that you push into consoles when you want agents to know them.</li>
-</ul>
-
-<h2 id="tiles">4. Tiles: plan right next to the work.</h2>
-<ul>
-  <li><strong>Notes, checklists, kanban.</strong> Sticky notes in five colours, checklists with progress, and a drag-and-drop kanban board.</li>
-  <li><strong>Calendar.</strong> A month view for deadlines and release days, right on the board.</li>
-  <li><strong>Web preview.</strong> A live view of your localhost dev server, with the web inspector one click away.</li>
-  <li><strong>Files and git.</strong> Browse and preview files with highlighting, and commit, pull, push or switch branches from a git card.</li>
-</ul>
-
-<h2 id="personal">5. Make it yours: your colours, your feel.</h2>
-<ul>
-  <li><strong>Accent colour.</strong> Presets from the default Ember to lavender, rose, mint and sky, or any colour you like. The taskbar icon takes it on too.</li>
-  <li><strong>Looks and glass.</strong> Ember by default, plus Midnight, Abyss, Dusk, Slate and looks styled after each agent; Paper and Daylight by day. Liquid glass everywhere, and Windows Mica or Acrylic behind the window.</li>
-  <li><strong>Board background.</strong> Dots, grid lines, a slowly drifting aurora, or plain.</li>
-  <li><strong>Terminal and motion.</strong> Choose the terminal font and cursor, corner style, and switch animations off for a stiller feel. Argon also greets you by name.</li>
-</ul>
-
-<h2 id="continuity">6. Continuity and privacy: yours, on your PC.</h2>
-<ul>
-  <li><strong>Resume after restart.</strong> Consoles relaunch in place and continue their last session where the agent supports it.</li>
-  <li><strong>Autosave with backups.</strong> Every board is saved as you work, with rolling backups in your data folder.</li>
-  <li><strong>Plan limits and usage.</strong> How much of your Claude, Codex and Copilot plan is left and when it resets, plus token charts read from logs on your PC.</li>
-  <li><strong>Automatic updates.</strong> Settings → Updates: ask first, or download quietly and install when you close Argon. Every update is signed, and Argon checks the signature before it installs anything.</li>
-  <li><strong>No Argon servers.</strong> No account, no telemetry. Sign-in checks only look for whether each agent has saved a login file.</li>
-</ul>
-
-<h2>Try it on your own projects. It's free.</h2>
+<ul class="tags" style="margin-top:28px"><li><a href="#board">The board</a></li><li><a href="#agents">Agents and status</a></li><li><a href="#orchestration">Orchestration</a></li><li><a href="#tiles">Tiles</a></li><li><a href="#personal">Make it yours</a></li><li><a href="#continuity">Continuity and privacy</a></li></ul></section>
+<section class="wrap section" id="board">
+<div class="section-head"><p class="eyebrow">01 · The board</p>
+<h2>Room for <em>everything.</em></h2>
+</div>
+<div class="grid ">
+<article class="card wide"><h3>Infinite canvas</h3><p>Zoom with the wheel, scroll the board with <kbd>Ctrl</kbd> + wheel, drag with the middle button to pan, and fit everything with <kbd>Ctrl 0</kbd>.</p></article>
+<article class="card "><h3>Workspaces as tabs</h3><p>Each project folder gets its own board. Switch with <kbd>Ctrl 1–9</kbd>; agents keep running in the background.</p></article>
+<article class="card "><h3>Ink and images</h3><p>Draw over the board to sketch ideas, and drop or paste screenshots straight onto it.</p></article>
+<article class="card "><h3>The Add selector</h3><p>Hover the Add button in the toolbar for a floating glass selector: a shell console, a picture, or a folder to connect to the project.</p></article>
+<article class="card "><h3>Fly to anything</h3><p>Click an agent in the mission map or double-click a tile header to glide to it at full size.</p></article>
+</div>
+</section>
+<section class="wrap section" id="agents">
+<div class="section-head"><p class="eyebrow">02 · Agents and status</p>
+<h2>Real terminals. <em>Live status.</em></h2>
+</div>
+<div class="grid ">
+<article class="card wide"><h3>12 agents built in</h3><p>Claude Code, Codex, Gemini CLI, Copilot CLI, OpenCode, Qwen Code, Amp, Aider, Cursor CLI, Goose, Crush and a plain terminal, plus any custom command.</p></article>
+<article class="card "><h3>Working, resting, needs you</h3><p>Every tile shows its state. Approval prompts turn it amber and float it to the top of the mission map.</p></article>
+<article class="card "><h3>Agents setup</h3><p>See which agents are installed and signed in, and install missing ones in one click.</p></article>
+<article class="card "><h3>Pictures in consoles</h3><p>Paste, drop or pick a screenshot into a console. Claude Code and Codex get it as an attached image, and the console shows it, in the terminal or in the conversation.</p></article>
+<article class="card "><h3>Account profiles</h3><p>Run Claude Code or Codex under a second account. Each profile keeps its own sign-in, so you can spread work across plans.</p></article>
+</div>
+<p class="note" style="margin-top:14px"><strong>Safe by default.</strong> Auto-approve flags are off unless you turn them on in Settings, with a clear warning first.</p>
+</section>
+<section class="wrap section" id="orchestration">
+<div class="section-head"><p class="eyebrow">03 · Orchestration</p>
+<h2>Direct the team, <em>not each tab.</em></h2>
+</div>
+<div class="grid ">
+<article class="card wide"><h3>Command bar</h3><p>Press <kbd>Ctrl K</kbd> and type. Send to <code>@claude-1</code>, a team like <code>#frontend</code>, or <code>@all</code>, or run commands like <code>/spawn codex 3</code>.</p></article>
+<article class="card "><h3>Composer</h3><p>Line up to 12 agents with their first prompts and launch them together in a neat grid.</p></article>
+<article class="card "><h3>Loops</h3><p>Re-send a prompt whenever an agent goes idle or on a schedule, and stop automatically when a goal phrase appears.</p></article>
+<article class="card "><h3>Handoffs</h3><p>One agent writes a brief into <code>.argon/handoffs/</code>, the next one is told to read it and carry on.</p></article>
+<article class="card "><h3>Groups</h3><p>Tag consoles with a team name to order them together and see them grouped in the mission map.</p></article>
+<article class="card "><h3>Orchestrator</h3><p>Give orders to several agents at once. Its text box grows as you write, and you can start typing anywhere on it.</p></article>
+<article class="card wide"><h3>Project memory</h3><p>Global and per-repo notes that you push into consoles when you want agents to know them.</p></article>
+</div>
+</section>
+<section class="wrap section" id="tiles">
+<div class="section-head"><p class="eyebrow">04 · Tiles</p>
+<h2>Plan right next <em>to the work.</em></h2>
+</div>
+<div class="grid ">
+<article class="card "><h3>Notes, checklists, kanban</h3><p>Sticky notes in five colours, checklists with progress, and a drag-and-drop kanban board.</p></article>
+<article class="card "><h3>Calendar</h3><p>A month view for deadlines and release days, right on the board.</p></article>
+<article class="card "><h3>Web preview</h3><p>A live view of your localhost dev server, with the web inspector one click away.</p></article>
+<article class="card wide"><h3>Files and git</h3><p>Browse and preview files with highlighting, and commit, pull, push or switch branches from a git card.</p></article>
+</div>
+</section>
+<section class="wrap section" id="personal">
+<div class="section-head"><p class="eyebrow">05 · Make it yours</p>
+<h2>Your colours. <em>Your feel.</em></h2>
+</div>
+<div class="grid ">
+<article class="card "><h3>Accent colour</h3><p>Presets from the default Ember to lavender, rose, mint and sky, or any colour you like. The taskbar icon takes it on too.</p></article>
+<article class="card wide"><h3>Looks and glass</h3><p>Ember by default, plus Midnight, Abyss, Dusk, Slate and looks styled after each agent; Paper and Daylight by day. Liquid glass everywhere, and Windows Mica or Acrylic behind the window.</p></article>
+<article class="card "><h3>Board background</h3><p>Dots, grid lines, a slowly drifting aurora, or plain.</p></article>
+<article class="card wide"><h3>Terminal and motion</h3><p>Choose the terminal font and cursor, corner style, and switch animations off for a stiller feel. Argon also greets you by name.</p></article>
+</div>
+</section>
+<section class="wrap section" id="continuity">
+<div class="section-head"><p class="eyebrow">06 · Continuity and privacy</p>
+<h2>Yours, <em>on your PC.</em></h2>
+</div>
+<div class="grid ">
+<article class="card "><h3>Resume after restart</h3><p>Consoles relaunch in place and continue their last session where the agent supports it.</p></article>
+<article class="card "><h3>Autosave with backups</h3><p>Every board is saved as you work, with rolling backups in your data folder.</p></article>
+<article class="card "><h3>Plan limits and usage</h3><p>How much of your Claude, Codex and Copilot plan is left and when it resets, plus token charts read from logs on your PC.</p></article>
+<article class="card wide"><h3>Automatic updates</h3><p>Settings → Updates: ask first, or download quietly and install when you close Argon. Every update is signed, and Argon checks the signature before it installs anything.</p></article>
+<article class="card "><h3>No Argon servers</h3><p>No account, no telemetry. Sign-in checks only look for whether each agent has saved a login file.</p></article>
+</div>
+</section>
+<section class="wrap"><div class="cta">
+<h2>Try it on your own projects. <em>It's free.</em></h2>
 <p>Grab Argon for Windows and open your first folder.</p>
-<p><a class="button primary" href="https://github.com/ophidianp/argon/releases/latest/download/Argon-Setup.exe">Download for Windows</a></p>
+<div class="actions"><a class="btn primary" href="https://github.com/ophidianp/argon/releases/latest/download/Argon-Setup.exe">Download for Windows ↓</a></div>
+</div></section>
 </main>
 
 <footer>
-<p>&copy; 2026 Pavan Nemani · A calm command deck for busy agents.</p>
-  <nav aria-label="Footer"><a href="features.html">Features</a><a href="download.html">Download</a><a href="transparency.html">Transparency</a></nav>
+  <p class="made"><span>Made by</span> Pavan Nemani</p>
+  <p class="fine">&copy; 2026 Pavan Nemani · A calm command deck for busy agents. · <a href="https://github.com/ophidianp/argon">GitHub</a></p>
 </footer>
 </body>
 </html>

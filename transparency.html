@@ -4,10 +4,14 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="description" content="How Argon was made, what it does with your data, and where the idea came from.">
+<meta name="theme-color" content="#0c0c0a">
 <title>Transparency · Argon</title>
 <link rel="icon" href="assets/argon-icon.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&amp;family=Geist+Mono:wght@400;500&amp;family=Instrument+Serif:ital@0;1&amp;display=swap">
 <link rel="stylesheet" href="assets/liquid-glass.css?v=2">
-<link rel="stylesheet" href="assets/site.css?v=13">
+<link rel="stylesheet" href="assets/site.css?v=12">
 <script src="assets/liquid-glass.js?v=2" data-auto defer></script>
 <script src="assets/chat.js?v=2" defer></script>
 </head>
@@ -19,39 +23,49 @@
     <a href="features.html">Features</a>
     <a href="download.html">Download</a>
     <a href="transparency.html" aria-current="page">Transparency</a>
+    <a class="cta-link" href="https://github.com/ophidianp/argon/releases/latest/download/Argon-Setup.exe">Download</a>
   </nav>
 </header>
 
 <main>
-<h1>How Argon was made.</h1>
+<section class="wrap hero">
+<span class="badge">Transparency</span>
+<h1>How Argon <em>was made.</em></h1>
 <p class="lead">Straight answers about who wrote the code and what happens to your data.</p>
-<ul>
-  <li><strong>The code: built with AI.</strong> Argon and this website were written with Claude, an AI model, directed and tested by Pavan. The design follows the same style as Chlorine and the other sites in this family. The whole conversation is below.</li>
-  <li><strong>Your data: stays on your PC.</strong> Argon has no servers, accounts or telemetry. Boards, notes, memory and settings are JSON files in your app data folder, with rolling backups.</li>
-  <li><strong>Your accounts: never touched.</strong> Agents sign in by themselves. Argon only checks whether each agent has saved a login file, to show "signed in" in the setup panel. It never reads or sends what's inside.</li>
-  <li><strong>Usage stats: read locally.</strong> The usage chart reads Claude Code and Codex session logs already on your PC and adds up token counts. Nothing leaves your machine.</li>
-  <li><strong>Safety: approvals stay on.</strong> Agents ask before editing files or running commands. Auto-approve is off by default and comes with a warning if you turn it on.</li>
-</ul>
-
-<h2 id="log-title">The conversation itself.</h2>
+</section>
+<section class="wrap" style="padding-top:64px">
+<div class="grid ">
+<article class="card wide"><p class="label">The code</p><h3>Built with AI</h3><p>Argon and this website were written with Claude, an AI model, directed and tested by Pavan. The design follows the same style as Chlorine and the other sites in this family. The whole conversation is below.</p></article>
+<article class="card "><p class="label">Your data</p><h3>Stays on your PC</h3><p>Argon has no servers, accounts or telemetry. Boards, notes, memory and settings are JSON files in your app data folder, with rolling backups.</p></article>
+<article class="card "><p class="label">Your accounts</p><h3>Never touched</h3><p>Agents sign in by themselves. Argon only checks whether each agent has saved a login file, to show "signed in" in the setup panel. It never reads or sends what's inside.</p></article>
+<article class="card "><p class="label">Usage stats</p><h3>Read locally</h3><p>The usage chart reads Claude Code and Codex session logs already on your PC and adds up token counts. Nothing leaves your machine.</p></article>
+<article class="card "><p class="label">Safety</p><h3>Approvals stay on</h3><p>Agents ask before editing files or running commands. Auto-approve is off by default and comes with a warning if you turn it on.</p></article>
+</div>
+</section>
+<section class="wrap section" id="log-title">
+<div class="section-head"><p class="eyebrow">The receipts</p>
+<h2>The conversation <em>itself.</em></h2>
 <p>From the first message of the Claude Code session Argon was made in to the request for this page. Only what was said in the chat is shown. Tool use is left out, and file paths, local addresses, emails and keys are masked. It reads like a messaging app, but you can't reply.</p>
+</div>
 <div class="chatlog">
   <div class="chatlog-head">
     <div><b>Claude Code · Argon</b><small id="chat-meta">Loading the conversation…</small></div>
-    <button class="button" type="button" id="chat-jump">Jump to start</button>
+    <button class="btn" type="button" id="chat-jump">Jump to start</button>
   </div>
   <div id="chat" tabindex="0" aria-label="Full chat log"><p class="chat-empty">Loading…</p></div>
   <div class="chatlog-foot" id="chat-foot">Read-only copy of the session. Scroll to read.</div>
 </div>
-
-<h2>Have a look for yourself. It's all local.</h2>
+</section>
+<section class="wrap"><div class="cta">
+<h2>Have a look for yourself. <em>It's all local.</em></h2>
 <p>Open your data folder from Settings: your boards, notes and settings are plain files on this PC.</p>
-<p><a class="button primary" href="https://github.com/ophidianp/argon/releases/latest/download/Argon-Setup.exe">Download for Windows</a></p>
+<div class="actions"><a class="btn primary" href="https://github.com/ophidianp/argon/releases/latest/download/Argon-Setup.exe">Download for Windows ↓</a></div>
+</div></section>
 </main>
 
 <footer>
-<p>&copy; 2026 Pavan Nemani · A calm command deck for busy agents.</p>
-  <nav aria-label="Footer"><a href="features.html">Features</a><a href="download.html">Download</a><a href="transparency.html">Transparency</a></nav>
+  <p class="made"><span>Made by</span> Pavan Nemani</p>
+  <p class="fine">&copy; 2026 Pavan Nemani · A calm command deck for busy agents. · <a href="https://github.com/ophidianp/argon">GitHub</a></p>
 </footer>
 </body>
 </html>

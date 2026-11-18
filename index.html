@@ -4,10 +4,14 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="description" content="Argon is a Windows command deck for running coding agents side by side on one zoomable board.">
+<meta name="theme-color" content="#0c0c0a">
 <title>Argon</title>
 <link rel="icon" href="assets/argon-icon.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&amp;family=Geist+Mono:wght@400;500&amp;family=Instrument+Serif:ital@0;1&amp;display=swap">
 <link rel="stylesheet" href="assets/liquid-glass.css?v=2">
-<link rel="stylesheet" href="assets/site.css?v=13">
+<link rel="stylesheet" href="assets/site.css?v=12">
 <script src="assets/liquid-glass.js?v=2" data-auto defer></script>
 </head>
 <body>
@@ -18,75 +22,96 @@
     <a href="features.html">Features</a>
     <a href="download.html">Download</a>
     <a href="transparency.html">Transparency</a>
+    <a class="cta-link" href="https://github.com/ophidianp/argon/releases/latest/download/Argon-Setup.exe">Download</a>
   </nav>
 </header>
 
 <main>
-<h1>All your agents, one calm board.</h1>
+<section class="wrap hero">
+<span class="badge">Command deck for coding agents · <b>1.0.6</b></span>
+<h1>All your agents,<br><em>one calm board.</em></h1>
 <p class="lead">Run Claude Code, Codex, Gemini and more side by side, on a board you can zoom, arrange and talk to. No more hunting through terminal tabs.</p>
-<div class="actions">
-  <a class="button primary" href="https://github.com/ophidianp/argon/releases/latest/download/Argon-Setup.exe">Download for Windows</a>
-  <a class="button" href="features.html">See the features</a>
+<div class="actions"><a class="btn primary" href="https://github.com/ophidianp/argon/releases/latest/download/Argon-Setup.exe">Download for Windows ↓</a><a class="btn" href="features.html">See the features →</a></div>
+<p class="fine">Argon 1.0.6 · Windows 10 and 11, 64-bit · Free · <a href="download.html">Install notes</a></p>
+<div class="cmd"><div class="cmd-tabs"><span>Command bar</span><span>Ctrl K</span></div><div class="cmd-line"><span>›</span><code>/spawn codex 3</code></div><p class="cmd-hint">Send to <code>@claude-1</code>, a team like <code>#frontend</code>, or <code>@all</code>, or run commands like <code>/spawn codex 3</code>.</p></div></section>
+<section class="wrap" style="padding-top:56px">
+<div class="grid four">
+<article class="card "><p class="label">01</p><h3>Every agent in view</h3><p></p></article>
+<article class="card "><p class="label">02</p><h3>Your accounts, your machine</h3><p></p></article>
+<article class="card "><p class="label">03</p><h3>Nothing hidden in tabs</h3><p></p></article>
+<article class="card "><p class="label">04</p><h3>As light as air</h3><p></p></article>
 </div>
-<p class="muted">Argon 1.0.6 · Windows 10 and 11, 64-bit · Free · <a href="download.html">Install notes</a></p>
-<ol>
-  <li>Every agent in view</li>
-  <li>Your accounts, your machine</li>
-  <li>Nothing hidden in tabs</li>
-  <li>As light as air</li>
-</ol>
-
-<h2 id="watch">Three agents, one hand-off after another.</h2>
+</section>
+<section class="wrap section" id="watch">
+<div class="section-head"><p class="eyebrow">Watch it work</p>
+<h2>Three agents, <em>one hand-off after another.</em></h2>
 <p>Thirty seconds of the real board: one agent builds, the next tests, the last reviews, each picking up when the one before it is done.</p>
-<video class="video" src="assets/video/argon-launch.mp4" poster="assets/video/argon-launch.jpg" controls muted loop playsinline preload="metadata" aria-label="Argon launch video: three coding agents hand work to one another on the board"></video>
-
-<h2>See every agent. Know who needs you.</h2>
-<p>Each tile on the board is a real terminal running a real agent. Argon watches them all and tells you, at a glance, who is working, who is resting and who is waiting on you. <a href="features.html">See everything it does</a></p>
-<ul>
-  <li><strong>An infinite board.</strong> Pan, zoom and arrange live terminals next to notes, checklists, kanban, a calendar, web previews and git. <a href="features.html#board">Explore the board</a></li>
-  <li><strong>A mission map.</strong> Every agent shows as working, resting or needs you. Get a notification when one is waiting for approval. <a href="features.html#agents">Explore status</a></li>
-  <li><strong>Teams, loops, handoffs.</strong> Launch up to 12 agents at once, loop a prompt until a goal is met, and hand work from one agent to the next. <a href="features.html#orchestration">Explore orchestration</a></li>
-</ul>
-
-<h2>Less tab juggling. More shipping.</h2>
-<p>Agents are great until you have five of them in five windows. Argon keeps the whole crew in one place and handles the bookkeeping.</p>
-<ul>
-  <li><strong>Real terminals, not a wrapper.</strong> Each tile is a full Windows terminal. Ctrl+C works, full-screen tools work, and agents behave exactly as they do on their own.</li>
-  <li><strong>Know the moment one is waiting.</strong> Approval prompts turn the tile amber, move it to the top of the mission map and, if you are elsewhere, send a Windows notification.</li>
-  <li><strong>Pick up where you left off.</strong> Close Argon with agents running and they relaunch in place next time, continuing their last session where the agent supports it.</li>
-  <li><strong>Know how much of your plan is left.</strong> The Usage window shows the 5-hour and weekly limits of your Claude, Codex and Copilot plans, and charts the tokens your agents used. Your sign-ins never leave your PC.</li>
-  <li><strong>Shared project memory.</strong> Keep notes for every agent, globally or per repo, and push them into any console when you want them to know.</li>
-</ul>
-
-<h2>Install. Open a folder. Spawn your team.</h2>
-<ol>
-  <li><strong>Install.</strong> Get Argon for Windows. It keeps itself up to date, and the setup panel shows which agents you already have.</li>
-  <li><strong>Open a folder.</strong> Each project becomes its own workspace tab, with its own board, notes and agents.</li>
-  <li><strong>Spawn and direct.</strong> Press <kbd>N</kbd> for one agent or the Composer for a whole team, then talk to them with <kbd>Ctrl K</kbd>.</li>
-</ol>
-<p><a href="download.html">Get started with Argon</a></p>
-
-<h2>Works with the agents you already use.</h2>
-<p>Argon runs the command-line agents installed on your PC, signed in with your own accounts. Add any other command as a custom agent.</p>
-<p>Claude Code, Codex, Gemini CLI, Copilot CLI, OpenCode, Qwen Code, Amp, Aider, Cursor CLI, Goose, Crush, and your own command.</p>
-<p class="muted">Each agent signs in with its own account the first time you open it · Argon never sees your logins</p>
-
-<h2>A few quick answers.</h2>
-<div class="faq">
-  <details><summary>Do I need a separate subscription for each agent?</summary><p>No. One plan covers as many tiles of that agent as you like; they all share its usage limit, so five busy Claude Code tiles use it up about five times faster. You only need accounts for the kinds of agents you actually run. Argon itself is free.</p></details>
-  <details><summary>Does Argon send my code anywhere?</summary><p>Argon itself has no servers. Your boards, notes and settings are saved as files on your PC. The agents you run talk to their own providers exactly as they would outside Argon.</p></details>
-  <details><summary>Will agents do things without asking?</summary><p>Not unless you turn that on. Auto-approve is off by default; agents ask before editing files or running commands, and Argon flags those moments so you don't miss them.</p></details>
-  <details><summary>Is it only for Windows?</summary><p>Argon is built and tested on Windows 10 and 11, and Linux support is on the way. A Mac version isn’t planned: on a Mac, try <a href="https://github.com/ricca200xx/vibeboard">vibeboard</a>, the open-source project Argon is built on.</p></details>
 </div>
-
-<h2>Put your agents on one board. Make it yours.</h2>
+<video class="video" src="assets/video/argon-launch.mp4" poster="assets/video/argon-launch.jpg" controls muted loop playsinline preload="metadata" aria-label="Argon launch video: three coding agents hand work to one another on the board"></video>
+</section>
+<section class="wrap section">
+<div class="section-head"><p class="eyebrow">One place for the whole team</p>
+<h2>See every agent. <em>Know who needs you.</em></h2>
+<p>Each tile on the board is a real terminal running a real agent. Argon watches them all and tells you, at a glance, who is working, who is resting and who is waiting on you.</p>
+</div>
+<div class="grid two">
+<article class="card tall"><p class="label">01 / Board</p><p class="serif">An infinite board</p><p>Pan, zoom and arrange live terminals next to notes, checklists, kanban, a calendar, web previews and git.</p><ul class="tags"><li class="on">terminals</li><li>notes</li><li>checklists</li><li>kanban</li><li>calendar</li><li>web preview</li><li>git</li></ul><a class="more" href="features.html#board">Explore the board →</a></article>
+<article class="card "><p class="label">02 / Status</p><h3>A mission map</h3><p>Every agent shows as working, resting or needs you. Get a notification when one is waiting for approval.</p><a class="more" href="features.html#agents">Explore status →</a></article>
+<article class="card "><p class="label">03 / Orchestration</p><h3>Teams, loops, handoffs</h3><p>Launch up to 12 agents at once, loop a prompt until a goal is met, and hand work from one agent to the next.</p><a class="more" href="features.html#orchestration">Explore orchestration →</a></article>
+</div>
+<p style="margin-top:22px"><a class="btn" href="features.html">See everything it does ↗</a></p>
+</section>
+<section class="wrap section split">
+<div class="section-head"><p class="eyebrow">Built for running many at once</p>
+<h2>Less tab juggling. <em>More shipping.</em></h2>
+<p>Agents are great until you have five of them in five windows. Argon keeps the whole crew in one place and handles the bookkeeping.</p>
+</div>
+<div class="rows">
+<div class="row"><p class="label">Consoles</p><div><h3>Real terminals, not a wrapper</h3><p>Each tile is a full Windows terminal. Ctrl+C works, full-screen tools work, and agents behave exactly as they do on their own.</p></div></div>
+<div class="row"><p class="label">Status</p><div><h3>Know the moment one is waiting</h3><p>Approval prompts turn the tile amber, move it to the top of the mission map and, if you are elsewhere, send a Windows notification.</p></div></div>
+<div class="row"><p class="label">Continuity</p><div><h3>Pick up where you left off</h3><p>Close Argon with agents running and they relaunch in place next time, continuing their last session where the agent supports it.</p></div></div>
+<div class="row"><p class="label">Usage</p><div><h3>Know how much of your plan is left</h3><p>The Usage window shows the 5-hour and weekly limits of your Claude, Codex and Copilot plans, and charts the tokens your agents used. Your sign-ins never leave your PC.</p></div></div>
+<div class="row"><p class="label">Memory</p><div><h3>Shared project memory</h3><p>Keep notes for every agent, globally or per repo, and push them into any console when you want them to know.</p></div></div>
+</div>
+</section>
+<section class="wrap section">
+<div class="section-head"><p class="eyebrow">Up and running fast</p>
+<h2>Install. Open a folder. <em>Spawn your team.</em></h2>
+</div>
+<ol class="steps">
+<li><h3>Install</h3><p>Get Argon for Windows. It keeps itself up to date, and the setup panel shows which agents you already have.</p></li>
+<li><h3>Open a folder</h3><p>Each project becomes its own workspace tab, with its own board, notes and agents.</p></li>
+<li><h3>Spawn and direct</h3><p>Press <kbd>N</kbd> for one agent or the Composer for a whole team, then talk to them with <kbd>Ctrl K</kbd>.</p></li>
+</ol>
+<p style="margin-top:22px"><a class="btn" href="download.html">Get started with Argon ↗</a></p>
+</section>
+<section class="wrap section split">
+<div class="section-head"><p class="eyebrow">Bring your own agents</p>
+<h2>Works with the agents <em>you already use.</em></h2>
+<p>Argon runs the command-line agents installed on your PC, signed in with your own accounts. Add any other command as a custom agent.</p>
+</div>
+<article class="card "><p class="label">Agents</p><p>Each agent signs in with its own account the first time you open it · Argon never sees your logins</p><ul class="tags"><li>Claude Code</li><li>Codex</li><li>Gemini CLI</li><li>Copilot CLI</li><li>OpenCode</li><li>Qwen Code</li><li>Amp</li><li>Aider</li><li>Cursor CLI</li><li>Goose</li><li>Crush</li><li class="on">Your own command</li></ul></article></section>
+<section class="wrap section split" style="align-items:start">
+<div class="section-head"><p class="eyebrow">Good to know</p>
+<h2>A few quick <em>answers.</em></h2>
+</div>
+<div class="faq">
+<details><summary>Do I need a separate subscription for each agent?</summary><p>No. One plan covers as many tiles of that agent as you like; they all share its usage limit, so five busy Claude Code tiles use it up about five times faster. You only need accounts for the kinds of agents you actually run. Argon itself is free.</p></details>
+<details><summary>Does Argon send my code anywhere?</summary><p>Argon itself has no servers. Your boards, notes and settings are saved as files on your PC. The agents you run talk to their own providers exactly as they would outside Argon.</p></details>
+<details><summary>Will agents do things without asking?</summary><p>Not unless you turn that on. Auto-approve is off by default; agents ask before editing files or running commands, and Argon flags those moments so you don't miss them.</p></details>
+<details><summary>Is it only for Windows?</summary><p>Argon is built and tested on Windows 10 and 11, and Linux support is on the way. A Mac version isn’t planned: on a Mac, try <a href="https://github.com/ricca200xx/vibeboard">vibeboard</a>, the open-source project Argon is built on.</p></details>
+</div>
+</section>
+<section class="wrap"><div class="cta">
+<h2>Put your agents on one board. <em>Make it yours.</em></h2>
 <p>Free for Windows 10 and 11, 64-bit. Bring the agents and accounts you already have.</p>
-<p><a class="button primary" href="https://github.com/ophidianp/argon/releases/latest/download/Argon-Setup.exe">Download for Windows</a></p>
+<div class="actions"><a class="btn primary" href="https://github.com/ophidianp/argon/releases/latest/download/Argon-Setup.exe">Download for Windows ↓</a></div>
+</div></section>
 </main>
 
 <footer>
-<p>&copy; 2026 Pavan Nemani · A calm command deck for busy agents.</p>
-  <nav aria-label="Footer"><a href="features.html">Features</a><a href="download.html">Download</a><a href="transparency.html">Transparency</a></nav>
+  <p class="made"><span>Made by</span> Pavan Nemani</p>
+  <p class="fine">&copy; 2026 Pavan Nemani · A calm command deck for busy agents. · <a href="https://github.com/ophidianp/argon">GitHub</a></p>
 </footer>
 </body>
 </html>
