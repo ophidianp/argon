@@ -695,3 +695,79 @@ body { background: var(--bg); }
 @media (max-width: 560px) { .phone { border-radius: 22px; } .phone-bar { padding: 12px 14px; gap: 10px; } .chat { height: min(72svh, 560px); padding: 14px 12px 24px; overscroll-behavior-y: auto; } .bubble { max-width: 94%; font-size: 14.5px; padding: 9px 12px; } }
 @media (max-width: 400px) { .phone-bar small { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; } .phone-bar .jump { padding: 8px 10px; } }
 .bubble .redact { background: #000; color: transparent; border-radius: 3px; box-shadow: 0 0 0 1px rgba(255,255,255,.14); user-select: none; -webkit-user-select: none; }
+
+/* ---------- Minimal layer ----------
+   Flat page, one accent colour, hairline dividers instead of boxed cards, no shadows or
+   glows. Liquid glass stays on the header only (see the block above). Every rule here
+   only restyles; no content is hidden. */
+.backdrop { display: none; }
+body { background: var(--bg); }
+
+/* type: a little lighter and quieter */
+h1, h2 { font-weight: 700; letter-spacing: -0.03em; }
+h1 { font-size: clamp(40px, 5.6vw, 72px); line-height: 1.04; }
+h2 { font-size: clamp(28px, 3.4vw, 42px); line-height: 1.12; }
+h3 { font-weight: 600; }
+.eyebrow { color: var(--faint); font-size: 11.5px; letter-spacing: 0.12em; }
+.status-dot { background: var(--faint); }
+
+/* buttons: flat, no glow */
+.btn { padding: 12px 20px; border-radius: 10px; }
+.btn-sm { padding: 9px 14px; }
+.btn-primary, .btn-primary:hover { box-shadow: none; }
+.btn-ghost { background: transparent; border-color: var(--line-strong); }
+.btn-ghost:hover { border-color: var(--ink); }
+
+/* cards become open columns separated by a hairline */
+.cards { gap: clamp(28px, 4vw, 56px); }
+.card { padding: 28px 0 0; border: 0; border-top: 1px solid var(--line); border-radius: 0; background: none; overflow: visible; }
+.card:hover { border-color: var(--line-strong); }
+.card-icon { width: fit-content; height: auto; margin: 26px 0 16px; display: block; border: 0; border-radius: 0; background: none; box-shadow: none; color: var(--accent); }
+.card-icon svg { width: 22px; height: 22px; display: block; margin: 0; }
+
+/* principles row: plain numbers */
+.marquee i { padding: 0; border: 0; color: var(--faint); }
+
+/* demo lab: a plain list with a thin accent bar on the selected item */
+.lab-tab { border: 0; border-radius: 0; padding: 14px 18px; }
+.lab-tab:hover, .lab-tab[aria-selected="true"] { background: none; }
+.lab-tab[aria-selected="true"] strong { color: var(--accent); }
+.demo, .demo-head, .demo-foot { box-shadow: none; }
+.demo { background: var(--bg); }
+
+/* lists and steps: numbers as text, hairlines between */
+.work-item .tag { padding: 0; border: 0; background: none; box-shadow: none; }
+.steps { gap: clamp(28px, 4vw, 56px); }
+.steps::before { display: none; }
+.step { padding: 26px 0 0; border-top: 1px solid var(--line); }
+.step .num { display: block; width: auto; height: auto; margin-bottom: 14px; border: 0; border-radius: 0; background: none; box-shadow: none; }
+
+/* compatibility: chips sit on the page, not in a box */
+.chips { padding: 0; border: 0; border-radius: 0; background: none; box-shadow: none; }
+.chip { font-weight: 500; background: none; }
+.chip.req { background: none; }
+
+/* FAQ: a bare plus */
+.faq-list summary .plus { border: 0; background: none; box-shadow: none; }
+.faq-list details[open] .plus { background: none; }
+
+/* closing call to action: an open section, not a box */
+.cta { padding: clamp(56px, 8vw, 96px) 0 0; border: 0; border-top: 1px solid var(--line); border-radius: 0; background: none; }
+
+/* hero readouts: flat */
+.hero-readout { box-shadow: none; }
+.hero-icon { box-shadow: 0 0 0 1px var(--line-strong); }
+
+/* inner pages */
+.feature-items { gap: 28px 40px; }
+.feature-item { padding: 22px 0 0; border: 0; border-top: 1px solid var(--line); border-radius: 0; background: none; }
+.feature-note, .requirements-note { border-style: solid; border-color: var(--line); background: none; }
+.callout { padding: 40px 0 0; border: 0; border-top: 1px solid var(--line); border-radius: 0; background: none; }
+.release-panel { background: none; box-shadow: none; }
+.version-picker { background: none; }
+.version-pill { background: var(--accent-soft); box-shadow: none; }
+.release-result { background: none; }
+.specs div { padding: 20px 0 0; border: 0; border-top: 1px solid var(--line); border-radius: 0; background: none; }
+.result { padding: 26px 0 0; border: 0; border-top: 1px solid var(--line); border-radius: 0; background: none; box-shadow: none; }
+.result.hi { border-top-color: var(--accent); box-shadow: none; }
+.phone { box-shadow: none; }
