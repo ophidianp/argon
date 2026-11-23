@@ -2,119 +2,159 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="description" content="Everything Argon does: the board, agent consoles, mission map, command bar, loops, handoffs, tiles and personalization.">
-<meta name="theme-color" content="#0c0c0a">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Features · Argon</title>
-<link rel="icon" href="assets/argon-icon.svg">
+<meta name="description" content="Everything Argon does: the board, agent consoles, mission map, command bar, loops, handoffs, tiles and personalization.">
+<meta name="theme-color" content="#FFFFFF" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#111111" media="(prefers-color-scheme: dark)">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Argon">
+<meta property="og:title" content="Features · Argon">
+<meta property="og:description" content="Everything Argon does: the board, agent consoles, mission map, command bar, loops, handoffs, tiles and personalization.">
+<meta property="og:url" content="https://ophidianp.github.io/argon/features.html">
+<meta property="og:image" content="https://ophidianp.github.io/argon/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<script>try{var t=localStorage.getItem("argon-theme");if(t)document.documentElement.dataset.theme=t;if(!sessionStorage.getItem("argon-pre")&&!matchMedia("(prefers-reduced-motion: reduce)").matches){document.documentElement.classList.add("preload");sessionStorage.setItem("argon-pre","1")}}catch(e){}</script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&amp;family=Geist+Mono:wght@400;500&amp;family=Instrument+Serif:ital@0;1&amp;display=swap">
-<link rel="stylesheet" href="assets/liquid-glass.css?v=2">
-<link rel="stylesheet" href="assets/site.css?v=16">
-<script src="assets/liquid-glass.js?v=2" data-auto defer></script>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&amp;family=Inter+Tight:wght@500;600;700&amp;family=JetBrains+Mono:wght@400;500&amp;display=swap">
+<link rel="stylesheet" href="assets/site.css?v=20">
+<script src="assets/site.js?v=20" defer></script>
 </head>
 <body>
-<header class="header" data-glass="60">
-  <a class="name" href="index.html"><img src="assets/argon-icon.svg" alt="" width="22" height="22">Argon</a>
-  <nav aria-label="Main">
-    <a href="index.html">Home</a>
-    <a href="features.html" aria-current="page">Features</a>
-    <a href="download.html">Download</a>
-    <a href="transparency.html">Transparency</a>
-    <a class="cta-link" href="https://github.com/ophidianp/argon/releases/latest/download/Argon-Setup.exe">Download</a>
-  </nav>
+<div class="pre" aria-hidden="true"><div class="pre-in">
+  <span class="lgs"><svg class="ghost"><use href="#argon"/></svg><svg class="fillp"><use href="#argon"/></svg></span>
+  <p>All your agents,<br>one calm board.</p>
+</div></div>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="argon" viewBox="-0.6 -0.6 125.33 38.20"><path fill="currentColor" d="M79.91,2.20 L84.19,2.20 L82.05,3.51 L80.24,4.80 L78.10,6.55 L76.37,8.15 L74.73,9.86 L73.20,11.66 L70.69,14.97 L69.46,16.79 L68.48,18.52 L67.74,20.14 L67.26,21.64 L67.02,22.99 L67.00,23.73 L67.07,24.40 L67.23,25.00 L67.39,25.37 L67.70,25.85 L67.96,26.13 L68.43,26.48 L68.79,26.66 L69.63,26.91 L70.63,27.00 L76.51,26.99 L77.97,26.81 L79.55,26.37 L81.58,25.53 L83.35,24.61 L85.51,23.24 L87.32,21.92 L88.75,20.76 L90.14,19.51 L91.49,18.18 L92.78,16.79 L94.00,15.34 L97.03,11.29 L97.74,10.21 L98.54,8.82 L99.19,7.49 L99.68,6.24 L100.01,5.08 L100.17,4.01 L100.18,3.04 L100.03,2.20 L104.31,2.20 L85.63,27.00 L91.23,27.00 L103.42,10.82 L104.55,9.41 L105.94,7.86 L107.03,6.78 L108.10,5.83 L109.17,5.01 L110.23,4.31 L111.28,3.72 L112.59,3.14 L113.64,2.78 L114.89,2.48 L115.54,2.70 L116.14,3.06 L116.56,3.51 L116.80,4.06 L116.87,4.70 L116.78,5.44 L116.53,6.27 L116.12,7.20 L115.23,8.77 L114.01,10.56 L105.27,22.22 L104.60,23.26 L104.13,24.13 L103.84,24.86 L103.71,25.45 L103.77,26.03 L104.04,26.44 L104.50,26.71 L105.25,26.90 L106.71,27.00 L113.23,27.00 L114.89,24.80 L113.44,24.78 L112.51,24.70 L111.87,24.55 L111.38,24.30 L111.07,23.92 L110.97,23.50 L111.05,22.82 L111.30,22.13 L112.01,20.81 L112.94,19.43 L121.03,8.68 L122.30,6.85 L123.12,5.50 L123.70,4.30 L124.04,3.24 L124.13,2.50 L124.06,1.86 L123.89,1.44 L123.52,0.96 L123.12,0.67 L122.43,0.36 L121.79,0.19 L120.20,0.01 L113.69,0.00 L112.61,0.05 L111.42,0.19 L111.57,0.00 L75.97,0.00 L75.28,0.92 L74.93,0.63 L74.41,0.34 L73.79,0.13 L73.33,0.05 L72.57,0.00 L66.97,0.00 L66.12,0.05 L64.92,0.26 L63.97,0.52 L62.64,1.01 L61.61,1.47 L60.21,2.19 L57.68,3.76 L58.01,3.15 L58.25,2.50 L58.33,2.04 L58.33,1.52 L58.20,1.08 L57.97,0.72 L57.65,0.43 L57.25,0.21 L56.69,0.05 L56.07,0.00 L50.27,0.00 L49.48,0.06 L48.65,0.20 L47.56,0.49 L46.43,0.92 L45.27,1.47 L44.32,2.01 L43.13,2.81 L42.17,3.55 L40.97,4.60 L40.02,5.54 L39.09,6.57 L38.17,7.70 L25.40,24.65 L24.30,24.51 L23.45,24.30 L22.82,24.01 L22.50,23.73 L22.26,23.25 L22.23,22.82 L22.38,22.13 L22.75,21.29 L23.35,20.29 L24.17,19.12 L38.57,0.00 L32.97,0.00 L32.28,0.92 L31.77,0.52 L31.21,0.26 L30.57,0.09 L29.83,0.01 L23.69,0.01 L22.53,0.13 L21.29,0.43 L19.64,1.01 L17.56,2.00 L15.41,3.27 L13.24,4.80 L11.10,6.55 L9.37,8.15 L7.42,10.21 L5.91,12.03 L3.69,14.97 L2.46,16.79 L1.31,18.85 L0.52,20.76 L0.26,21.64 L0.09,22.47 L0.00,23.49 L0.04,24.18 L0.17,24.81 L0.39,25.37 L0.70,25.85 L1.11,26.25 L1.60,26.57 L1.98,26.74 L2.63,26.91 L3.11,26.98 L9.79,26.98 L10.97,26.81 L12.23,26.48 L13.55,25.99 L14.98,25.34 L15.09,25.70 L15.34,26.03 L15.70,26.29 L16.19,26.50 L17.55,26.79 L19.41,26.94 L23.63,27.00 L52.23,27.00 L53.07,26.95 L54.27,26.74 L55.23,26.48 L56.32,26.08 L54.74,28.17 L53.62,29.54 L52.53,30.70 L51.20,31.90 L49.89,32.84 L48.58,33.55 L47.27,34.06 L45.94,34.41 L44.00,34.68 L41.35,34.79 L2.76,34.80 L1.10,37.00 L45.90,36.99 L47.66,36.91 L49.34,36.71 L50.95,36.34 L52.26,35.86 L53.83,35.04 L55.14,34.10 L56.74,32.63 L58.12,31.08ZM43.17,24.80 L30.89,24.80 L41.88,10.20 L43.26,8.51 L44.92,6.80 L45.87,5.95 L46.83,5.18 L48.74,3.93 L49.68,3.43 L50.75,2.96 L50.94,3.28 L51.07,3.72 L51.09,4.13 L51.02,4.58 L50.86,5.08 L50.61,5.63 L49.92,6.70 L53.93,6.70 L51.70,8.82 L49.80,10.93 L46.69,14.97 L45.24,17.14 L44.15,19.18 L43.74,20.14 L43.33,21.35 L43.13,22.20 L43.01,23.24 L43.02,23.96ZM8.09,23.79 L7.65,23.17 L7.49,22.80 L7.33,22.20 L7.26,21.04 L7.45,19.72 L7.88,18.25 L8.57,16.65 L9.50,14.94 L10.43,13.50 L11.99,11.71 L13.66,10.02 L15.39,8.44 L17.54,6.73 L19.71,5.24 L21.86,4.01 L23.25,3.35 L24.26,2.95 L24.65,2.81 L24.83,2.95 L25.11,3.21 L25.45,3.67 L25.63,4.01 L25.82,4.59 L25.94,5.71 L25.81,7.00 L25.42,8.44 L24.79,10.02 L23.90,11.71 L22.76,13.50 L21.20,15.29 L19.20,17.31 L17.09,19.15 L14.93,20.79 L12.40,22.41 L10.99,23.17 L9.95,23.65 L8.55,24.19ZM50.85,23.50 L50.49,22.80 L50.27,21.76 L50.31,20.54 L50.51,19.44 L51.00,17.94 L51.57,16.65 L52.50,14.94 L53.44,13.49 L54.99,11.71 L56.66,10.02 L58.39,8.44 L60.54,6.73 L62.71,5.24 L64.86,4.01 L66.25,3.35 L67.26,2.95 L67.65,2.81 L67.83,2.95 L68.11,3.21 L68.45,3.67 L68.63,4.01 L68.82,4.59 L68.94,5.71 L68.81,7.00 L68.42,8.44 L67.79,10.02 L66.90,11.71 L65.76,13.51 L63.88,15.64 L61.85,17.63 L59.73,19.44 L57.21,21.29 L55.76,22.20 L54.34,22.99 L52.95,23.65 L51.61,24.17 L51.55,24.19 L51.22,23.93ZM74.96,23.65 L74.57,22.99 L74.43,22.61 L74.30,21.98 L74.28,20.79 L74.51,19.44 L75.00,17.94 L75.57,16.65 L76.50,14.94 L77.44,13.49 L78.99,11.71 L80.66,10.02 L82.39,8.44 L84.54,6.73 L86.71,5.24 L88.86,4.01 L90.25,3.35 L91.26,2.95 L91.65,2.81 L91.83,2.95 L92.11,3.21 L92.45,3.67 L92.63,4.01 L92.82,4.59 L92.94,5.71 L92.81,7.00 L92.42,8.44 L91.79,10.02 L90.90,11.71 L89.76,13.51 L87.88,15.64 L85.85,17.63 L83.73,19.44 L81.57,21.04 L80.12,21.98 L78.69,22.80 L77.29,23.50 L76.27,23.93 L75.55,24.19Z"/></symbol>
+</svg>
+
+<header class="hdr" id="hdr">
+  <div class="wrap">
+    <a class="logo lgs" href="index.html" aria-label="Argon, home"><svg class="base" aria-hidden="true"><use href="#argon"/></svg><svg class="fillp" aria-hidden="true"><use href="#argon"/></svg></a>
+    <nav class="nav" id="nav" aria-label="Main">
+      <a href="index.html">Home</a>
+      <a href="features.html" aria-current="page">Features</a>
+      <a href="download.html">Download</a>
+      <a href="transparency.html">Transparency</a>
+    </nav>
+    <div class="tools">
+      <span class="kbd">v1.0.6</span>
+      <button class="ib" id="theme" type="button" aria-label="Switch light or dark mode">
+        <svg class="moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M20 14.5A8 8 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5z"/></svg>
+        <svg class="sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>
+      </button>
+      <a class="ib gh" href="https://github.com/ophidianp/argon" aria-label="Argon on GitHub"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M9 19c-4 1.3-4-2-6-2.5m12 4.5v-3.5c0-1 .1-1.4-.5-2 2.8-.3 5.5-1.4 5.5-6a4.6 4.6 0 0 0-1.3-3.2 4.2 4.2 0 0 0-.1-3.2s-1.1-.3-3.5 1.3a12 12 0 0 0-6.2 0C6.5 2.8 5.4 3.1 5.4 3.1a4.2 4.2 0 0 0-.1 3.2A4.6 4.6 0 0 0 4 9.5c0 4.6 2.7 5.7 5.5 6-.6.6-.6 1.2-.5 2V21"/></svg></a>
+      <a class="pill sm" href="https://github.com/ophidianp/argon/releases/latest/download/Argon-Setup.exe" style="margin-left:8px">Download</a>
+      <button class="ib" id="menu" type="button" aria-label="Menu" aria-controls="nav" aria-expanded="false">
+        <svg class="bars" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><path d="M4 8h16M4 16h16"/></svg>
+        <svg class="x" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>
+      </button>
+    </div>
+  </div>
 </header>
 
 <main>
-<section class="wrap hero">
-<span class="badge">Features</span>
-<h1>Everything on <em>one board.</em></h1>
-<p class="lead">A tour of what Argon does, from the board itself to the small touches that make running many agents feel calm.</p>
-<ul class="tags" style="margin-top:28px"><li><a href="#board">The board</a></li><li><a href="#agents">Agents and status</a></li><li><a href="#orchestration">Orchestration</a></li><li><a href="#tiles">Tiles</a></li><li><a href="#personal">Make it yours</a></li><li><a href="#continuity">Continuity and privacy</a></li></ul></section>
-<section class="wrap section" id="board">
-<div class="section-head"><p class="eyebrow">01 · The board</p>
-<h2>Room for <em>everything.</em></h2>
-</div>
-<div class="grid ">
-<article class="card wide"><h3>Infinite canvas</h3><p>Zoom with the wheel, scroll the board with <kbd>Ctrl</kbd> + wheel, drag with the middle button to pan, and fit everything with <kbd>Ctrl 0</kbd>.</p></article>
-<article class="card "><h3>Workspaces as tabs</h3><p>Each project folder gets its own board. Switch with <kbd>Ctrl 1–9</kbd>; agents keep running in the background.</p></article>
-<article class="card "><h3>Ink and images</h3><p>Draw over the board to sketch ideas, and drop or paste screenshots straight onto it.</p></article>
-<article class="card "><h3>The Add selector</h3><p>Hover the Add button in the toolbar for a floating glass selector: a shell console, a picture, or a folder to connect to the project.</p></article>
-<article class="card "><h3>Fly to anything</h3><p>Click an agent in the mission map or double-click a tile header to glide to it at full size.</p></article>
-</div>
-</section>
-<section class="wrap section" id="agents">
-<div class="section-head"><p class="eyebrow">02 · Agents and status</p>
-<h2>Real terminals. <em>Live status.</em></h2>
-</div>
-<div class="grid ">
-<article class="card wide"><h3>12 agents built in</h3><p>Claude Code, Codex, Gemini CLI, Copilot CLI, OpenCode, Qwen Code, Amp, Aider, Cursor CLI, Goose, Crush and a plain terminal, plus any custom command.</p></article>
-<article class="card "><h3>Working, resting, needs you</h3><p>Every tile shows its state. Approval prompts turn it amber and float it to the top of the mission map.</p></article>
-<article class="card "><h3>Agents setup</h3><p>See which agents are installed and signed in, and install missing ones in one click.</p></article>
-<article class="card "><h3>Pictures in consoles</h3><p>Paste, drop or pick a screenshot into a console. Claude Code and Codex get it as an attached image, and the console shows it, in the terminal or in the conversation.</p></article>
-<article class="card "><h3>Account profiles</h3><p>Run Claude Code or Codex under a second account. Each profile keeps its own sign-in, so you can spread work across plans.</p></article>
-</div>
-<p class="note" style="margin-top:14px"><strong>Safe by default.</strong> Auto-approve flags are off unless you turn them on in Settings, with a clear warning first.</p>
-</section>
-<section class="wrap section" id="orchestration">
-<div class="section-head"><p class="eyebrow">03 · Orchestration</p>
-<h2>Direct the team, <em>not each tab.</em></h2>
-</div>
-<div class="grid ">
-<article class="card wide"><h3>Command bar</h3><p>Press <kbd>Ctrl K</kbd> and type. Send to <code>@claude-1</code>, a team like <code>#frontend</code>, or <code>@all</code>, or run commands like <code>/spawn codex 3</code>.</p></article>
-<article class="card "><h3>Composer</h3><p>Line up to 12 agents with their first prompts and launch them together in a neat grid.</p></article>
-<article class="card "><h3>Loops</h3><p>Re-send a prompt whenever an agent goes idle or on a schedule, and stop automatically when a goal phrase appears.</p></article>
-<article class="card "><h3>Handoffs</h3><p>One agent writes a brief into <code>.argon/handoffs/</code>, the next one is told to read it and carry on.</p></article>
-<article class="card "><h3>Groups</h3><p>Tag consoles with a team name to order them together and see them grouped in the mission map.</p></article>
-<article class="card "><h3>Orchestrator</h3><p>Give orders to several agents at once. Its text box grows as you write, and you can start typing anywhere on it.</p></article>
-<article class="card wide"><h3>Project memory</h3><p>Global and per-repo notes that you push into consoles when you want agents to know them.</p></article>
-</div>
-</section>
-<section class="wrap section" id="tiles">
-<div class="section-head"><p class="eyebrow">04 · Tiles</p>
-<h2>Plan right next <em>to the work.</em></h2>
-</div>
-<div class="grid ">
-<article class="card "><h3>Notes, checklists, kanban</h3><p>Sticky notes in five colours, checklists with progress, and a drag-and-drop kanban board.</p></article>
-<article class="card "><h3>Calendar</h3><p>A month view for deadlines and release days, right on the board.</p></article>
-<article class="card "><h3>Web preview</h3><p>A live view of your localhost dev server, with the web inspector one click away.</p></article>
-<article class="card wide"><h3>Files and git</h3><p>Browse and preview files with highlighting, and commit, pull, push or switch branches from a git card.</p></article>
-</div>
-</section>
-<section class="wrap section" id="personal">
-<div class="section-head"><p class="eyebrow">05 · Make it yours</p>
-<h2>Your colours. <em>Your feel.</em></h2>
-</div>
-<div class="grid ">
-<article class="card "><h3>Accent colour</h3><p>Presets from the default Ember to lavender, rose, mint and sky, or any colour you like. The taskbar icon takes it on too.</p></article>
-<article class="card wide"><h3>Looks and glass</h3><p>Ember by default, plus Midnight, Abyss, Dusk, Slate and looks styled after each agent; Paper and Daylight by day. Liquid glass everywhere, and Windows Mica or Acrylic behind the window.</p></article>
-<article class="card "><h3>Board background</h3><p>Dots, grid lines, a slowly drifting aurora, or plain.</p></article>
-<article class="card wide"><h3>Terminal and motion</h3><p>Choose the terminal font and cursor, corner style, and switch animations off for a stiller feel. Argon also greets you by name.</p></article>
-</div>
-</section>
-<section class="wrap section" id="continuity">
-<div class="section-head"><p class="eyebrow">06 · Continuity and privacy</p>
-<h2>Yours, <em>on your PC.</em></h2>
-</div>
-<div class="grid ">
-<article class="card "><h3>Resume after restart</h3><p>Consoles relaunch in place and continue their last session where the agent supports it.</p></article>
-<article class="card "><h3>Autosave with backups</h3><p>Every board is saved as you work, with rolling backups in your data folder.</p></article>
-<article class="card "><h3>Plan limits and usage</h3><p>How much of your Claude, Codex and Copilot plan is left and when it resets, plus token charts read from logs on your PC.</p></article>
-<article class="card wide"><h3>Automatic updates</h3><p>Settings → Updates: ask first, or download quietly and install when you close Argon. Every update is signed, and Argon checks the signature before it installs anything.</p></article>
-<article class="card "><h3>No Argon servers</h3><p>No account, no telemetry. Sign-in checks only look for whether each agent has saved a login file.</p></article>
-</div>
-</section>
-<section class="wrap"><div class="cta">
-<h2>Try it on your own projects. <em>It's free.</em></h2>
-<p>Grab Argon for Windows and open your first folder.</p>
-<div class="actions"><a class="btn primary" href="https://github.com/ophidianp/argon/releases/latest/download/Argon-Setup.exe">Download for Windows ↓</a></div>
-</div></section>
+  <section class="hero">
+    <div class="wrap">
+      <div class="hero-grid">
+        <div><p class="eyebrow in">Features</p><h1 class="in d1" style="margin-top:22px">Everything on <em>one board.</em></h1></div>
+        <div class="hero-side">
+          <p class="lede in d2">A tour of what Argon does, from the board itself to the small touches that make running many agents feel calm.</p>
+          <ul class="chips in d3"><li><a href="#board">The board</a></li><li><a href="#agents">Agents and status</a></li><li><a href="#orchestration">Orchestration</a></li><li><a href="#tiles">Tiles</a></li><li><a href="#personal">Make it yours</a></li><li><a href="#continuity">Continuity and privacy</a></li></ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="blk" id="board">
+    <div class="wrap">
+      <div class="blk-head"><div><p class="eyebrow rv">01 · The board</p><h2 class="rv d1">Room for <em>everything.</em></h2></div></div>
+      <div class="cards">
+        <div class="card rv wide"><h3>Infinite canvas</h3><p>Zoom with the wheel, scroll the board with <kbd>Ctrl</kbd> + wheel, drag with the middle button to pan, and fit everything with <kbd>Ctrl 0</kbd>.</p></div>
+        <div class="card rv d1"><h3>Workspaces as tabs</h3><p>Each project folder gets its own board. Switch with <kbd>Ctrl 1–9</kbd>; agents keep running in the background.</p></div>
+        <div class="card rv d2"><h3>Ink and images</h3><p>Draw over the board to sketch ideas, and drop or paste screenshots straight onto it.</p></div>
+        <div class="card rv"><h3>The Add selector</h3><p>Hover the Add button in the toolbar for a floating glass selector: a shell console, a picture, or a folder to connect to the project.</p></div>
+        <div class="card rv d1"><h3>Fly to anything</h3><p>Click an agent in the mission map or double-click a tile header to glide to it at full size.</p></div>
+      </div>
+    </div>
+  </section>
+  <section class="blk tint" id="agents">
+    <div class="wrap">
+      <div class="blk-head"><div><p class="eyebrow rv">02 · Agents and status</p><h2 class="rv d1">Real terminals. <em>Live status.</em></h2></div></div>
+      <div class="cards">
+        <div class="card rv wide"><h3>12 agents built in</h3><p>Claude Code, Codex, Gemini CLI, Copilot CLI, OpenCode, Qwen Code, Amp, Aider, Cursor CLI, Goose, Crush and a plain terminal, plus any custom command.</p></div>
+        <div class="card rv d1"><h3>Working, resting, needs you</h3><p>Every tile shows its state. Approval prompts turn it amber and float it to the top of the mission map.</p></div>
+        <div class="card rv d2"><h3>Agents setup</h3><p>See which agents are installed and signed in, and install missing ones in one click.</p></div>
+        <div class="card rv"><h3>Pictures in consoles</h3><p>Paste, drop or pick a screenshot into a console. Claude Code and Codex get it as an attached image, and the console shows it, in the terminal or in the conversation.</p></div>
+        <div class="card rv d1"><h3>Account profiles</h3><p>Run Claude Code or Codex under a second account. Each profile keeps its own sign-in, so you can spread work across plans.</p></div>
+      </div>
+      <p class="note rv" style="margin-top:24px"><strong>Safe by default.</strong> Auto-approve flags are off unless you turn them on in Settings, with a clear warning first.</p>
+    </div>
+  </section>
+  <section class="blk" id="orchestration">
+    <div class="wrap">
+      <div class="blk-head"><div><p class="eyebrow rv">03 · Orchestration</p><h2 class="rv d1">Direct the team, <em>not each tab.</em></h2></div></div>
+      <div class="cards">
+        <div class="card rv wide"><h3>Command bar</h3><p>Press <kbd>Ctrl K</kbd> and type. Send to <code>@claude-1</code>, a team like <code>#frontend</code>, or <code>@all</code>, or run commands like <code>/spawn codex 3</code>.</p></div>
+        <div class="card rv d1"><h3>Composer</h3><p>Line up to 12 agents with their first prompts and launch them together in a neat grid.</p></div>
+        <div class="card rv d2"><h3>Loops</h3><p>Re-send a prompt whenever an agent goes idle or on a schedule, and stop automatically when a goal phrase appears.</p></div>
+        <div class="card rv"><h3>Handoffs</h3><p>One agent writes a brief into <code>.argon/handoffs/</code>, the next one is told to read it and carry on.</p></div>
+        <div class="card rv d1"><h3>Groups</h3><p>Tag consoles with a team name to order them together and see them grouped in the mission map.</p></div>
+        <div class="card rv d2"><h3>Orchestrator</h3><p>Give orders to several agents at once. Its text box grows as you write, and you can start typing anywhere on it.</p></div>
+        <div class="card rv wide"><h3>Project memory</h3><p>Global and per-repo notes that you push into consoles when you want agents to know them.</p></div>
+      </div>
+    </div>
+  </section>
+  <section class="blk tint" id="tiles">
+    <div class="wrap">
+      <div class="blk-head"><div><p class="eyebrow rv">04 · Tiles</p><h2 class="rv d1">Plan right next <em>to the work.</em></h2></div></div>
+      <div class="cards">
+        <div class="card rv"><h3>Notes, checklists, kanban</h3><p>Sticky notes in five colours, checklists with progress, and a drag-and-drop kanban board.</p></div>
+        <div class="card rv d1"><h3>Calendar</h3><p>A month view for deadlines and release days, right on the board.</p></div>
+        <div class="card rv d2"><h3>Web preview</h3><p>A live view of your localhost dev server, with the web inspector one click away.</p></div>
+        <div class="card rv wide"><h3>Files and git</h3><p>Browse and preview files with highlighting, and commit, pull, push or switch branches from a git card.</p></div>
+      </div>
+    </div>
+  </section>
+  <section class="blk" id="personal">
+    <div class="wrap">
+      <div class="blk-head"><div><p class="eyebrow rv">05 · Make it yours</p><h2 class="rv d1">Your colours. <em>Your feel.</em></h2></div></div>
+      <div class="cards">
+        <div class="card rv"><h3>Accent colour</h3><p>Presets from the default Ember to lavender, rose, mint and sky, or any colour you like. The taskbar icon takes it on too.</p></div>
+        <div class="card rv wide d1"><h3>Looks and glass</h3><p>Ember by default, plus Midnight, Abyss, Dusk, Slate and looks styled after each agent; Paper and Daylight by day. Liquid glass everywhere, and Windows Mica or Acrylic behind the window.</p></div>
+        <div class="card rv d2"><h3>Board background</h3><p>Dots, grid lines, a slowly drifting aurora, or plain.</p></div>
+        <div class="card rv wide"><h3>Terminal and motion</h3><p>Choose the terminal font and cursor, corner style, and switch animations off for a stiller feel. Argon also greets you by name.</p></div>
+      </div>
+    </div>
+  </section>
+  <section class="blk tint" id="continuity">
+    <div class="wrap">
+      <div class="blk-head"><div><p class="eyebrow rv">06 · Continuity and privacy</p><h2 class="rv d1">Yours, <em>on your PC.</em></h2></div></div>
+      <div class="cards">
+        <div class="card rv"><h3>Resume after restart</h3><p>Consoles relaunch in place and continue their last session where the agent supports it.</p></div>
+        <div class="card rv d1"><h3>Autosave with backups</h3><p>Every board is saved as you work, with rolling backups in your data folder.</p></div>
+        <div class="card rv d2"><h3>Plan limits and usage</h3><p>How much of your Claude, Codex and Copilot plan is left and when it resets, plus token charts read from logs on your PC.</p></div>
+        <div class="card rv wide"><h3>Automatic updates</h3><p>Settings → Updates: ask first, or download quietly and install when you close Argon. Every update is signed, and Argon checks the signature before it installs anything.</p></div>
+        <div class="card rv d1"><h3>No Argon servers</h3><p>No account, no telemetry. Sign-in checks only look for whether each agent has saved a login file.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="blk">
+    <div class="wrap close">
+      <h2 class="rv">Try it on your own projects. <em>It's free.</em></h2>
+      <p class="lede rv d1">Grab Argon for Windows and open your first folder.</p>
+      <div class="cta rv d2"><a class="pill acc" href="https://github.com/ophidianp/argon/releases/latest/download/Argon-Setup.exe">Download for Windows <span class="ar dn">↓</span></a></div>
+    </div>
+  </section>
 </main>
 
-<footer>
-  <p class="made"><span>Made by</span> <a href="https://ophidianp.github.io/">Pavan Nemani</a></p>
-  <p class="fine">&copy; 2026 Pavan Nemani · A calm command deck for busy agents. · <a href="https://github.com/ophidianp/argon">GitHub</a> <a href="https://ophidianp.github.io/">Portfolio ↗</a></p>
-</footer>
+<footer><div class="wrap foot-logo"><span class="lgs" role="img" aria-label="Argon"><svg class="ghost"><use href="#argon"/></svg><svg class="fillp"><use href="#argon"/></svg></span><p class="foot-by">by <a href="https://ophidianp.github.io/">Pavan Nemani</a></p></div><div class="wrap fine"><span>&copy; Pavan Nemani · <a href="https://github.com/ophidianp/argon/blob/HEAD/LICENSE">All rights reserved</a> · A calm command deck for busy agents.</span><span><a href="https://github.com/ophidianp/argon">GitHub</a><a href="https://ophidianp.github.io/">Portfolio ↗</a></span></div></footer>
 </body>
 </html>

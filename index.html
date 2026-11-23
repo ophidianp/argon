@@ -2,136 +2,188 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="description" content="Argon is a Windows command deck for running coding agents side by side on one zoomable board.">
-<meta name="theme-color" content="#0c0c0a">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Argon</title>
-<link rel="icon" href="assets/argon-icon.svg">
+<meta name="description" content="Argon is a Windows command deck for running coding agents side by side on one zoomable board.">
+<meta name="theme-color" content="#FFFFFF" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#111111" media="(prefers-color-scheme: dark)">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Argon">
+<meta property="og:title" content="Argon">
+<meta property="og:description" content="Argon is a Windows command deck for running coding agents side by side on one zoomable board.">
+<meta property="og:url" content="https://ophidianp.github.io/argon/">
+<meta property="og:image" content="https://ophidianp.github.io/argon/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<script>try{var t=localStorage.getItem("argon-theme");if(t)document.documentElement.dataset.theme=t;if(!sessionStorage.getItem("argon-pre")&&!matchMedia("(prefers-reduced-motion: reduce)").matches){document.documentElement.classList.add("preload");sessionStorage.setItem("argon-pre","1")}}catch(e){}</script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&amp;family=Geist+Mono:wght@400;500&amp;family=Instrument+Serif:ital@0;1&amp;display=swap">
-<link rel="stylesheet" href="assets/liquid-glass.css?v=2">
-<link rel="stylesheet" href="assets/site.css?v=16">
-<script src="assets/liquid-glass.js?v=2" data-auto defer></script>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&amp;family=Inter+Tight:wght@500;600;700&amp;family=JetBrains+Mono:wght@400;500&amp;display=swap">
+<link rel="stylesheet" href="assets/site.css?v=20">
+<script src="assets/site.js?v=20" defer></script>
 </head>
 <body>
-<header class="header" data-glass="60">
-  <a class="name" href="index.html"><img src="assets/argon-icon.svg" alt="" width="22" height="22">Argon</a>
-  <nav aria-label="Main">
-    <a href="index.html" aria-current="page">Home</a>
-    <a href="features.html">Features</a>
-    <a href="download.html">Download</a>
-    <a href="transparency.html">Transparency</a>
-    <a class="cta-link" href="https://github.com/ophidianp/argon/releases/latest/download/Argon-Setup.exe">Download</a>
-  </nav>
+<div class="pre" aria-hidden="true"><div class="pre-in">
+  <span class="lgs"><svg class="ghost"><use href="#argon"/></svg><svg class="fillp"><use href="#argon"/></svg></span>
+  <p>All your agents,<br>one calm board.</p>
+</div></div>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="argon" viewBox="-0.6 -0.6 125.33 38.20"><path fill="currentColor" d="M79.91,2.20 L84.19,2.20 L82.05,3.51 L80.24,4.80 L78.10,6.55 L76.37,8.15 L74.73,9.86 L73.20,11.66 L70.69,14.97 L69.46,16.79 L68.48,18.52 L67.74,20.14 L67.26,21.64 L67.02,22.99 L67.00,23.73 L67.07,24.40 L67.23,25.00 L67.39,25.37 L67.70,25.85 L67.96,26.13 L68.43,26.48 L68.79,26.66 L69.63,26.91 L70.63,27.00 L76.51,26.99 L77.97,26.81 L79.55,26.37 L81.58,25.53 L83.35,24.61 L85.51,23.24 L87.32,21.92 L88.75,20.76 L90.14,19.51 L91.49,18.18 L92.78,16.79 L94.00,15.34 L97.03,11.29 L97.74,10.21 L98.54,8.82 L99.19,7.49 L99.68,6.24 L100.01,5.08 L100.17,4.01 L100.18,3.04 L100.03,2.20 L104.31,2.20 L85.63,27.00 L91.23,27.00 L103.42,10.82 L104.55,9.41 L105.94,7.86 L107.03,6.78 L108.10,5.83 L109.17,5.01 L110.23,4.31 L111.28,3.72 L112.59,3.14 L113.64,2.78 L114.89,2.48 L115.54,2.70 L116.14,3.06 L116.56,3.51 L116.80,4.06 L116.87,4.70 L116.78,5.44 L116.53,6.27 L116.12,7.20 L115.23,8.77 L114.01,10.56 L105.27,22.22 L104.60,23.26 L104.13,24.13 L103.84,24.86 L103.71,25.45 L103.77,26.03 L104.04,26.44 L104.50,26.71 L105.25,26.90 L106.71,27.00 L113.23,27.00 L114.89,24.80 L113.44,24.78 L112.51,24.70 L111.87,24.55 L111.38,24.30 L111.07,23.92 L110.97,23.50 L111.05,22.82 L111.30,22.13 L112.01,20.81 L112.94,19.43 L121.03,8.68 L122.30,6.85 L123.12,5.50 L123.70,4.30 L124.04,3.24 L124.13,2.50 L124.06,1.86 L123.89,1.44 L123.52,0.96 L123.12,0.67 L122.43,0.36 L121.79,0.19 L120.20,0.01 L113.69,0.00 L112.61,0.05 L111.42,0.19 L111.57,0.00 L75.97,0.00 L75.28,0.92 L74.93,0.63 L74.41,0.34 L73.79,0.13 L73.33,0.05 L72.57,0.00 L66.97,0.00 L66.12,0.05 L64.92,0.26 L63.97,0.52 L62.64,1.01 L61.61,1.47 L60.21,2.19 L57.68,3.76 L58.01,3.15 L58.25,2.50 L58.33,2.04 L58.33,1.52 L58.20,1.08 L57.97,0.72 L57.65,0.43 L57.25,0.21 L56.69,0.05 L56.07,0.00 L50.27,0.00 L49.48,0.06 L48.65,0.20 L47.56,0.49 L46.43,0.92 L45.27,1.47 L44.32,2.01 L43.13,2.81 L42.17,3.55 L40.97,4.60 L40.02,5.54 L39.09,6.57 L38.17,7.70 L25.40,24.65 L24.30,24.51 L23.45,24.30 L22.82,24.01 L22.50,23.73 L22.26,23.25 L22.23,22.82 L22.38,22.13 L22.75,21.29 L23.35,20.29 L24.17,19.12 L38.57,0.00 L32.97,0.00 L32.28,0.92 L31.77,0.52 L31.21,0.26 L30.57,0.09 L29.83,0.01 L23.69,0.01 L22.53,0.13 L21.29,0.43 L19.64,1.01 L17.56,2.00 L15.41,3.27 L13.24,4.80 L11.10,6.55 L9.37,8.15 L7.42,10.21 L5.91,12.03 L3.69,14.97 L2.46,16.79 L1.31,18.85 L0.52,20.76 L0.26,21.64 L0.09,22.47 L0.00,23.49 L0.04,24.18 L0.17,24.81 L0.39,25.37 L0.70,25.85 L1.11,26.25 L1.60,26.57 L1.98,26.74 L2.63,26.91 L3.11,26.98 L9.79,26.98 L10.97,26.81 L12.23,26.48 L13.55,25.99 L14.98,25.34 L15.09,25.70 L15.34,26.03 L15.70,26.29 L16.19,26.50 L17.55,26.79 L19.41,26.94 L23.63,27.00 L52.23,27.00 L53.07,26.95 L54.27,26.74 L55.23,26.48 L56.32,26.08 L54.74,28.17 L53.62,29.54 L52.53,30.70 L51.20,31.90 L49.89,32.84 L48.58,33.55 L47.27,34.06 L45.94,34.41 L44.00,34.68 L41.35,34.79 L2.76,34.80 L1.10,37.00 L45.90,36.99 L47.66,36.91 L49.34,36.71 L50.95,36.34 L52.26,35.86 L53.83,35.04 L55.14,34.10 L56.74,32.63 L58.12,31.08ZM43.17,24.80 L30.89,24.80 L41.88,10.20 L43.26,8.51 L44.92,6.80 L45.87,5.95 L46.83,5.18 L48.74,3.93 L49.68,3.43 L50.75,2.96 L50.94,3.28 L51.07,3.72 L51.09,4.13 L51.02,4.58 L50.86,5.08 L50.61,5.63 L49.92,6.70 L53.93,6.70 L51.70,8.82 L49.80,10.93 L46.69,14.97 L45.24,17.14 L44.15,19.18 L43.74,20.14 L43.33,21.35 L43.13,22.20 L43.01,23.24 L43.02,23.96ZM8.09,23.79 L7.65,23.17 L7.49,22.80 L7.33,22.20 L7.26,21.04 L7.45,19.72 L7.88,18.25 L8.57,16.65 L9.50,14.94 L10.43,13.50 L11.99,11.71 L13.66,10.02 L15.39,8.44 L17.54,6.73 L19.71,5.24 L21.86,4.01 L23.25,3.35 L24.26,2.95 L24.65,2.81 L24.83,2.95 L25.11,3.21 L25.45,3.67 L25.63,4.01 L25.82,4.59 L25.94,5.71 L25.81,7.00 L25.42,8.44 L24.79,10.02 L23.90,11.71 L22.76,13.50 L21.20,15.29 L19.20,17.31 L17.09,19.15 L14.93,20.79 L12.40,22.41 L10.99,23.17 L9.95,23.65 L8.55,24.19ZM50.85,23.50 L50.49,22.80 L50.27,21.76 L50.31,20.54 L50.51,19.44 L51.00,17.94 L51.57,16.65 L52.50,14.94 L53.44,13.49 L54.99,11.71 L56.66,10.02 L58.39,8.44 L60.54,6.73 L62.71,5.24 L64.86,4.01 L66.25,3.35 L67.26,2.95 L67.65,2.81 L67.83,2.95 L68.11,3.21 L68.45,3.67 L68.63,4.01 L68.82,4.59 L68.94,5.71 L68.81,7.00 L68.42,8.44 L67.79,10.02 L66.90,11.71 L65.76,13.51 L63.88,15.64 L61.85,17.63 L59.73,19.44 L57.21,21.29 L55.76,22.20 L54.34,22.99 L52.95,23.65 L51.61,24.17 L51.55,24.19 L51.22,23.93ZM74.96,23.65 L74.57,22.99 L74.43,22.61 L74.30,21.98 L74.28,20.79 L74.51,19.44 L75.00,17.94 L75.57,16.65 L76.50,14.94 L77.44,13.49 L78.99,11.71 L80.66,10.02 L82.39,8.44 L84.54,6.73 L86.71,5.24 L88.86,4.01 L90.25,3.35 L91.26,2.95 L91.65,2.81 L91.83,2.95 L92.11,3.21 L92.45,3.67 L92.63,4.01 L92.82,4.59 L92.94,5.71 L92.81,7.00 L92.42,8.44 L91.79,10.02 L90.90,11.71 L89.76,13.51 L87.88,15.64 L85.85,17.63 L83.73,19.44 L81.57,21.04 L80.12,21.98 L78.69,22.80 L77.29,23.50 L76.27,23.93 L75.55,24.19Z"/></symbol>
+</svg>
+
+<header class="hdr" id="hdr">
+  <div class="wrap">
+    <a class="logo lgs" href="index.html" aria-label="Argon, home"><svg class="base" aria-hidden="true"><use href="#argon"/></svg><svg class="fillp" aria-hidden="true"><use href="#argon"/></svg></a>
+    <nav class="nav" id="nav" aria-label="Main">
+      <a href="index.html" aria-current="page">Home</a>
+      <a href="features.html">Features</a>
+      <a href="download.html">Download</a>
+      <a href="transparency.html">Transparency</a>
+    </nav>
+    <div class="tools">
+      <span class="kbd">v1.0.6</span>
+      <button class="ib" id="theme" type="button" aria-label="Switch light or dark mode">
+        <svg class="moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M20 14.5A8 8 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5z"/></svg>
+        <svg class="sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>
+      </button>
+      <a class="ib gh" href="https://github.com/ophidianp/argon" aria-label="Argon on GitHub"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M9 19c-4 1.3-4-2-6-2.5m12 4.5v-3.5c0-1 .1-1.4-.5-2 2.8-.3 5.5-1.4 5.5-6a4.6 4.6 0 0 0-1.3-3.2 4.2 4.2 0 0 0-.1-3.2s-1.1-.3-3.5 1.3a12 12 0 0 0-6.2 0C6.5 2.8 5.4 3.1 5.4 3.1a4.2 4.2 0 0 0-.1 3.2A4.6 4.6 0 0 0 4 9.5c0 4.6 2.7 5.7 5.5 6-.6.6-.6 1.2-.5 2V21"/></svg></a>
+      <a class="pill sm" href="https://github.com/ophidianp/argon/releases/latest/download/Argon-Setup.exe" style="margin-left:8px">Download</a>
+      <button class="ib" id="menu" type="button" aria-label="Menu" aria-controls="nav" aria-expanded="false">
+        <svg class="bars" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><path d="M4 8h16M4 16h16"/></svg>
+        <svg class="x" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>
+      </button>
+    </div>
+  </div>
 </header>
 
 <main>
-<section class="wrap hero">
-<span class="badge">Command deck for coding agents · <b>1.0.6</b></span>
-<h1>All your agents,<br><em>one calm board.</em></h1>
-<p class="lead">Run Claude Code, Codex, Gemini and more side by side, on a board you can zoom, arrange and talk to. No more hunting through terminal tabs.</p>
-<div class="actions"><a class="btn primary" href="https://github.com/ophidianp/argon/releases/latest/download/Argon-Setup.exe">Download for Windows ↓</a><a class="btn" href="features.html">See the features →</a></div>
-<p class="fine">Argon 1.0.6 · Windows 10 and 11, 64-bit · Free · <a href="download.html">Install notes</a></p>
-<div class="cmd"><div class="cmd-tabs"><span>Command bar</span><span>Ctrl K</span></div><div class="cmd-line"><span>›</span><code>/spawn codex 3</code></div><p class="cmd-hint">Send to <code>@claude-1</code>, a team like <code>#frontend</code>, or <code>@all</code>, or run commands like <code>/spawn codex 3</code>.</p></div></section>
-<section class="wrap" style="padding-top:56px">
-<div class="grid four">
-<article class="card "><p class="label">01</p><h3>Every agent in view</h3><p></p></article>
-<article class="card "><p class="label">02</p><h3>Your accounts, your machine</h3><p></p></article>
-<article class="card "><p class="label">03</p><h3>Nothing hidden in tabs</h3><p></p></article>
-<article class="card "><p class="label">04</p><h3>As light as air</h3><p></p></article>
-</div>
-</section>
-<section class="wrap section" id="watch">
-<div class="section-head"><p class="eyebrow">Watch it work</p>
-<h2>Three agents, <em>one hand-off after another.</em></h2>
-<p>Thirty seconds of the real board: one agent builds, the next tests, the last reviews, each picking up when the one before it is done.</p>
-</div>
-<video class="video" src="assets/video/argon-launch.mp4" poster="assets/video/argon-launch.jpg" controls muted loop playsinline preload="metadata" aria-label="Argon launch video: three coding agents hand work to one another on the board"></video>
-</section>
-<section class="wrap section">
-<div class="section-head"><p class="eyebrow">One place for the whole team</p>
-<h2>See every agent. <em>Know who needs you.</em></h2>
-<p>Each tile on the board is a real terminal running a real agent. Argon watches them all and tells you, at a glance, who is working, who is resting and who is waiting on you.</p>
-</div>
-<div class="grid two">
-<article class="card tall"><p class="label">01 / Board</p><p class="serif">An infinite board</p><p>Pan, zoom and arrange live terminals next to notes, checklists, kanban, a calendar, web previews and git.</p><ul class="tags"><li class="on">terminals</li><li>notes</li><li>checklists</li><li>kanban</li><li>calendar</li><li>web preview</li><li>git</li></ul><a class="more" href="features.html#board">Explore the board →</a></article>
-<article class="card "><p class="label">02 / Status</p><h3>A mission map</h3><p>Every agent shows as working, resting or needs you. Get a notification when one is waiting for approval.</p><a class="more" href="features.html#agents">Explore status →</a></article>
-<article class="card "><p class="label">03 / Orchestration</p><h3>Teams, loops, handoffs</h3><p>Launch up to 12 agents at once, loop a prompt until a goal is met, and hand work from one agent to the next.</p><a class="more" href="features.html#orchestration">Explore orchestration →</a></article>
-</div>
-<p style="margin-top:22px"><a class="btn" href="features.html">See everything it does ↗</a></p>
-</section>
-<section class="wrap section split">
-<div class="section-head"><p class="eyebrow">Built for running many at once</p>
-<h2>Less tab juggling. <em>More shipping.</em></h2>
-<p>Agents are great until you have five of them in five windows. Argon keeps the whole crew in one place and handles the bookkeeping.</p>
-</div>
-<div class="rows">
-<div class="row"><p class="label">Consoles</p><div><h3>Real terminals, not a wrapper</h3><p>Each tile is a full Windows terminal. Ctrl+C works, full-screen tools work, and agents behave exactly as they do on their own.</p></div></div>
-<div class="row"><p class="label">Status</p><div><h3>Know the moment one is waiting</h3><p>Approval prompts turn the tile amber, move it to the top of the mission map and, if you are elsewhere, send a Windows notification.</p></div></div>
-<div class="row"><p class="label">Continuity</p><div><h3>Pick up where you left off</h3><p>Close Argon with agents running and they relaunch in place next time, continuing their last session where the agent supports it.</p></div></div>
-<div class="row"><p class="label">Usage</p><div><h3>Know how much of your plan is left</h3><p>The Usage window shows the 5-hour and weekly limits of your Claude, Codex and Copilot plans, and charts the tokens your agents used. Your sign-ins never leave your PC.</p></div></div>
-<div class="row"><p class="label">Memory</p><div><h3>Shared project memory</h3><p>Keep notes for every agent, globally or per repo, and push them into any console when you want them to know.</p></div></div>
-</div>
-</section>
-<section class="wrap section">
-<div class="section-head"><p class="eyebrow">Up and running fast</p>
-<h2>Install. Open a folder. <em>Spawn your team.</em></h2>
-</div>
-<ol class="steps">
-<li><h3>Install</h3><p>Get Argon for Windows. It keeps itself up to date, and the setup panel shows which agents you already have.</p></li>
-<li><h3>Open a folder</h3><p>Each project becomes its own workspace tab, with its own board, notes and agents.</p></li>
-<li><h3>Spawn and direct</h3><p>Press <kbd>N</kbd> for one agent or the Composer for a whole team, then talk to them with <kbd>Ctrl K</kbd>.</p></li>
-</ol>
-<p style="margin-top:22px"><a class="btn" href="download.html">Get started with Argon ↗</a></p>
-</section>
-<section class="wrap section split">
-<div class="section-head"><p class="eyebrow">Bring your own agents</p>
-<h2>Works with the agents <em>you already use.</em></h2>
-<p>Argon runs the command-line agents installed on your PC, signed in with your own accounts. Add any other command as a custom agent.</p>
-</div>
-<article class="card "><p class="label">Agents</p><p>Each agent signs in with its own account the first time you open it · Argon never sees your logins</p><ul class="tags"><li>Claude Code</li><li>Codex</li><li>Gemini CLI</li><li>Copilot CLI</li><li>OpenCode</li><li>Qwen Code</li><li>Amp</li><li>Aider</li><li>Cursor CLI</li><li>Goose</li><li>Crush</li><li class="on">Your own command</li></ul></article></section>
-<section class="wrap section split" style="align-items:start">
-<div class="section-head"><p class="eyebrow">Good to know</p>
-<h2>A few quick <em>answers.</em></h2>
-</div>
-<div class="faq">
-<details><summary>Do I need a separate subscription for each agent?</summary><p>No. One plan covers as many tiles of that agent as you like; they all share its usage limit, so five busy Claude Code tiles use it up about five times faster. You only need accounts for the kinds of agents you actually run. Argon itself is free.</p></details>
-<details><summary>Does Argon send my code anywhere?</summary><p>Argon itself has no servers. Your boards, notes and settings are saved as files on your PC. The agents you run talk to their own providers exactly as they would outside Argon.</p></details>
-<details><summary>Will agents do things without asking?</summary><p>Not unless you turn that on. Auto-approve is off by default; agents ask before editing files or running commands, and Argon flags those moments so you don't miss them.</p></details>
-<details><summary>Is it only for Windows?</summary><p>Argon is built and tested on Windows 10 and 11, and Linux support is on the way. A Mac version isn’t planned: on a Mac, try <a href="https://github.com/ricca200xx/vibeboard">vibeboard</a>, the open-source project Argon is built on.</p></details>
-</div>
-</section>
-<section class="wrap"><div class="cta">
-<h2>Put your agents on one board. <em>Make it yours.</em></h2>
-<p>Free for Windows 10 and 11, 64-bit. Bring the agents and accounts you already have.</p>
-<div class="actions"><a class="btn primary" href="https://github.com/ophidianp/argon/releases/latest/download/Argon-Setup.exe">Download for Windows ↓</a></div>
-</div></section>
+  <section class="hero" id="top">
+    <div class="wrap">
+      <div class="hero-grid">
+        <div>
+          <p class="eyebrow in">Command deck for coding agents · <b>1.0.6</b></p>
+          <h1 class="in d1" style="margin-top:22px">All your agents,<br><em>one calm board.</em></h1>
+        </div>
+        <div class="hero-side">
+          <p class="lede in d2">Run Claude Code, Codex, Gemini and more side by side, on a board you can zoom, arrange and talk to. No more hunting through terminal tabs.</p>
+          <div class="cta in d3"><a class="pill acc" href="https://github.com/ophidianp/argon/releases/latest/download/Argon-Setup.exe">Download for Windows <span class="ar dn">↓</span></a><a class="pill" href="features.html">See the features <span class="ar">→</span></a></div>
+          <p class="fine in d4">Argon 1.0.6 · Windows 10 and 11, 64-bit · Free · <a href="download.html">Install notes</a></p>
+        </div>
+      </div>
+      <div class="ph stage zoom">
+        <div class="cmd"><div class="cmd-tabs"><span>Command bar</span><span>Ctrl K</span></div><div class="cmd-line"><span>›</span><code>/spawn codex 3</code></div><p class="cmd-hint">Send to <code>@claude-1</code>, a team like <code>#frontend</code>, or <code>@all</code>, or run commands like <code>/spawn codex 3</code>.</p></div>
+      </div>
+      <div class="ticks">
+        <div class="rv"><span>01</span><b>Every agent in view</b></div>
+        <div class="rv d1"><span>02</span><b>Your accounts, your machine</b></div>
+        <div class="rv d2"><span>03</span><b>Nothing hidden in tabs</b></div>
+        <div class="rv d3"><span>04</span><b>As light as air</b></div>
+      </div>
+    </div>
+    <div class="marq" aria-hidden="true"><div class="track"><span>Claude Code</span><span>Codex</span><span>Gemini CLI</span><span>Copilot CLI</span><span>OpenCode</span><span>Qwen Code</span><span>Amp</span><span>Aider</span><span>Cursor CLI</span><span>Goose</span><span>Crush</span><span>Claude Code</span><span>Codex</span><span>Gemini CLI</span><span>Copilot CLI</span><span>OpenCode</span><span>Qwen Code</span><span>Amp</span><span>Aider</span><span>Cursor CLI</span><span>Goose</span><span>Crush</span></div></div>
+  </section>
+
+  <section class="blk" id="watch">
+    <div class="wrap">
+      <div class="blk-head">
+        <div><p class="eyebrow rv">Watch it work</p><h2 class="rv d1">Three agents, <em>one hand-off after another.</em></h2></div>
+        <p class="lede rv d2">Thirty seconds of the real board: one agent builds, the next tests, the last reviews, each picking up when the one before it is done.</p>
+      </div>
+      <video class="video zoom" src="assets/video/argon-launch.mp4" poster="assets/video/argon-launch.jpg" controls muted loop playsinline preload="metadata" aria-label="Argon launch video: three coding agents hand work to one another on the board"></video>
+    </div>
+  </section>
+
+  <section class="tear" id="team">
+    <div class="pin"><div class="wrap grid">
+      <div>
+        <p class="eyebrow">One place for the whole team</p>
+        <h2 style="margin-top:18px;font-size:clamp(32px,3.8vw,54px)">See every agent. <em>Know who needs you.</em></h2>
+        <p class="intro">Each tile on the board is a real terminal running a real agent. Argon watches them all and tells you, at a glance, who is working, who is resting and who is waiting on you.</p>
+        <ol class="steps">
+          <li class="on" data-lbl="Board"><div class="t">An infinite board <small>01 / Board</small></div><div class="x"><p>Pan, zoom and arrange live terminals next to notes, checklists, kanban, a calendar, web previews and git.</p><ul class="chips"><li class="on"><span>terminals</span></li><li><span>notes</span></li><li><span>checklists</span></li><li><span>kanban</span></li><li><span>calendar</span></li><li><span>web preview</span></li><li><span>git</span></li></ul><a class="more" href="features.html#board">Explore the board <span class="ar">→</span></a></div></li>
+          <li data-lbl="Status"><div class="t">A mission map <small>02 / Status</small></div><div class="x"><p>Every agent shows as working, resting or needs you. Get a notification when one is waiting for approval.</p><a class="more" href="features.html#agents">Explore status <span class="ar">→</span></a></div></li>
+          <li data-lbl="Orchestration"><div class="t">Teams, loops, handoffs <small>03 / Orchestration</small></div><div class="x"><p>Launch up to 12 agents at once, loop a prompt until a goal is met, and hand work from one agent to the next.</p><a class="more" href="features.html#orchestration">Explore orchestration <span class="ar">→</span></a></div></li>
+        </ol>
+        <div class="bar"><i id="bar"></i></div>
+        <p style="margin-top:24px"><a class="pill" href="features.html">See everything it does <span class="ar">↗</span></a></p>
+      </div>
+      <div class="ph tstage" id="tstage" data-s="0" aria-hidden="true">
+        <div class="bd"></div>
+        <div class="tile t1 wk" style="left:6%;top:13%;width:52%;height:39%"><div class="th"><i></i>claude-1<em>working</em></div><div class="tb"><span class="ln a" style="width:62%"></span><span class="ln" style="width:90%"></span><span class="ln" style="width:54%"></span><span class="ln" style="width:78%"></span><span class="ln a" style="width:38%"></span><span class="ln" style="width:70%"></span><span class="ln" style="width:46%"></span></div></div>
+        <div class="tile t2 nd" style="left:62%;top:13%;width:32%;height:39%"><div class="th"><i></i>codex-1<em>needs you</em></div><div class="tb"><span class="ln" style="width:80%"></span><span class="ln" style="width:56%"></span><span class="ln a" style="width:70%"></span><span class="ln" style="width:40%"></span><span class="ln" style="width:66%"></span></div></div>
+        <div class="tile t3" style="left:6%;top:56%;width:34%;height:34%"><div class="th"><i></i>gemini-1<em>resting</em></div><div class="tb"><span class="ln" style="width:74%"></span><span class="ln" style="width:50%"></span><span class="ln" style="width:86%"></span><span class="ln a" style="width:44%"></span></div></div>
+        <div class="tile note side" style="left:44%;top:56%;width:22%;height:24%"><div class="th">Notes</div><div class="tb"><span class="ln" style="width:84%"></span><span class="ln" style="width:60%"></span><span class="ln" style="width:72%"></span></div></div>
+        <div class="tile side" style="left:70%;top:56%;width:24%;height:34%"><div class="th">Kanban</div><div class="kb"><div><b class="a"></b><b></b><b></b></div><div><b></b><b class="a"></b></div><div><b></b></div></div></div>
+        <div class="tile new wk n1" style="left:44%;top:56%;width:15%;height:23%"><div class="th"><i></i>codex-2</div><div class="tb"><span class="ln a" style="width:70%"></span><span class="ln" style="width:50%"></span></div></div>
+        <div class="tile new wk n2" style="left:61.5%;top:56%;width:15%;height:23%"><div class="th"><i></i>codex-3</div><div class="tb"><span class="ln" style="width:60%"></span><span class="ln a" style="width:44%"></span></div></div>
+        <div class="tile new wk n3" style="left:79%;top:56%;width:15%;height:23%"><div class="th"><i></i>codex-4</div><div class="tb"><span class="ln a" style="width:52%"></span><span class="ln" style="width:72%"></span></div></div>
+        <div class="mmap"><b>Mission map</b><div><i style="background:var(--warn)"></i>codex-1<span>needs you</span></div><div><i style="background:var(--acc)"></i>claude-1<span>working</span></div><div><i style="background:var(--faint)"></i>gemini-1<span>resting</span></div></div>
+        <div class="cbar"><span>›</span><code>/spawn codex 3</code><small>Ctrl K</small></div>
+        <span class="lbl" id="tlbl">Board</span>
+      </div>
+    </div></div>
+  </section>
+
+  <section class="blk tint">
+    <div class="wrap split">
+      <div class="blk-head"><div><p class="eyebrow rv">Built for running many at once</p><h2 class="rv d1">Less tab juggling. <em>More shipping.</em></h2><p class="lede rv d2">Agents are great until you have five of them in five windows. Argon keeps the whole crew in one place and handles the bookkeeping.</p></div></div>
+      <div class="rows">
+        <div class="row rv"><p class="eyebrow">Consoles</p><div><h3>Real terminals, not a wrapper</h3><p>Each tile is a full Windows terminal. Ctrl+C works, full-screen tools work, and agents behave exactly as they do on their own.</p></div></div>
+        <div class="row rv"><p class="eyebrow">Status</p><div><h3>Know the moment one is waiting</h3><p>Approval prompts turn the tile amber, move it to the top of the mission map and, if you are elsewhere, send a Windows notification.</p></div></div>
+        <div class="row rv"><p class="eyebrow">Continuity</p><div><h3>Pick up where you left off</h3><p>Close Argon with agents running and they relaunch in place next time, continuing their last session where the agent supports it.</p></div></div>
+        <div class="row rv"><p class="eyebrow">Usage</p><div><h3>Know how much of your plan is left</h3><p>The Usage window shows the 5-hour and weekly limits of your Claude, Codex and Copilot plans, and charts the tokens your agents used. Your sign-ins never leave your PC.</p></div></div>
+        <div class="row rv"><p class="eyebrow">Memory</p><div><h3>Shared project memory</h3><p>Keep notes for every agent, globally or per repo, and push them into any console when you want them to know.</p></div></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="blk">
+    <div class="wrap">
+      <div class="blk-head"><div><p class="eyebrow rv">Up and running fast</p><h2 class="rv d1">Install. Open a folder. <em>Spawn your team.</em></h2></div></div>
+      <div class="cards">
+        <div class="card rv"><div class="num">01</div><h3>Install</h3><p>Get Argon for Windows. It keeps itself up to date, and the setup panel shows which agents you already have.</p></div>
+        <div class="card rv d1"><div class="num">02</div><h3>Open a folder</h3><p>Each project becomes its own workspace tab, with its own board, notes and agents.</p></div>
+        <div class="card rv d2"><div class="num">03</div><h3>Spawn and direct</h3><p>Press <kbd>N</kbd> for one agent or the Composer for a whole team, then talk to them with <kbd>Ctrl K</kbd>.</p></div>
+      </div>
+      <p class="rv" style="margin-top:40px"><a class="pill" href="download.html">Get started with Argon <span class="ar">↗</span></a></p>
+    </div>
+  </section>
+
+  <section class="blk tint">
+    <div class="wrap">
+      <div class="blk-head">
+        <div><p class="eyebrow rv">Bring your own agents</p><h2 class="rv d1">Works with the agents <em>you already use.</em></h2></div>
+        <p class="lede rv d2">Argon runs the command-line agents installed on your PC, signed in with your own accounts. Add any other command as a custom agent.</p>
+      </div>
+      <ul class="agents rv"><li>Claude Code</li><li>Codex</li><li>Gemini CLI</li><li>Copilot CLI</li><li>OpenCode</li><li>Qwen Code</li><li>Amp</li><li>Aider</li><li>Cursor CLI</li><li>Goose</li><li>Crush</li><li class="on">Your own command</li></ul>
+      <p class="note rv" style="margin-top:32px">Each agent signs in with its own account the first time you open it · Argon never sees your logins</p>
+    </div>
+  </section>
+
+  <section class="blk">
+    <div class="wrap split">
+      <div class="blk-head"><div><p class="eyebrow rv">Good to know</p><h2 class="rv d1">A few quick <em>answers.</em></h2></div></div>
+      <div class="faq rv">
+        <details><summary>Do I need a separate subscription for each agent?</summary><p>No. One plan covers as many tiles of that agent as you like; they all share its usage limit, so five busy Claude Code tiles use it up about five times faster. You only need accounts for the kinds of agents you actually run. Argon itself is free.</p></details>
+        <details><summary>Does Argon send my code anywhere?</summary><p>Argon itself has no servers. Your boards, notes and settings are saved as files on your PC. The agents you run talk to their own providers exactly as they would outside Argon.</p></details>
+        <details><summary>Will agents do things without asking?</summary><p>Not unless you turn that on. Auto-approve is off by default; agents ask before editing files or running commands, and Argon flags those moments so you don't miss them.</p></details>
+        <details><summary>Is it only for Windows?</summary><p>Argon is built and tested on Windows 10 and 11, and Linux support is on the way. A Mac version isn’t planned: on a Mac, try <a href="https://github.com/ricca200xx/vibeboard">vibeboard</a>, the open-source project Argon is built on.</p></details>
+      </div>
+    </div>
+  </section>
+
+  <section class="blk flush">
+    <div class="wrap close">
+      <h2 class="rv">Put your agents on one board. <em>Make it yours.</em></h2>
+      <p class="lede rv d1">Free for Windows 10 and 11, 64-bit. Bring the agents and accounts you already have.</p>
+      <div class="cta rv d2"><a class="pill acc" href="https://github.com/ophidianp/argon/releases/latest/download/Argon-Setup.exe">Download for Windows <span class="ar dn">↓</span></a></div>
+    </div>
+  </section>
 </main>
 
-<script>
-/* FAQ: slide each answer open and closed instead of snapping */
-document.querySelectorAll(".faq details").forEach((d) => {
-  const ans = d.querySelector(":scope > :not(summary)");
-  let anim = null;
-  d.querySelector("summary").addEventListener("click", (e) => {
-    if (!ans || matchMedia("(prefers-reduced-motion: reduce)").matches) return;
-    e.preventDefault();
-    const opening = !d.open || d.classList.contains("closing");
-    const from = d.open ? ans.offsetHeight : 0;
-    if (anim) anim.cancel();
-    d.open = true;
-    d.classList.toggle("closing", !opening);
-    const to = opening ? ans.scrollHeight : 0;
-    anim = ans.animate([{ height: from + "px", opacity: opening ? 0 : 1 }, { height: to + "px", opacity: opening ? 1 : 0 }],
-      { duration: opening ? 340 : 260, easing: "cubic-bezier(0.2, 0.7, 0.2, 1)" });
-    anim.onfinish = () => { anim = null; if (!opening) { d.open = false; d.classList.remove("closing"); } };
-  });
-});
-</script>
-<footer>
-  <p class="made"><span>Made by</span> <a href="https://ophidianp.github.io/">Pavan Nemani</a></p>
-  <p class="fine">&copy; 2026 Pavan Nemani · A calm command deck for busy agents. · <a href="https://github.com/ophidianp/argon">GitHub</a> <a href="https://ophidianp.github.io/">Portfolio ↗</a></p>
-</footer>
+<footer><div class="wrap foot-logo"><span class="lgs" role="img" aria-label="Argon"><svg class="ghost"><use href="#argon"/></svg><svg class="fillp"><use href="#argon"/></svg></span><p class="foot-by">by <a href="https://ophidianp.github.io/">Pavan Nemani</a></p></div><div class="wrap fine"><span>&copy; Pavan Nemani · <a href="https://github.com/ophidianp/argon/blob/HEAD/LICENSE">All rights reserved</a> · A calm command deck for busy agents.</span><span><a href="https://github.com/ophidianp/argon">GitHub</a><a href="https://ophidianp.github.io/">Portfolio ↗</a></span></div></footer>
 </body>
 </html>
