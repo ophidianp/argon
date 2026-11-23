@@ -2,6 +2,8 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
+<!-- GitHub Pages serves this page at any missing path, however deep: point relative links back at the site root -->
+<script>if(location.pathname.indexOf("/argon/")===0)document.write('<base href="/argon/">')</script>
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Not found · Argon</title>
 <meta name="description" content="This page could not be found.">
@@ -74,5 +76,7 @@
 </main>
 
 <footer><div class="wrap foot-logo"><span class="lgs" role="img" aria-label="Argon"><svg class="ghost"><use href="#argon"/></svg><svg class="fillp"><use href="#argon"/></svg></span><p class="foot-by">by <a href="https://ophidianp.github.io/">Pavan Nemani</a></p></div><div class="wrap fine"><span>&copy; Pavan Nemani · <a href="https://github.com/ophidianp/argon/blob/HEAD/LICENSE">All rights reserved</a> · A calm command deck for busy agents.</span><span><a href="https://github.com/ophidianp/argon">GitHub</a><a href="https://ophidianp.github.io/">Portfolio ↗</a></span></div></footer>
+<script>/* with a <base>, "#argon" would point at the site root; keep the logo references on this page */
+document.querySelectorAll("use").forEach(function(u){u.setAttribute("href",location.href.split("#")[0]+"#argon")});</script>
 </body>
 </html>
