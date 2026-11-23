@@ -8,7 +8,7 @@ import { ACCENTS, DARK_PALETTES, DEFAULT_LOOK, LIGHT_PALETTES, LOOK_TINT, LOOKS,
 import { useTheme } from '../theme'
 import { AgentIcon } from './icons'
 import { checkForUpdates, setUpdateMode, setUpdatePrefs, updater } from '../updates'
-import { atomColors, drawAtom } from '../appicon'
+import { appIconColors, drawAppIcon } from '../appicon'
 
 type Tab = 'general' | 'agents' | 'look' | 'updates' | 'data' | 'about'
 const WIN = window.vibeboardDesktop?.platform === 'win32'
@@ -420,13 +420,13 @@ function UpdatesPane() {
   )
 }
 
-// Settings → About: the atom in the current accent (the same drawing as the taskbar icon), the version, credits.
+// Settings → About: the app icon in the current accent (the same drawing as the taskbar icon), the version, credits.
 function AboutPane() {
   useLook() // redraw when the look changes
   const atom = useRef<HTMLCanvasElement>(null)
   useEffect(() => {
-    const k = atomColors()
-    if (atom.current && k) drawAtom(atom.current, k, 192)
+    const k = appIconColors()
+    if (atom.current && k) drawAppIcon(atom.current, k, 192)
   })
   const link = (href: string, text: string) => (
     <a href={href} target="_blank" rel="noreferrer">
