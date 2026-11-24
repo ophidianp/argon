@@ -11,13 +11,11 @@ The launch video is [`assets/video/argon-launch.mp4`](assets/video/argon-launch.
 - **Home** — `index.html` (with the launch video)
 - **Features** — `features.html`
 - **Download** — `download.html` (the Windows installer, with a small link to the source)
-- **Transparency** — `transparency.html`
 - **404** — `404.html`
 
 Shared assets: `assets/site.css` (the Mouse 33 design: floating header, scroll reveals, pinned feature
-stage, cards and pill buttons, in Argon's ember accent; light and dark with a toggle), `assets/site.js`
-(theme toggle, header, menu, first-visit preloader, FAQ animation, feature stage) and `assets/chat.js`
-(the chat log on the Transparency page). `favicon.svg`, `apple-touch-icon.png` and `og.png` sit at the root.
+stage, cards and pill buttons, in Argon's ember accent; light and dark with a toggle) and `assets/site.js`
+(theme toggle, header, menu, first-visit preloader, FAQ animation, feature stage). `favicon.svg`, `apple-touch-icon.png` and `og.png` sit at the root.
 
 ## Logo
 The "argon" wordmark is drawn by `brand/argon_logo.py`: a flat rectangular nib swept along Bezier
